@@ -16,6 +16,15 @@ try:
     eleven_available = True
 except ImportError:
     eleven_available = False 
+try:
+    import torch
+    import torchaudio
+    from tortoise.api import TextToSpeech, MODELS_DIR
+    from tortoise.utils.audio import load_voices
+    from tortoise.utils.text import split_and_recombine_text
+    tortoise_available = True
+except ImportError:
+    tortoise_available = False
 from dotenv import load_dotenv
 from pathlib import Path
 from pydub import AudioSegment
@@ -49,6 +58,7 @@ class WallPod(object):
     def loadConfig(self):
         global openai_available
         global eleven_available
+        global tortoise_available
         load_dotenv()
         self.wallabagUrl = os.environ['url']
         self.username = os.environ['user']
@@ -75,6 +85,10 @@ class WallPod(object):
             self.elevenclient = ElevenLabs(
                 api_key=self.eleven_api_key
                 )
+        elif self.engine in 'tortoise' and tortoise_available:
+            self.engine = 'tortoise'
+            self.tts = TextToSpeech(kv_cache=True, half=True)
+            self.voice_samples, self.conditioning_latents = load_voices(['daniel'])
         else:
             raise Exception("no TTS engine/API key found")
         return
@@ -139,21 +153,24 @@ class WallPod(object):
         paragraphs = re.split(r'(\n|\r){2,}',text)
         segments = []
         add_to_next = ""
-        for para in paragraphs:
-            this_segment = (add_to_next + re.sub(' +',' ',para))
-            if not re.search('[A-Za-z]{5}',this_segment):
-                continue
-            if len(this_segment) < 50:
-                add_to_next = this_segment
-                continue
-            else:
-                add_to_next = ""
-            if len(this_segment) > 4096:
-                this_segment = re.sub(r'([A-Za-z]{5}\.) +',r'\1-----',this_segment)
-                new_segments = re.split('-----',this_segment)
-                segments.extend([x.replace("-----"," ") for x in new_segments])
-            else:
-                segments.append(this_segment)
+        if self.engine != "tortoise":
+            for para in paragraphs:
+                this_segment = (add_to_next + re.sub(' +',' ',para))
+                if not re.search('[A-Za-z]{5}',this_segment):
+                    continue
+                if len(this_segment) < 50:
+                    add_to_next = this_segment
+                    continue
+                else:
+                    add_to_next = ""
+                if len(this_segment) > 4096:
+                    this_segment = re.sub(r'([A-Za-z]{5}\.) +',r'\1-----',this_segment)
+                    new_segments = re.split('-----',this_segment)
+                    segments.extend([x.replace("-----"," ") for x in new_segments])
+                else:
+                    segments.append(this_segment)
+        else:
+            segments = split_and_recombine_text(text)
         item = 1
         combined = AudioSegment.empty()
         for segment in segments:
@@ -172,6 +189,10 @@ class WallPod(object):
                     input=segment
                     )
                 response.stream_to_file(f'{self.temp_path}{item}.mp3')
+            elif self.engine == 'tortoise':
+                gen, dbg_state = self.tts.tts_with_preset(text=segment, k=1, voice_samples=self.voice_samples, conditioning_latents=self.conditioning_latents,
+                                  preset='fast', return_deterministic_state=True, cvvp_amount=1)
+                torchaudio.save(f'{self.temp_path}{item}.mp3', gen.squeeze(0).cpu(), 24000)
             combined += AudioSegment.from_mp3(f'{self.temp_path}{item}.mp3')
         combined.export(f'{self.final_path}{out_file}', format="mp3")
         os.chmod(f'{self.final_path}{out_file}', 0o644)
