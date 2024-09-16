@@ -1,0 +1,13 @@
+# rename this to .env and fill in the values below
+url='WALLABAG ACCESS URL'
+user='WALLABAG USERNAME'
+password='WALLABAG PASSWORD'
+client='WALLABAG CLIENT ID'
+secret='WALLABAG CLIENT SECRET'
+working_path='./local/path/for/processing'
+pod_url='https://podcast.example.com/wallabag'
+eleven_api_key='ELEVENLABS API KEY'
+openai_api_key='OPENAI API KEY' 
+engine='openai|eleven'  # pick one
+ssh_server_path='/full/path/on/server/to/podcast/folder'
+ssh_server='podcast.example.com'

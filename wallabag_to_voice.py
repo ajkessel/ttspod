@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import pip_system_certs.wrapt_requests # necessary to trust local certificates
+import sysrsync
 from pathlib import Path
 import pickle
 import unicodedata
@@ -9,19 +11,17 @@ import html2text
 import pod2gen
 from dotenv import load_dotenv
 import os
-import sys
-import tempfile
-import time
-import torch
-import torchaudio
-from tortoise.api import MODELS_DIR, TextToSpeech
-from tortoise.utils.audio import get_voices, load_voices, load_audio
-from tortoise.utils.text import split_and_recombine_text
+from elevenlabs.client import ElevenLabs
+from elevenlabs import save
 from pydub import AudioSegment
+from openai import OpenAI
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
 
 def slugify(value):
     value = str(value)
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = unicodedata.normalize('NFKD', value).encode(
+        'ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value.lower())
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
@@ -32,6 +32,7 @@ class WallPod(object):
         Path(self.working_path).mkdir(parents=True, exist_ok=True)
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
+        os.chmod(self.final_path, 0o755)
         return
 
     def loadConfig(self):
@@ -39,7 +40,7 @@ class WallPod(object):
         self.url = os.environ['url']
         self.username = os.environ['user']
         self.password = os.environ['password']
-        self.client = os.environ['client']
+        self.client_id = os.environ['client']
         self.secret = os.environ['secret']
         self.working_path = os.environ['working_path']
         self.pod_url = os.environ['pod_url']
@@ -48,22 +49,38 @@ class WallPod(object):
         self.pod_pickle = f'{self.working_path}/wallabag.pickle'
         self.pod_rss_url = f'{self.pod_url}/index.rss'
         self.pod_rss_file = f'{self.final_path}/index.rss'
+        self.ssh_server = os.environ['ssh_server'] if 'ssh_server' in os.environ else ""
+        self.ssh_server_path = os.environ['ssh_server_path'] if 'ssh_server_path' in os.environ else ""
+        self.eleven_api_key = os.environ['eleven_api_key'] if 'eleven_api_key' in os.environ else ""
+        self.openai_api_key = os.environ['openai_api_key'] if 'openai_api_key' in os.environ else ""
+        self.engine = os.environ['engine'].lower() if 'engine' in os.environ else ""
+        if self.engine in 'openai' and self.openai_api_key:
+            self.engine = 'openai'
+            self.openaiclient = OpenAI(api_key = self.openai_api_key)
+        elif self.engine in 'eleven' and self.eleven_api_key:
+            self.engine = 'eleven'
+            self.elevenclient = ElevenLabs(
+                api_key=self.eleven_api_key
+                )
+        else:
+            raise Exception("no TTS engine/API key found")
         return
 
     def getEntries(self):
         entries_url = f'{self.url}/api/entries.json?starred=1&sort=created&order=asc&page=1&perPage=500&since=0&detail=full'
         auth_url = f'{self.url}/oauth/v2/token'
-        auth_data = { 'username': self.username,
-                    'password': self.password,
-                    'client_id': self.client,
-                    'client_secret': self.secret,
-                    'grant_type' : 'password' }
-        login = requests.post(auth_url, data = auth_data)
+        auth_data = {'username': self.username,
+                     'password': self.password,
+                     'client_id': self.client_id,
+                     'client_secret': self.secret,
+                     'grant_type': 'password'}
+        login = requests.post(auth_url, data=auth_data)
         token = json.loads(login.content)
         print(self.username)
+        print(token)
         access_token = token['access_token']
         headers = {"Authorization": f"Bearer {access_token}"}
-        entries_request = requests.get(entries_url, headers = headers)
+        entries_request = requests.get(entries_url, headers=headers)
         entries_response = json.loads(entries_request.content)
         entries = entries_response['_embedded']['items']
         h = html2text.HTML2Text()
@@ -74,7 +91,7 @@ class WallPod(object):
             uid = entry['uid']
             title = entry['title']
             text = h.handle(entry['content'])
-            this_entry = (uid,title,text)
+            this_entry = (uid, title, text)
             all_entries.append(this_entry)
         return all_entries
 
@@ -92,24 +109,59 @@ class WallPod(object):
         return pod
 
     def saveFeed(self):
-        self.p.rss_file(self.pod_rss_file,minimize=False)
+        self.p.rss_file(self.pod_rss_file, minimize=False)
+
+    def syncFeed(self):
+        if self.ssh_server_path and self.ssh_server:
+            sysrsync.run(source=self.final_path + '/',
+                destination=self.ssh_server_path + '/',
+                destination_ssh=self.ssh_server,
+                sync_source_contents=True,
+                options=['-a']
+                )
 
     def speechify(self, title, text):
         out_file = slugify(title) + ".mp3"
-        paragraphs = split_and_recombine_text(text)
-        tts = TextToSpeech(models_dir=MODELS_DIR, use_deepspeed=False, kv_cache=True, half=True, enable_redaction=False, device="cuda")
-        voice_samples, conditioning_latents = load_voices(['daniel'])
+        paragraphs = re.split(r'(\n|\r){2,}',text)
+        segments = []
+        add_to_next = ""
+        for para in paragraphs:
+            this_segment = (add_to_next + re.sub(' +',' ',para))
+            if not re.search('[A-Za-z]{5}',this_segment):
+                continue
+            if len(this_segment) < 50:
+                add_to_next = this_segment
+                continue
+            else:
+                add_to_next = ""
+            if len(this_segment) > 4096:
+                this_segment = re.sub(r'([A-Za-z]{5}\.) +',r'\1-----',this_segment)
+                new_segments = re.split('-----',this_segment)
+                segments.extend([x.replace("-----"," ") for x in new_segments])
+            else:
+                segments.append(this_segment)
         item = 1
         combined = AudioSegment.empty()
-        for para in paragraphs:
-            gen, dbg_state = tts.tts_with_preset(para, k=1, voice_samples=voice_samples, conditioning_latents=conditioning_latents,
-                                        preset='ultra_fast', use_deterministic_seed=None, return_deterministic_state=True, cvvp_amount=0)
-            torchaudio.save(f'{self.temp_path}/{item}.wav', gen.squeeze(0).cpu(), 24000)
-            combined += AudioSegment.from_wav(f'{self.temp_path}/{item}.wav')
-            item += 1
-        #combined.export(f'{final_path}/{out_file}',format="mp3", tag={'title': title})
-        combined.export(f'{self.final_path}/{out_file}',format="mp3")
-        return(out_file)
+        for segment in segments:
+            print(f'processing {segment}')
+            if self.engine == "eleven":
+                audio = self.elevenclient.generate(
+                    text=segment,
+                    voice="Daniel",
+                    model="eleven_monolingual_v1"
+                    )
+                save(audio, f'{self.temp_path}/{item}.mp3')
+            elif self.engine == "openai":
+                response = self.openaiclient.audio.speech.create(
+                    model="tts-1",
+                    voice="alloy",
+                    input=segment
+                    )
+                response.stream_to_file(f'{self.temp_path}/{item}.mp3')
+            combined += AudioSegment.from_mp3(f'{self.temp_path}/{item}.mp3')
+        combined.export(f'{self.final_path}/{out_file}', format="mp3")
+        os.chmod(f'{self.final_path}/{out_file}', 0o644)
+        return (out_file)
 
     def process(self):
         entries = self.getEntries()
@@ -120,11 +172,11 @@ class WallPod(object):
         cached = []
         if self.p:
             for ep in self.p.episodes:
-                cached.append(ep.title)         
+                cached.append(ep.title)
         else:
             self.p = self.newPod()
         for entry in entries:
-            (uid,title,content) = entry
+            (uid, title, content) = entry
             if title in cached:
                 print(f'{title} is already in the feed, skipping')
                 continue
@@ -132,18 +184,20 @@ class WallPod(object):
             filename = self.speechify(title, content)
             size = os.path.getsize(f'{self.final_path}/{filename}')
             self.p.episodes.append(
-            pod2gen.Episode(
-                title=title,
-                media=pod2gen.Media(f'{self.pod_url}/{filename}',size)
+                pod2gen.Episode(
+                    title=title,
+                    media=pod2gen.Media(f'{self.pod_url}/{filename}', size)
                 )
             )
         self.saveFeed()
+        self.syncFeed()
         with open(self.pod_pickle, 'wb') as f:
-            pickle.dump(self.p,f)
-        
+            pickle.dump(self.p, f)
+
+
 def main():
-    success = WallPod()
-    success.process()
+    wallpod = WallPod()
+    wallpod.process()
     return
 
 if __name__ == '__main__':
