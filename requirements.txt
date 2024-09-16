@@ -1,9 +1,0 @@
-elevenlabs==1.8.1
-html2text==2024.2.26
-openai==1.45.1
-pip_system_certs==4.0
-pod2gen==1.0.3
-pydub==0.25.1
-python-dotenv==1.0.1
-Requests==2.32.3
-sysrsync==1.1.1
