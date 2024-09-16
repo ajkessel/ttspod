@@ -25,6 +25,19 @@ try:
     tortoise_available = True
 except ImportError:
     tortoise_available = False
+try:
+    import numpy as np
+    from grad_tts.model import GradTTS, params
+    from grad_tts.text.symbols import symbols
+    from grad_tts.text import text_to_sequence, cmudict
+    from grad_tts.utils import intersperse
+    from scipy.io.wavfile import write
+    from grad_tts.model.hifi_gan.models import Generator as HiFiGAN
+    from gradify import Gradify
+    grad_available = True
+except ImportError:
+    grad_available = False
+
 from dotenv import load_dotenv
 from pathlib import Path
 from pydub import AudioSegment
@@ -53,13 +66,24 @@ class WallPod(object):
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
         os.chmod(self.final_path, 0o755)
+        if (os.path.exists(self.pod_pickle)):
+            with open(self.pod_pickle, 'rb') as f:
+                self.p = pickle.load(f)
+        self.cache = []
+        if self.p:
+            for ep in self.p.episodes:
+                self.cache.append(ep.summary)
+        else:
+            self.p = self.newPod()
         return
 
     def loadConfig(self):
         global openai_available
         global eleven_available
         global tortoise_available
+        global grad_available
         load_dotenv()
+        self.debug = 'wallpod_debug' in os.environ
         self.wallabagUrl = os.environ['url']
         self.username = os.environ['user']
         self.password = os.environ['password']
@@ -77,6 +101,8 @@ class WallPod(object):
         self.eleven_api_key = os.environ['eleven_api_key'] if 'eleven_api_key' in os.environ else ""
         self.openai_api_key = os.environ['openai_api_key'] if 'openai_api_key' in os.environ else ""
         self.engine = os.environ['engine'].lower() if 'engine' in os.environ else ""
+        self.grad_tts = os.environ['grad_tts'] if 'grad_tts' in os.environ else ""
+        self.hifigan = os.environ['hifigan'] if 'hifigan' in os.environ else ""
         if self.engine in 'openai' and self.openai_api_key and openai_available:
             self.engine = 'openai'
             self.openaiclient = OpenAI(api_key = self.openai_api_key)
@@ -89,6 +115,9 @@ class WallPod(object):
             self.engine = 'tortoise'
             self.tts = TextToSpeech(kv_cache=True, half=True)
             self.voice_samples, self.conditioning_latents = load_voices(['daniel'])
+        elif self.engine in 'grad' and grad_available and self.grad_tts and self.hifigan:
+            self.engine = 'grad'
+            self.tts = Gradify(self.grad_tts, self.hifigan)
         else:
             raise Exception("no TTS engine/API key found")
         return
@@ -103,8 +132,8 @@ class WallPod(object):
                      'grant_type': 'password'}
         login = requests.post(auth_url, data=auth_data)
         token = json.loads(login.content)
-        print(self.username)
-        print(token)
+        if self.debug: print(self.username)
+        if self.debug: print(token)
         access_token = token['access_token']
         headers = {"Authorization": f"Bearer {access_token}"}
         entries_request = requests.get(entries_url, headers=headers)
@@ -174,7 +203,7 @@ class WallPod(object):
         item = 1
         combined = AudioSegment.empty()
         for segment in segments:
-            print(f'processing {segment}')
+            if self.debug: print(f'processing text:\n{segment}\n--------------------')
             if self.engine == "eleven":
                 audio = self.elevenclient.generate(
                     text=segment,
@@ -191,8 +220,12 @@ class WallPod(object):
                 response.stream_to_file(f'{self.temp_path}{item}.mp3')
             elif self.engine == 'tortoise':
                 gen, dbg_state = self.tts.tts_with_preset(text=segment, k=1, voice_samples=self.voice_samples, conditioning_latents=self.conditioning_latents,
-                                  preset='fast', return_deterministic_state=True, cvvp_amount=1)
+                                  preset='fast', return_deterministic_state=True, cvvp_amount=0)
                 torchaudio.save(f'{self.temp_path}{item}.mp3', gen.squeeze(0).cpu(), 24000)
+            elif self.engine == 'grad':
+                self.tts.transcribe(segment,f'{self.temp_path}{item}.mp3')
+            else:
+                raise Exception("no TTS engine found")
             combined += AudioSegment.from_mp3(f'{self.temp_path}{item}.mp3')
         combined.export(f'{self.final_path}{out_file}', format="mp3")
         os.chmod(f'{self.final_path}{out_file}', 0o644)
@@ -200,22 +233,12 @@ class WallPod(object):
 
     def process(self):
         entries = self.getEntries()
-        item = 1
-        if (os.path.exists(self.pod_pickle)):
-            with open(self.pod_pickle, 'rb') as f:
-                self.p = pickle.load(f)
-        cached = []
-        if self.p:
-            for ep in self.p.episodes:
-                cached.append(ep.summary)
-        else:
-            self.p = self.newPod()
         for entry in entries:
             (title, content, url) = entry
-            if url in cached:
-                print(f'{title} is already in the feed, skipping')
+            if url in self.cached:
+                if self.debug: print(f'{title} is already in the feed, skipping')
                 continue
-            print(f'processing {title}')
+            if self.debug: print(f'processing {title}')
             filename = self.speechify(title, content)
             size = os.path.getsize(f'{self.final_path}{filename}')
             self.p.episodes.append(

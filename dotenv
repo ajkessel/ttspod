@@ -8,6 +8,6 @@ working_path='./local/path/for/processing'
 pod_url='https://podcast.example.com/wallabag'
 eleven_api_key='ELEVENLABS API KEY'
 openai_api_key='OPENAI API KEY' 
-engine='openai|eleven|tortoise'  # pick one - tortoise runs locally, no API key needed
+engine='openai|eleven|tortoise|grad'  # pick one - tortoise and grad run locally, no API key needed
 ssh_server_path='/full/path/on/server/to/podcast/folder'
 ssh_server='podcast.example.com'
