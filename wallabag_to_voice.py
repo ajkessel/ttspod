@@ -104,6 +104,7 @@ class WallPod(object):
         self.pod_pickle = f'{self.working_path}wallabag.pickle'
         self.pod_rss_url = f'{self.pod_url}/index.rss' 
         self.pod_rss_file = f'{self.final_path}index.rss'
+        self.max_length = int(os.environ['wallpod_max_length']) if 'max_length' in os.environ else 20000
         self.ssh_server = os.environ['ssh_server'] if 'ssh_server' in os.environ else ""
         self.ssh_server_path = os.path.join(os.environ['ssh_server_path'],'') if 'ssh_server_path' in os.environ else ""
         self.eleven_api_key = os.environ['eleven_api_key'] if 'eleven_api_key' in os.environ else ""
@@ -117,7 +118,9 @@ class WallPod(object):
         self.tts_vocoder_model = os.environ['wallpod_tts_vocoder_model'] if 'wallpod_tts_vocoder_model' in os.environ else None
         if self.engine in 'openai' and self.openai_api_key and openai_available:
             self.engine = 'openai'
-            self.openaiclient = OpenAI(api_key = self.openai_api_key)
+            self.tts = OpenAI(api_key = self.openai_api_key)
+            self.openai_voice = os.environ['wallpod_openai_voice'] if 'wallpod_openai_voice' in os.environ else "onyx"
+            self.openai_model = os.environ['wallpod_openai_model'] if 'wallpod_openai_model' in os.environ else "tts-1-hd"
         elif self.engine in 'eleven' and self.eleven_api_key and eleven_available:
             self.engine = 'eleven'
             self.elevenclient = ElevenLabs(
@@ -240,9 +243,9 @@ class WallPod(object):
                         )
                     save(audio, segment_audio)
                 elif self.engine == "openai":
-                    response = self.openaiclient.audio.speech.create(
-                        model="tts-1",
-                        voice="alloy",
+                    response = self.tts.audio.speech.create(
+                        model=self.openai_model,
+                        voice=self.openai_voice,
                         input=segment
                         )
                     response.stream_to_file(segment_audio)
@@ -273,6 +276,9 @@ class WallPod(object):
             if url in self.cache:
                 if self.debug: print(f'{title} is already in the feed, skipping')
                 continue
+            if len(content) > self.max_length:
+                if self.debug: print(f'{title} is longer than max length of {self.max_length}, skipping')
+                continue
             if self.debug: print(f'processing {title}')
             fullpath = self.speechify(title, content)
             filename = ntpath.split(fullpath)[1]
@@ -289,7 +295,6 @@ class WallPod(object):
         self.syncFeed()
         with open(self.pod_pickle, 'wb') as f:
             pickle.dump(self.p, f)
-
 
 def main():
     wallpod = WallPod()

@@ -1,13 +1,40 @@
 # rename this to .env and fill in the values below
-url='WALLABAG ACCESS URL'
-user='WALLABAG USERNAME'
-password='WALLABAG PASSWORD'
-client='WALLABAG CLIENT ID'
-secret='WALLABAG CLIENT SECRET'
-working_path='./local/path/for/processing'
-pod_url='https://podcast.example.com/wallabag'
-eleven_api_key='ELEVENLABS API KEY'
-openai_api_key='OPENAI API KEY' 
-engine='openai|eleven|tortoise|grad'  # pick one - tortoise and grad run locally, no API key needed
-ssh_server_path='/full/path/on/server/to/podcast/folder'
-ssh_server='podcast.example.com'
+
+# debug - set to anything for verbose output
+wallpod_debug=1
+
+# wallabag parameters - you need to define these for anything to work
+url=
+user=
+password=
+client=
+secret=
+
+# path for temporary files (defaults to ./working)
+working_path=
+
+# max length - skip articles longer than this number of characters (default 20000)
+wallpod_max_length = 20000
+
+# Root URL for podcast 
+# index.rss and all of the MP3 files need to be accessible from this URL
+pod_url=
+
+# Physical server and path corresponnding to the above URL
+ssh_server_path=
+ssh_server=
+
+# TTS API keys and other parameters
+# Eleven and OpenAI require a paid API key; the others run on your device for free
+# if only one engine is defined, that will be used; otherwise specify engine on next line
+engine='tts' # should be tts / grad / tortoise / openai / eleven
+eleven_api_key=
+openai_api_key=
+wallpod_openai_voice='onyx'
+wallpod_openai_model='tts-1-hd'
+wallpod_tts_model='tts_models/en/ljspeech/glow-tts'
+wallpod_tts_vocoder_model='vocoder_models/en/ljspeech/hifigan_v2'
+grad_tts=
+hifigan=
+pe_scale=1
+n_spks=1
