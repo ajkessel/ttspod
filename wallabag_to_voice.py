@@ -1,22 +1,33 @@
 #!/usr/bin/env python
-import pip_system_certs.wrapt_requests # necessary to trust local certificates
-import sysrsync
+try:
+    import pip_system_certs.wrapt_requests # necessary to trust local SSL certificates, otherwise optional
+except ImportError:
+    pass
+try:
+    from openai import OpenAI
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
+    openai_available = True
+except ImportError:
+    openai_available = False
+try:
+    from elevenlabs.client import ElevenLabs
+    from elevenlabs import save
+    eleven_available = True
+except ImportError:
+    eleven_available = False 
+from dotenv import load_dotenv
 from pathlib import Path
+from pydub import AudioSegment
+import html2text
+import json
+import os
 import pickle
-import unicodedata
+import pod2gen
 import re
 import requests
-import json
-import html2text
-import pod2gen
-from dotenv import load_dotenv
-import os
-from elevenlabs.client import ElevenLabs
-from elevenlabs import save
-from pydub import AudioSegment
-from openai import OpenAI
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
+import sysrsync
+import unicodedata
 
 def slugify(value):
     value = str(value)
@@ -36,28 +47,30 @@ class WallPod(object):
         return
 
     def loadConfig(self):
+        global openai_available
+        global eleven_available
         load_dotenv()
-        self.url = os.environ['url']
+        self.wallabagUrl = os.environ['url']
         self.username = os.environ['user']
         self.password = os.environ['password']
         self.client_id = os.environ['client']
         self.secret = os.environ['secret']
-        self.working_path = os.environ['working_path']
+        self.working_path = os.path.join(os.environ['working_path'], '')
         self.pod_url = os.environ['pod_url']
-        self.temp_path = f'{self.working_path}/temp'
-        self.final_path = f'{self.working_path}/wallabag'
-        self.pod_pickle = f'{self.working_path}/wallabag.pickle'
+        self.temp_path = f'{self.working_path}temp/'
+        self.final_path = f'{self.working_path}wallabag/'
+        self.pod_pickle = f'{self.working_path}wallabag.pickle'
         self.pod_rss_url = f'{self.pod_url}/index.rss'
-        self.pod_rss_file = f'{self.final_path}/index.rss'
+        self.pod_rss_file = f'{self.final_path}index.rss'
         self.ssh_server = os.environ['ssh_server'] if 'ssh_server' in os.environ else ""
-        self.ssh_server_path = os.environ['ssh_server_path'] if 'ssh_server_path' in os.environ else ""
+        self.ssh_server_path = os.path.join(os.environ['ssh_server_path'],'') if 'ssh_server_path' in os.environ else ""
         self.eleven_api_key = os.environ['eleven_api_key'] if 'eleven_api_key' in os.environ else ""
         self.openai_api_key = os.environ['openai_api_key'] if 'openai_api_key' in os.environ else ""
         self.engine = os.environ['engine'].lower() if 'engine' in os.environ else ""
-        if self.engine in 'openai' and self.openai_api_key:
+        if self.engine in 'openai' and self.openai_api_key and openai_available:
             self.engine = 'openai'
             self.openaiclient = OpenAI(api_key = self.openai_api_key)
-        elif self.engine in 'eleven' and self.eleven_api_key:
+        elif self.engine in 'eleven' and self.eleven_api_key and eleven_available:
             self.engine = 'eleven'
             self.elevenclient = ElevenLabs(
                 api_key=self.eleven_api_key
@@ -67,8 +80,8 @@ class WallPod(object):
         return
 
     def getEntries(self):
-        entries_url = f'{self.url}/api/entries.json?starred=1&sort=created&order=asc&page=1&perPage=500&since=0&detail=full'
-        auth_url = f'{self.url}/oauth/v2/token'
+        entries_url = f'{self.wallabagUrl}/api/entries.json?starred=1&sort=created&order=asc&page=1&perPage=500&since=0&detail=full'
+        auth_url = f'{self.wallabagUrl}/oauth/v2/token'
         auth_data = {'username': self.username,
                      'password': self.password,
                      'client_id': self.client_id,
@@ -88,10 +101,10 @@ class WallPod(object):
         h.ignore_images = True
         all_entries = []
         for entry in entries:
-            uid = entry['uid']
             title = entry['title']
             text = h.handle(entry['content'])
-            this_entry = (uid, title, text)
+            url = h.handle(entry['url'])
+            this_entry = (title, text, url)
             all_entries.append(this_entry)
         return all_entries
 
@@ -110,11 +123,12 @@ class WallPod(object):
 
     def saveFeed(self):
         self.p.rss_file(self.pod_rss_file, minimize=False)
+        os.chmod(self.pod_rss_file, 0o644)
 
     def syncFeed(self):
         if self.ssh_server_path and self.ssh_server:
-            sysrsync.run(source=self.final_path + '/',
-                destination=self.ssh_server_path + '/',
+            sysrsync.run(source=self.final_path,
+                destination=self.ssh_server_path,
                 destination_ssh=self.ssh_server,
                 sync_source_contents=True,
                 options=['-a']
@@ -150,17 +164,17 @@ class WallPod(object):
                     voice="Daniel",
                     model="eleven_monolingual_v1"
                     )
-                save(audio, f'{self.temp_path}/{item}.mp3')
+                save(audio, f'{self.temp_path}{item}.mp3')
             elif self.engine == "openai":
                 response = self.openaiclient.audio.speech.create(
                     model="tts-1",
                     voice="alloy",
                     input=segment
                     )
-                response.stream_to_file(f'{self.temp_path}/{item}.mp3')
-            combined += AudioSegment.from_mp3(f'{self.temp_path}/{item}.mp3')
-        combined.export(f'{self.final_path}/{out_file}', format="mp3")
-        os.chmod(f'{self.final_path}/{out_file}', 0o644)
+                response.stream_to_file(f'{self.temp_path}{item}.mp3')
+            combined += AudioSegment.from_mp3(f'{self.temp_path}{item}.mp3')
+        combined.export(f'{self.final_path}{out_file}', format="mp3")
+        os.chmod(f'{self.final_path}{out_file}', 0o644)
         return (out_file)
 
     def process(self):
@@ -172,20 +186,22 @@ class WallPod(object):
         cached = []
         if self.p:
             for ep in self.p.episodes:
-                cached.append(ep.title)
+                cached.append(ep.summary)
         else:
             self.p = self.newPod()
         for entry in entries:
-            (uid, title, content) = entry
-            if title in cached:
+            (title, content, url) = entry
+            if url in cached:
                 print(f'{title} is already in the feed, skipping')
                 continue
             print(f'processing {title}')
             filename = self.speechify(title, content)
-            size = os.path.getsize(f'{self.final_path}/{filename}')
+            size = os.path.getsize(f'{self.final_path}{filename}')
             self.p.episodes.append(
                 pod2gen.Episode(
-                    title=title,
+                    title = title,
+                    summary = url,
+                    long_summary = f'Text to speech by {self.engine} from {url}',
                     media=pod2gen.Media(f'{self.pod_url}/{filename}', size)
                 )
             )
