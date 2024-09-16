@@ -97,12 +97,12 @@ class WallPod(object):
         self.password = os.environ['password']
         self.client_id = os.environ['client']
         self.secret = os.environ['secret']
-        self.working_path = os.path.join(os.environ['working_path'], '')
+        self.working_path = os.path.join(os.environ['working_path'], '') if 'working_path' in os.environ else "./working"
         self.pod_url = os.environ['pod_url']
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}wallabag/'
         self.pod_pickle = f'{self.working_path}wallabag.pickle'
-        self.pod_rss_url = f'{self.pod_url}/index.rss'
+        self.pod_rss_url = f'{self.pod_url}/index.rss' 
         self.pod_rss_file = f'{self.final_path}index.rss'
         self.ssh_server = os.environ['ssh_server'] if 'ssh_server' in os.environ else ""
         self.ssh_server_path = os.path.join(os.environ['ssh_server_path'],'') if 'ssh_server_path' in os.environ else ""
@@ -194,6 +194,15 @@ class WallPod(object):
                 sync_source_contents=True,
                 options=['-a']
                 )
+        elif self.ssh_server_path:
+            sysrsync.run(source=self.final_path,
+                destination=self.ssh_server_path,
+                sync_source_contents=True,
+                options=['-a']
+                )
+        else:
+            if self.debug: print("ssh_server_path not defined so not uploading results")
+
 
     def speechify(self, title, text):
         out_file = self.final_path + slugify(title) + ".mp3"
