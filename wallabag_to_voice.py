@@ -56,6 +56,7 @@ import pod2gen
 import re
 import requests
 import sysrsync
+import sys
 import unicodedata
 
 def slugify(value):
@@ -244,9 +245,9 @@ class WallPod(object):
                     save(audio, segment_audio)
                 elif self.engine == "openai":
                     response = self.tts.audio.speech.create(
-                        model=self.openai_model,
-                        voice=self.openai_voice,
-                        input=segment
+                        model = self.openai_model,
+                        voice = self.openai_voice,
+                        input = segment
                         )
                     response.stream_to_file(segment_audio)
                 elif self.engine == 'tortoise':
@@ -261,8 +262,10 @@ class WallPod(object):
                     # TODO use BytesIO and perform in RAM
                 else:
                     raise Exception("no TTS engine found")
-            except:
-                print("TTS failed")
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                if self.debug: print(f'TTS failed {e} {exc_type} {fname} {exc_tb.tb_lineno}')
             else:
                 combined += AudioSegment.from_mp3(segment_audio)
         combined.export(out_file, format="mp3")
