@@ -1,40 +1,53 @@
-# rename this to .env and fill in the values below
+# rename this file to .env and ocomplete the settings
 
+# global parameters
 # debug - set to anything for verbose output
 wallpod_debug=1
+# path for temporary files (defaults to ./working relative to current directory)
+wallpod_working_path='./working'
+# max length - skip articles longer than this number of characters (default 20000)
+wallpod_max_length=20000
+# max number of articles to retrieve with each execution (default 5)
+wallpod_max_articles=5
+# optional user-agent configuration
+#wallpod_user_agent=
 
 # wallabag parameters - you need to define these for anything to work
-url=
-user=
-password=
-client=
-secret=
+# create a client at https://your.wallabag.url/developer/client/create
+# then populate with the information below
+#wallpod_wallabag_url=
+#wallpod_wallabag_username=
+#wallpod_wallabag_password=
+#wallpod_wallabag_client_id=
+#wallpod_wallabag_client_secret=
 
-# path for temporary files (defaults to ./working)
-working_path=
+# pocket parameters 
+# create a consumer key at https://getpocket.com/developer/
+# get access token from https://reader.fxneumann.de/plugins/oneclickpocket/auth.php
+#wallpod_pocket_consumer_key=
+#wallpod_pocket_access_token=
 
-# max length - skip articles longer than this number of characters (default 20000)
-wallpod_max_length = 20000
-
-# Root URL for podcast 
-# index.rss and all of the MP3 files need to be accessible from this URL
-pod_url=
+# podcast settings
+# Root URL for podcast rss file (index.rss) and generated MP3 files
+#wallpod_pod_url="https://domain-name.com/path"
+wallpod_pod_name="wallpod generated pod feed"
+wallpod_pod_description="web content converted to audio"
+wallpod_pod_author="unknown"
+wallpod_pod_image="icon.png"
+wallpod_pod_language="en"
 
 # Physical server and path corresponnding to the above URL
-ssh_server_path=
-ssh_server=
+#wallpod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
+#wallpod_pod_ssh_server="domain-name.com"
 
 # TTS API keys and other parameters
-# Eleven and OpenAI require a paid API key; the others run on your device for free
+# Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
-engine='tts' # should be tts / grad / tortoise / openai / eleven
-eleven_api_key=
-openai_api_key=
+wallpod_engine=whisper  # must be whisper, openai, or eleven
+wallpod_whisper_model='collabora/whisperspeech:t2s-base-en+pl.model'
+#wallpod_eleven_api_key=
+wallpod_eleven_voice='Daniel'
+wallpod_eleven_model='eleven_monolingual_v1'
+#wallpod_openai_api_key=
 wallpod_openai_voice='onyx'
 wallpod_openai_model='tts-1-hd'
-wallpod_tts_model='tts_models/en/ljspeech/glow-tts'
-wallpod_tts_vocoder_model='vocoder_models/en/ljspeech/hifigan_v2'
-grad_tts=
-hifigan=
-pe_scale=1
-n_spks=1
