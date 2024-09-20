@@ -10,7 +10,11 @@ ttspod_max_length=20000
 # max number of articles to retrieve with each execution (default 5)
 ttspod_max_articles=5
 # optional user-agent configuration
-#ttspod_user_agent=
+#ttspod_user_agent='Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.54 Mobile Safari/537.36'
+# optional location to store cache file
+# if the path includes ssh:// the file will be synced to and from that location on each run
+# this allows you to have multiple instances of this script running on different boxes without duplicate blog entries
+#ttspod_cache_path = 'ssh://example.com/home/user/ttspod/working'
 
 # wallabag parameters - you need to define these for anything to work
 # create a client at https://your.wallabag.url/developer/client/create
@@ -24,8 +28,12 @@ ttspod_max_articles=5
 # pocket parameters 
 # create a consumer key at https://getpocket.com/developer/
 # get access token from https://reader.fxneumann.de/plugins/oneclickpocket/auth.php
+# eventually, this workflow will be built into ttspod
 #ttspod_pocket_consumer_key=
 #ttspod_pocket_access_token=
+
+# instapaper parameters
+# TODO
 
 # podcast settings
 # Root URL for podcast rss file (index.rss) and generated MP3 files
