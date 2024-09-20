@@ -26,3 +26,5 @@ git clone https://github.com/ajkessel/ttspod
 cd ttspod
 ./quickstart.sh
 ```
+## License
+[MIT](LICENSE)
