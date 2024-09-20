@@ -56,7 +56,8 @@ class Config(object):
             self.openai_api_key = e.get('wallpod_openai_api_key')
             self.openai_voice = e.get('wallpod_openai_voice','onyx')
             self.openai_model = e.get('wallpod_openai_model','tts-1-hd')
-            self.whisper_model = e.get('wallpod_whisper_model','collabora/whisperspeech:t2s-base-en+pl.model')
+            self.whisper_t2s_model = e.get('wallpod_whisper_t2s_model','whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model')
+            self.whisper_s2a_model = e.get('wallpod_whisper_s2a_model','whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.temp_path = temp_path
             self.final_path = final_path
             self.debug = debug

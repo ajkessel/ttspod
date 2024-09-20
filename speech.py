@@ -35,7 +35,7 @@ class Speech(object):
             case "eleven":
                 self.tts = ElevenLabs(api_key = self.config.eleven_api_key)
             case "whisper":
-                self.tts = Pipeline(t2s_ref=self.config.whisper_model, torch_compile = True, device=self.config.device, optimize = True)
+                self.tts = Pipeline(t2s_ref=self.config.whisper_t2s_model, s2a_ref=self.config.whisper_s2a_model, torch_compile = True, device=self.config.device, optimize = True)
             case _:
                 raise Exception('TTS engine not configured')
         try:

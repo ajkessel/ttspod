@@ -44,7 +44,8 @@ wallpod_pod_language="en"
 # Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
 wallpod_engine=whisper  # must be whisper, openai, or eleven
-wallpod_whisper_model='collabora/whisperspeech:t2s-base-en+pl.model'
+wallpod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
+wallpod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
 #wallpod_eleven_api_key=
 wallpod_eleven_voice='Daniel'
 wallpod_eleven_model='eleven_monolingual_v1'
