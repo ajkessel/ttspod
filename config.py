@@ -7,6 +7,15 @@ except:
     pass
 
 class Config(object):
+    class Content(object):
+        def __init__(self, debug = False):
+            self.debug = debug
+            return
+    class Links(object):
+        def __init__(self, debug = False):
+            self.user_agent = e.get('ttspod_user_agent')
+            self.debug = debug
+            return
     class Wallabag(object):
         def __init__(self, debug = False):
             self.url = e.get('ttspod_wallabag_url')
@@ -82,14 +91,16 @@ class Config(object):
         if self.debug: print(f'debug mode is on')
         self.max_length = int(e.get('ttspod_max_length',20000))
         self.max_articles = int(e.get('ttspod_max_articles',5))
-        self.wallabag = self.Wallabag(debug = self.debug)
-        self.pocket = self.Pocket(debug = self.debug)
         self.working_path = path.join(e.get('ttspod_working_path','./working'),'')
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}output/'
         self.pickle = f'{self.working_path}ttspod.pickle'
         self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
         self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug)
+        self.content = self.Content(debug = self.debug)
+        self.links = self.Links(debug = self.debug)
+        self.wallabag = self.Wallabag(debug = self.debug)
+        self.pocket = self.Pocket(debug = self.debug)
         Path(self.working_path).mkdir(parents=True, exist_ok=True)
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)

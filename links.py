@@ -10,12 +10,13 @@ from trafilatura.settings import DEFAULT_CONFIG
 from copy import deepcopy
 
 class Links(object):
-    def __init__(self, debug = False):
-        self.debug = debug
+    def __init__(self, config)
+        self.config = config
         self.my_config = deepcopy(DEFAULT_CONFIG)
-        self.my_config['DEFAULT']['USER_AGENTS']='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
-        pass
-        
+        if self.config.user_agent:
+            self.my_config['DEFAULT']['USER_AGENTS']=self.config.user_agent
+        return 
+
     def getItems(self,urls):
         global debug
         entries = []

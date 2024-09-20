@@ -46,12 +46,13 @@ import sysrsync
 import sys
 import unicodedata
 
-from links import Links
 from config import Config
+from content import Content
+from links import Links
 from pod import Pod
 from speech import Speech
-from wallabag import Wallabag
 from ttspocket import TTSPocket
+from wallabag import Wallabag
 
 class Main(object):
     def __init__(self, debug = False):
@@ -86,8 +87,6 @@ class Main(object):
                 self.cache.append(url)
             else:
                 if self.config.debug: print(f'something went wrong processing {title}')
-        self.pod.save()
-        self.pod.sync()
     
     def saveCache(self):
         try:
@@ -106,7 +105,7 @@ class Main(object):
         return
         
     def processLinks(self,urls):
-        links = Links(debug = True)
+        links = Links(self.config.links)
         items = links.getItems(urls)
         self.process(items)
         return
@@ -117,18 +116,29 @@ class Main(object):
         self.process(items)
         return
 
+    def processContent(self, text, title = None):
+        content = Content(self.config.content)
+        items = content.getItems(text, title)
+        self.process(content)
+        return
+
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
     parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
+    parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
     args = parser.parse_args()
     debug = hasattr(args,'debug')
+    got_pipe = not os.isatty(sys.stdin.fileno())
     main = Main(debug)
+    if got_pipe: main.processContent(sys.stdin.read())
     if args.url: main.processLinks(args.url)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)
+    main.pod.save()
+    main.pod.sync()
     main.saveCache()
     return
 
