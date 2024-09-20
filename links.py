@@ -10,7 +10,7 @@ from trafilatura.settings import DEFAULT_CONFIG
 from copy import deepcopy
 
 class Links(object):
-    def __init__(self, config)
+    def __init__(self, config):
         self.config = config
         self.my_config = deepcopy(DEFAULT_CONFIG)
         if self.config.user_agent:
