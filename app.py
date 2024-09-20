@@ -51,7 +51,7 @@ from config import Config
 from pod import Pod
 from speech import Speech
 from wallabag import Wallabag
-from wallpocket import WallPocket
+from ttspocket import TTSPocket
 
 class Main(object):
     def __init__(self, debug = False):
@@ -112,7 +112,7 @@ class Main(object):
         return
 
     def processPocket(self,tag):
-        p = WallPocket(self.config.pocket)
+        p = TTSPocket(self.config.pocket)
         items = p.getItems(tag)
         self.process(items)
         return

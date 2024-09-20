@@ -2,56 +2,56 @@
 
 # global parameters
 # debug - set to anything for verbose output
-wallpod_debug=1
+ttspod_debug=1
 # path for temporary files (defaults to ./working relative to current directory)
-wallpod_working_path='./working'
+ttspod_working_path='./working'
 # max length - skip articles longer than this number of characters (default 20000)
-wallpod_max_length=20000
+ttspod_max_length=20000
 # max number of articles to retrieve with each execution (default 5)
-wallpod_max_articles=5
+ttspod_max_articles=5
 # optional user-agent configuration
-#wallpod_user_agent=
+#ttspod_user_agent=
 
 # wallabag parameters - you need to define these for anything to work
 # create a client at https://your.wallabag.url/developer/client/create
 # then populate with the information below
-#wallpod_wallabag_url=
-#wallpod_wallabag_username=
-#wallpod_wallabag_password=
-#wallpod_wallabag_client_id=
-#wallpod_wallabag_client_secret=
+#ttspod_wallabag_url=
+#ttspod_wallabag_username=
+#ttspod_wallabag_password=
+#ttspod_wallabag_client_id=
+#ttspod_wallabag_client_secret=
 
 # pocket parameters 
 # create a consumer key at https://getpocket.com/developer/
 # get access token from https://reader.fxneumann.de/plugins/oneclickpocket/auth.php
-#wallpod_pocket_consumer_key=
-#wallpod_pocket_access_token=
+#ttspod_pocket_consumer_key=
+#ttspod_pocket_access_token=
 
 # podcast settings
 # Root URL for podcast rss file (index.rss) and generated MP3 files
-#wallpod_pod_url="https://domain-name.com/path"
-wallpod_pod_name="wallpod generated pod feed"
-wallpod_pod_description="web content converted to audio"
-wallpod_pod_author="unknown"
-wallpod_pod_image="icon.png"
-wallpod_pod_language="en"
+#ttspod_pod_url="https://domain-name.com/path"
+ttspod_pod_name="ttspod generated pod feed"
+ttspod_pod_description="web content converted to audio"
+ttspod_pod_author="unknown"
+ttspod_pod_image="icon.png"
+ttspod_pod_language="en"
 
 # Physical server and path corresponnding to the above URL
-#wallpod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
-#wallpod_pod_ssh_server="domain-name.com"
+#ttspod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
+#ttspod_pod_ssh_server="domain-name.com"
 
 # TTS API keys and other parameters
 # Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough and has CUDA-enabled GPU) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
-wallpod_engine=whisper  # must be whisper, openai, or eleven
-wallpod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
-wallpod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
+ttspod_engine=whisper  # must be whisper, openai, or eleven
+ttspod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
+ttspod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
 # specify a sound file with a short (30 seconds) audio clip below to clone an existing voice for whisperspeech
-# e.g. "wallpod_whisper_voice=path/clip.mp3"
-#wallpod_whisper_voice=
-#wallpod_eleven_api_key=
-wallpod_eleven_voice='Daniel'
-wallpod_eleven_model='eleven_monolingual_v1'
-#wallpod_openai_api_key=
-wallpod_openai_voice='onyx'
-wallpod_openai_model='tts-1-hd'
+# e.g. "ttspod_whisper_voice=path/clip.mp3"
+#ttspod_whisper_voice=
+#ttspod_eleven_api_key=
+ttspod_eleven_voice='Daniel'
+ttspod_eleven_model='eleven_monolingual_v1'
+#ttspod_openai_api_key=
+ttspod_openai_voice='onyx'
+ttspod_openai_model='tts-1-hd'

@@ -12,7 +12,7 @@ except:
 
 from links import Links
 
-class WallPocket(object):
+class TTSPocket(object):
     def __init__(self, config):
         global pocket_available        
         if not pocket_available:
