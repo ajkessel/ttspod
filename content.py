@@ -37,9 +37,9 @@ class Content(object):
         if candidates:
             candidate = max(candidates, key=len)
             if '<html' in str(candidate):
-                text = self.cleanHTML(candidate)
+                text = str(self.cleanHTML(candidate))
             else:
-                text = candidate
+                text = str(candidate)
             entry = ( title, text, url )
             return [ entry ]
         return None
