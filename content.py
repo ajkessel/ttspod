@@ -24,25 +24,36 @@ class Content(object):
         msg = email.message_from_string(text)
         title_search = msg.get('subject')
         url = msg.get('message-id')
+        if not url:
+            pass
+        # need to generate url based on contents TODO
         if title_search:
             title = title_search
         elif not title:
             title = "Untitled Content"
-        candidates=[]
+        html_part = False
+        longest_part = ''
         for part in msg.walk():
             if part.get_content_type() == 'text/plain':
-                candidates.append(part.get_payload(decode=True))
+                this_part = part.get_payload(decode=True)
+                if len(this_part) > len(longest_part):
+                    longest_part = this_part
+                    html_part = False
             elif part.get_content_type() == 'text/html':
-                candidates.append(part.get_payload(decode=True))
-        if candidates:
-            candidate = max(candidates, key=len)
-            if '<html' in str(candidate):
-                text = str(self.cleanHTML(candidate))
-            else:
-                text = str(candidate)
-            entry = ( title, text, url )
-            return [ entry ]
-        return None
+                if len(this_part) > len(longest_part):
+                    longest_part = this_part
+                    html_part = True
+        if html_part:
+            if not "<html" in longest_part:
+                longest_part = f'<html>{longest_part}</html>'
+            if self.config.debug: print(f'cleaning up HTML {longest_part}')
+            text = str(self.cleanHTML(longest_part))
+        else:
+            if self.config.debug: print(f'cleaning up plain {longest_part}')
+            text = text.encode('ascii', 'ignore').decode('ascii')
+        entry = ( title, text, url )
+        if self.config.debug: print(f'entry {entry}')
+        return [ entry ]
 
     def cleanHTML(self, rawhtml):
          text = pypandoc.convert_text(
