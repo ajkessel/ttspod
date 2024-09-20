@@ -1,6 +1,8 @@
+Requests==2.32.3
 anyascii==0.3.2
 html2text==2024.2.26
 lxml==5.3.0
+mimetypes-magic==0.4.30
 nltk==3.9.1
 pandoc==2.4
 pip_system_certs==4.0
@@ -11,7 +13,6 @@ pydub==0.25.1
 pypandoc==1.13
 python-dotenv==1.0.1
 python_magic==0.4.27
-Requests==2.32.3
 sysrsync==1.1.1
 trafilatura==1.12.2
 truststore==0.9.2
