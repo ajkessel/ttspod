@@ -132,7 +132,7 @@ class Speech(object):
                 else:
                     combined += AudioSegment.from_mp3(segment_audio)
             try:
-                if combined.duration_seconds > 5:
+                if combined.duration_seconds > 2:
                     combined.export(out_file, format="mp3")
                     os.chmod(out_file, 0o644)
                     return (out_file)

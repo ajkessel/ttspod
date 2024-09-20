@@ -15,6 +15,27 @@ do
     pip install "$line"
   fi
 done
+if [ $(uname) == "Darwin" ]
+then
+  echo 'MacOS environment detected.'
+  if command -v brew 2> /dev/null
+  then
+    if ! brew list libmagic 2> /dev/null
+    then
+      echo 'ttspod requires libmagic. install with brew? (y/n)'
+      read answer
+      if [ "$answer" == "y" ]
+      then
+        brew install libmagic
+      fi
+    else
+      echo libmagic already installed
+    fi
+  else
+    echo 'tts requires libmagic, but I did not find a brew installation.'
+  fi
+fi
+
 cp -i dotenv .env
 echo Just edit .env to configure your local settings and you will be good to go.
 echo -n "Do you want to edit .env now? (y/n) "

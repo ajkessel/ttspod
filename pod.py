@@ -42,7 +42,7 @@ class Pod(object):
                 options=['-a']
                 )
         else:
-            if self.debug: print("ssh_server_path not defined so not uploading results")
+            if self.config.debug: print("ssh_server_path not defined so not uploading results")
 
     def add(self, entry):
         (url, title, fullpath) = entry
