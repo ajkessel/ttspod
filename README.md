@@ -27,6 +27,6 @@ cd ttspod
 ./quickstart.sh
 ```
 
-You'll need to copy [dotenv] to `.env` and edit the settings before the app will work.
+You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
 ## License
 [MIT](LICENSE)
