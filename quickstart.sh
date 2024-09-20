@@ -24,7 +24,7 @@ source .venv/bin/activate
 echo installing requirements
 pip3 install -r requirements.txt
 optional=$(cat 'optional-requirements.txt')
-echo optional requirements
+echo 'optional requirements - you should install at least one TTS engine (Whisper, OpenAI, or Eleven)'
 for line in $optional
 do
   echo -n "Install optional requirement ${line}? (y/n) "
