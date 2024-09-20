@@ -6,10 +6,12 @@ ttspod_debug=1
 # path for temporary files (defaults to ./working relative to current directory)
 ttspod_working_path='./working'
 # max length - skip articles longer than this number of characters (default 20000)
+# if you are using a paid TTS service, you probably want to cap this to avoid uncontrolled spend
 ttspod_max_length=20000
 # max number of articles to retrieve with each execution (default 5)
+# if you are using a paid TTS service, you probably want to cap this to avoid uncontrolled spend
 ttspod_max_articles=5
-# optional user-agent configuration
+# optional user-agent configuration - otherwise Python default requests will be used 
 #ttspod_user_agent='Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.54 Mobile Safari/537.36'
 # optional location to store cache file
 # if the path includes ssh:// the file will be synced to and from that location on each run
@@ -36,7 +38,7 @@ ttspod_max_articles=5
 # TODO
 
 # podcast settings
-# Root URL for podcast rss file (index.rss) and generated MP3 files
+# Root URL for podcast rss feed and generated MP3 files - should just be a path; index.rss will be automatically appended
 #ttspod_pod_url="https://domain-name.com/path"
 ttspod_pod_name="ttspod generated pod feed"
 ttspod_pod_description="web content converted to audio"
@@ -46,7 +48,7 @@ ttspod_pod_language="en"
 
 # Physical server and path corresponnding to the above URL
 # leave these blank to just keep the output local
-# ttspod expects that you already have rsync and an ssh key configured for your target server
+# ttspod expects that you already have rsync and an ssh key configured locally for your target server
 # this will be made configurable in the future
 #ttspod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
 #ttspod_pod_ssh_server="domain-name.com"
