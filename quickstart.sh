@@ -15,5 +15,12 @@ do
     pip install "$line"
   fi
 done
-echo Just edit .venv to configure your local settings and you will be good to go.
 cp -i dotenv .env
+echo Just edit .env to configure your local settings and you will be good to go.
+echo -n "Do you want to edit .env now? (y/n) "
+read answer
+if [ "$answer" == "y" ]
+then
+  "${editor}" .env
+fi
+echo get help with ./ttspod -h
