@@ -3,6 +3,7 @@ import unicodedata
 import re
 import textwrap
 import uuid
+from anyascii import anyascii
 from pydub import AudioSegment
 
 try:
@@ -53,8 +54,9 @@ class Speech(object):
             'ascii', 'ignore').decode('ascii')
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
-    def speechify(self, title, text):
+    def speechify(self, title, raw_text):
         out_file = self.config.final_path + self.slugify(title) + ".mp3"
+        text = anyascii(raw_text)
         temp = str(uuid.uuid4())
         if os.path.exists(out_file):
             out_file = self.config.final_path + self.slugify(title) + "-" + temp + ".mp3"
@@ -68,6 +70,7 @@ class Speech(object):
             if len(para) < 8: # skip very short lines which are likely not text
                 continue
             if len(para) > 4096: # break paragraphs greater than 4096 characters into sentences
+                if self.config.debug: print(f"further splitting paragraph of length {len(para)}")
                 if self.config.nltk:
                     sentences = sent_tokenize(para)
                 else:
@@ -87,7 +90,7 @@ class Speech(object):
         combined = AudioSegment.empty()
         for (item,segment) in enumerate(segments):
             segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
-            if self.config.debug: print(f'processing text #{item} length {len(segment)}:\n{segment}\n--------------------')
+            if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
             try:
                 if self.config.engine == "eleven":
                     audio = self.tts.generate(
@@ -104,7 +107,7 @@ class Speech(object):
                         )
                     response.stream_to_file(segment_audio)
                 elif self.config.engine == 'whisper':
-                    self.tts.generate_to_file(segment_audio, segment)
+                    self.tts.generate_to_file(segment_audio, segment, speaker=self.config.whisper_voice)
                 if self.config.debug: print(f'segment successful')
             except Exception as e:
                 if self.config.debug: print(f'TTS failed {e}')
