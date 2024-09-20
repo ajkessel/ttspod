@@ -1,4 +1,13 @@
 #!/bin/bash
+echo TTSPod Installer
+echo This will set things up under your current directory `pwd`
+echo -n "Proceed? (y/n)"
+read answer
+if [ "$answer" != "y" ]
+then
+  echo OK, exiting.
+  exit 0
+fi
 echo creating local python venv under current directory
 python3 -m venv .venv
 source .venv/bin/activate
