@@ -8,11 +8,21 @@ then
   echo OK, exiting.
   exit 0
 fi
+if ! command -v python3 > /dev/null 2>&1
+then
+  echo python3 not found, exiting.
+  exit 1
+fi
+if ! command -v pip3 > /dev/null 2>&1
+then
+  echo pip3 not found, exiting.
+  exit 1
+fi
 echo creating local python venv under current directory
 python3 -m venv .venv
 source .venv/bin/activate
 echo installing requirements
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 optional=$(cat 'optional-requirements.txt')
 echo optional requirements
 for line in $optional
@@ -21,15 +31,15 @@ do
   read answer
   if [ "$answer" == "y" ]
   then
-    pip install "$line"
+    pip3 install "$line"
   fi
 done
 if [ $(uname) == "Darwin" ]
 then
   echo 'MacOS environment detected.'
-  if command -v brew 2> /dev/null
+  if command -v brew > /dev/null 2>&1
   then
-    if ! brew list libmagic 2> /dev/null
+    if ! brew list libmagic > /dev/null 2>&1
     then
       echo -n 'ttspod requires libmagic. install with brew? (y/n)'
       read answer
