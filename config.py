@@ -94,7 +94,12 @@ class Config(object):
         self.working_path = path.join(e.get('ttspod_working_path','./working'),'')
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}output/'
-        self.pickle = f'{self.working_path}ttspod.pickle'
+        self.pickle_filename = 'ttspod.pickle'
+        self.pickle = f'{self.working_path}{self.pickle_filename}'
+        if e.get('ttspod_cache_path'):
+            self.cache_path = path.join(e.get('ttspod_cache_path'),'')+self.pickle_filename
+        else:
+            self.cache_path = None
         self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
         self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
         self.content = self.Content(debug = self.debug)

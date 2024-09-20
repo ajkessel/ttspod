@@ -11,6 +11,7 @@ import validators
 from pathlib import Path
 from pydub import AudioSegment
 from io import BytesIO
+from shutil import copyfile
 import html2text
 import json
 import ntpath
@@ -19,7 +20,7 @@ import pickle
 import pod2gen
 import re
 import requests
-import sysrsync
+from sysrsync import run as rsync
 import sys
 import unicodedata
 
@@ -38,6 +39,26 @@ class Main(object):
         self.p = None
         self.cache = []
         self.pod = None
+        if self.config.cache_path:
+            if self.config.cache_path.startswith("ssh://"):
+                try:
+                    (domain,path)=re.match(r'ssh://([^/]*)(.*)$',self.config.cache_path).group(1,2)
+                    rsync(source=f'{path}',
+                        source_ssh=domain,
+                        destination=self.config.pickle,
+                        sync_source_contents=False
+                        )
+                    if self.config.debug: print(f'cache file synced successfully')
+                except Exception as e:
+                    print(f'something went wrong syncing the cache file {e}')
+                    if "code 23" in str(e):
+                        print(f'if this is your first time running TTSPod, this is normal since the cache has never been synced')
+            else:
+                try:
+                    copyfile(f'{path}/ttspod.pickle',self.config.pickle)
+                    if self.config.debug: print(f'cache file synced successfully')
+                except Exception as e:
+                    print(f'something went wrong syncing the cache file {e}')
         if (os.path.exists(self.config.pickle)):
             try:
                 with open(self.config.pickle, 'rb') as f:
@@ -71,6 +92,24 @@ class Main(object):
             if self.cache and self.pod:
                 with open(self.config.pickle, 'wb') as f:
                     pickle.dump([self.cache, self.pod], f)
+                if self.config.cache_path:
+                    if self.config.cache_path.startswith("ssh://"):
+                        try:
+                            (domain,path)=re.match(r'ssh://([^/]*)(.*)$',self.config.cache_path).group(1,2)
+                            rsync(source=self.config.pickle,
+                                destination=path,
+                                destination_ssh=domain,
+                                sync_source_contents=False
+                                )
+                            if self.config.debug: print(f'cache file synced successfully')
+                        except Exception as e:
+                            print(f'something went wrong syncing the cache file {e}')
+                    else:
+                        try:
+                            copyfile(self.config.pickle, self.config.cache_path)
+                            if self.config.debug: print(f'cache file synced successfully')
+                        except Exception as e:
+                            print(f'something went wrong syncing the cache file {e}')
             else:
                 if self.config.debug: print('cache save failed')
         except Exception as e:
