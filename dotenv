@@ -46,6 +46,8 @@ ttspod_pod_language="en"
 ttspod_engine=whisper  # must be whisper, openai, or eleven
 ttspod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
 ttspod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
+# this setting will suppress console output from whisper dependency pytorch
+TORCH_LOGS='-all'
 # specify a sound file with a short (30 seconds) audio clip below to clone an existing voice for whisperspeech
 # e.g. "ttspod_whisper_voice=path/clip.mp3"
 #ttspod_whisper_voice=

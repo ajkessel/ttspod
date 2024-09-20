@@ -3,6 +3,8 @@ import unicodedata
 import re
 import textwrap
 import uuid
+import warnings
+warnings.filterwarnings("ignore") # to suppress TTS output
 from pathlib import Path
 from anyascii import anyascii
 from pydub import AudioSegment
@@ -25,6 +27,7 @@ except:
     pass
 try:
     from openai import OpenAI
+    warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
 except:
     pass
 

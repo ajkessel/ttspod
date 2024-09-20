@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import warnings
-warnings.filterwarnings("ignore")
 try:
     import pip_system_certs.wrapt_requests # necessary to trust local SSL certificates, otherwise optional
 except ImportError:
@@ -12,7 +10,6 @@ except ImportError:
     trafilatura_available = False
 try:
     from openai import OpenAI # TTS with OpenAI
-    warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
     openai_available = True
 except ImportError:
     openai_available = False
@@ -119,7 +116,7 @@ class Main(object):
     def processContent(self, text, title = None):
         content = Content(self.config.content)
         items = content.getItems(text, title)
-        self.process(content)
+        self.process(items)
         return
 
 def main():
