@@ -153,7 +153,7 @@ def main():
     engine=args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
     main = Main(debug = debug, engine = engine)
-    if got_pipe: main.processContent(sys.stdin.read(),title)
+    if got_pipe: main.processContent(str(sys.stdin.read()),title)
     if args.url: main.processLinks(args.url)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)
