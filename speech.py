@@ -3,6 +3,7 @@ import unicodedata
 import re
 import textwrap
 import uuid
+from pathlib import Path
 from anyascii import anyascii
 from pydub import AudioSegment
 
@@ -18,6 +19,8 @@ except:
     pass
 try:
     from whisperspeech.pipeline import Pipeline
+    import torch
+    import torchaudio
 except:
     pass
 try:
@@ -60,6 +63,11 @@ class Speech(object):
         temp = str(uuid.uuid4())
         if os.path.exists(out_file):
             out_file = self.config.final_path + self.slugify(title) + "-" + temp + ".mp3"
+        if self.config.engine == "whisper":
+            chunks = self.split_and_prepare_text(text)
+            self.whisper_long(chunks=chunks,output=out_file,speaker=self.config.whisper_voice)
+            os.chmod(out_file, 0o644)
+            return (out_file)
         if self.config.nltk:
             paragraphs = BlanklineTokenizer().tokenize(text)
         else:
@@ -87,38 +95,85 @@ class Speech(object):
                         segments.append(sentence)
             else:
                 segments.append(para)
-        combined = AudioSegment.empty()
-        for (item,segment) in enumerate(segments):
-            segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
-            if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
+            combined = AudioSegment.empty()
+            for (item,segment) in enumerate(segments):
+                segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
+                if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
+                try:
+                    if self.config.engine == "eleven":
+                        audio = self.tts.generate(
+                            text=segment,
+                            voice=self.config.eleven_voice,
+                            model=self.config.eleven_model
+                            )
+                        save(audio, segment_audio)
+                    elif self.config.engine == "openai":
+                        response = self.tts.audio.speech.create(
+                            model = self.config.openai_model,
+                            voice = self.config.openai_voice,
+                            input = segment
+                            )
+                        response.stream_to_file(segment_audio)
+                    if self.config.debug: print(f'segment successful')
+                except Exception as e:
+                    if self.config.debug: print(f'TTS failed {e}')
+                else:
+                    combined += AudioSegment.from_mp3(segment_audio)
             try:
-                if self.config.engine == "eleven":
-                    audio = self.tts.generate(
-                        text=segment,
-                        voice=self.config.eleven_voice,
-                        model=self.config.eleven_model
-                        )
-                    save(audio, segment_audio)
-                elif self.config.engine == "openai":
-                    response = self.tts.audio.speech.create(
-                        model = self.config.openai_model,
-                        voice = self.config.openai_voice,
-                        input = segment
-                        )
-                    response.stream_to_file(segment_audio)
-                elif self.config.engine == 'whisper':
-                    self.tts.generate_to_file(segment_audio, segment, speaker=self.config.whisper_voice)
-                if self.config.debug: print(f'segment successful')
-            except Exception as e:
-                if self.config.debug: print(f'TTS failed {e}')
-            else:
-                combined += AudioSegment.from_mp3(segment_audio)
-        try:
-            if combined.duration_seconds > 10:
-                combined.export(out_file, format="mp3")
-                os.chmod(out_file, 0o644)
-                return (out_file)
-            else:
+                if combined.duration_seconds > 10:
+                    combined.export(out_file, format="mp3")
+                    os.chmod(out_file, 0o644)
+                    return (out_file)
+                else:
+                    return None
+            except:
                 return None
-        except:
-            return None
+    def split_and_prepare_text(self, text, cps=14):
+        chunks = []
+        sentences = sent_tokenize(text)
+        chunk = ""
+        for sentence in sentences:
+            # replace fancy punctuation that was unseen during training
+            sentence = re.sub('[()]', ",", sentence).strip()
+            sentence = re.sub(",+", ",", sentence)
+            sentence = re.sub('"+', "", sentence)
+            sentence = re.sub("/", "", sentence)
+            # merge until the result is < 20s
+            if len(chunk) + len(sentence) < 20*cps:
+                chunk += " " + sentence
+            else:
+                chunks.append(chunk)
+                chunk = sentence
+        if chunk: chunks.append(chunk)
+        return chunks
+    def whisper_long(self,chunks=[], cps=14, overlap=100, output=None, speaker=None):
+        global atoks, stoks
+        if speaker is None:
+            speaker = self.tts.default_speaker 
+        elif isinstance(speaker, (str, Path)): 
+            speaker = self.tts.extract_spk_emb(speaker)
+        r = []
+        old_stoks = None
+        old_atoks = None
+        for chunk in chunks:
+            if self.config.debug: print(f"processing chunk {chunk}")
+            stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=False)[0]
+            stoks = stoks[stoks != 512]
+            if old_stoks is not None:
+                assert(len(stoks) < 750-overlap)
+                stoks = torch.cat([old_stoks[-overlap:], stoks])
+                atoks_prompt = old_atoks[:,:,-overlap*3:]
+            else:
+                atoks_prompt = None
+            atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(0), show_progress_bar=False)
+            if atoks_prompt is not None: atoks = atoks[:,:,overlap*3+1:]
+            r.append(atoks)
+            old_stoks = stoks
+            old_atoks = atoks
+            self.tts.vocoder.decode_to_notebook(atoks)
+        audios = []
+        for i,atoks in enumerate(r):
+            if i != 0: audios.append(torch.zeros((1, int(24000*0.5)), dtype=atoks.dtype, device=atoks.device))
+            audios.append(self.tts.vocoder.decode(atoks))
+        if output:
+            torchaudio.save(output, torch.cat(audios, -1).cpu(), 24000)
