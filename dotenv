@@ -44,16 +44,18 @@ ttspod_pod_language="en"
 # Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough and has CUDA-enabled GPU) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
 ttspod_engine=whisper  # must be whisper, openai, or eleven
+# Whisper settings
 ttspod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
 ttspod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
-# this setting will suppress console output from whisper dependency pytorch
-TORCH_LOGS='-all'
+TORCH_LOGS='-all' # suppress console output
 # specify a sound file with a short (30 seconds) audio clip below to clone an existing voice for whisperspeech
 # e.g. "ttspod_whisper_voice=path/clip.mp3"
 #ttspod_whisper_voice=
+# Eleven settings
 #ttspod_eleven_api_key=
 ttspod_eleven_voice='Daniel'
 ttspod_eleven_model='eleven_monolingual_v1'
+# OpenAI settings
 #ttspod_openai_api_key=
 ttspod_openai_voice='onyx'
 ttspod_openai_model='tts-1-hd'
