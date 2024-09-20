@@ -21,6 +21,10 @@ echo -n "Do you want to edit .env now? (y/n) "
 read answer
 if [ "$answer" == "y" ]
 then
-  "${editor}" .env
+  if [ -z "${EDITOR}" ]
+  then
+    command -v nano 2> /dev/null && EDITOR=nano || command -v vim 2> /dev/null && EDITOR=vim || command -v vi 2> /dev/null && EDITOR=vi || echo "Can't find editor!" && exit 1
+  fi
+  "${EDITOR}" .env
 fi
 echo get help with ./ttspod -h
