@@ -27,7 +27,7 @@ class Links(object):
                 continue
             try:
                 downloaded = trafilatura.fetch_url(url,config=self.my_config)
-                text = trafilatura.extract(downloaded, include_comments=False)
+                text = trafilatura.extract(downloaded, include_comments=False).replace('\n','\n\n')
                 title = trafilatura.extract_metadata(downloaded).title
                 title = title if title else url
                 entry = (title, text, url)
