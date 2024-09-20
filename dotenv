@@ -37,6 +37,9 @@ ttspod_pod_image="icon.png"
 ttspod_pod_language="en"
 
 # Physical server and path corresponnding to the above URL
+# leave these blank to just keep the output local
+# ttspod expects that you already have rsync and an ssh key configured for your target server
+# this will be made configurable in the future
 #ttspod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
 #ttspod_pod_ssh_server="domain-name.com"
 

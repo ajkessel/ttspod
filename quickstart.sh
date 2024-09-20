@@ -22,7 +22,7 @@ then
   then
     if ! brew list libmagic 2> /dev/null
     then
-      echo 'ttspod requires libmagic. install with brew? (y/n)'
+      echo -n 'ttspod requires libmagic. install with brew? (y/n)'
       read answer
       if [ "$answer" == "y" ]
       then
