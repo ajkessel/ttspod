@@ -18,13 +18,12 @@ class Links(object):
         return 
 
     def getItems(self,urls):
-        global debug
         entries = []
         for url in urls:
             if validators.url(url):
-                if self.debug: print(f"processing {url}")
+                if self.config.debug: print(f"processing {url}")
             else:
-                if self.debug: print(f"{url} does not appear to be a valid URL, skipping")
+                if self.config.debug: print(f"{url} does not appear to be a valid URL, skipping")
                 continue
             try:
                 downloaded = trafilatura.fetch_url(url,config=self.my_config)
@@ -33,7 +32,7 @@ class Links(object):
                 title = title if title else url
                 entry = (title, text, url)
                 entries.append(entry)
-                if self.debug: print(f'successfully processed {url} {title}')
+                if self.config.debug: print(f'successfully processed {url} {title}')
             except:
-                if self.debug: print(f'failed to process {url}')
+                if self.config.debug: print(f'failed to process {url}')
         return entries

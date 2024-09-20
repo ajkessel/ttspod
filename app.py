@@ -3,28 +3,8 @@ try:
     import pip_system_certs.wrapt_requests # necessary to trust local SSL certificates, otherwise optional
 except ImportError:
     pass
-try:
-    import trafilatura # to extract readable content from webpages
-    trafilatura_available = True
-except ImportError:
-    trafilatura_available = False
-try:
-    from openai import OpenAI # TTS with OpenAI
-    openai_available = True
-except ImportError:
-    openai_available = False
-try:
-    from elevenlabs.client import ElevenLabs # TTS with Eleven
-    from elevenlabs import save
-    eleven_available = True
-except ImportError:
-    eleven_available = False 
-try:
-    from whisperspeech.pipeline import Pipeline
-    whisper_available = True
-except ImportError:
-    whisper_available = False
 
+# third party modules
 from dotenv import load_dotenv
 import argparse
 import validators
@@ -43,6 +23,7 @@ import sysrsync
 import sys
 import unicodedata
 
+# TTSPod modules
 from config import Config
 from content import Content
 from links import Links
@@ -52,8 +33,8 @@ from ttspocket import TTSPocket
 from wallabag import Wallabag
 
 class Main(object):
-    def __init__(self, debug = False):
-        self.config = Config(debug)
+    def __init__(self, debug = False, engine = None):
+        self.config = Config(debug = debug, engine = engine)
         self.p = None
         self.cache = []
         self.pod = None
@@ -126,11 +107,14 @@ def main():
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
     parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
+    parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")
     args = parser.parse_args()
     debug = hasattr(args,'debug')
+    title=args.title if hasattr(args,'title') else None
+    engine=args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
-    main = Main(debug)
-    if got_pipe: main.processContent(sys.stdin.read())
+    main = Main(debug = debug, engine = engine)
+    if got_pipe: main.processContent(sys.stdin.read(),title)
     if args.url: main.processLinks(args.url)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)

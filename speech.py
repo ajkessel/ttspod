@@ -4,7 +4,6 @@ import re
 import textwrap
 import uuid
 import warnings
-warnings.filterwarnings("ignore") # to suppress TTS output
 from pathlib import Path
 from anyascii import anyascii
 from pydub import AudioSegment
@@ -23,13 +22,23 @@ try:
     from whisperspeech.pipeline import Pipeline
     import torch
     import torchaudio
-except:
-    pass
+    warnings.filterwarnings("ignore") # to suppress TTS output
+    whisper_available = True
+except ImportError:
+    whisper_available = False
 try:
     from openai import OpenAI
     warnings.filterwarnings("ignore", category=DeprecationWarning) # necessary for OpenAI TTS streaming
+    openai_available = True
 except:
+    openai_available = False
     pass
+try:
+    from elevenlabs.client import ElevenLabs # TTS with Eleven
+    from elevenlabs import save
+    eleven_available = True
+except ImportError:
+    eleven_available = False 
 
 class Speech(object):
     def __init__(self, config):
@@ -123,7 +132,7 @@ class Speech(object):
                 else:
                     combined += AudioSegment.from_mp3(segment_audio)
             try:
-                if combined.duration_seconds > 10:
+                if combined.duration_seconds > 5:
                     combined.export(out_file, format="mp3")
                     os.chmod(out_file, 0o644)
                     return (out_file)
@@ -158,12 +167,19 @@ class Speech(object):
         r = []
         old_stoks = None
         old_atoks = None
-        for chunk in chunks:
-            if self.config.debug: print(f"processing chunk {chunk}")
+        add_to_chunk = ""
+        for i, chunk in enumerate(chunks):
+#            chunk = add_to_chunk+" "+chunk
+#            if len(chunk) < 80 and i < len(chunks):
+#                add_to_chunk = chunk
+#                continue
+#            else:
+#                add_to_chunk = ""
+            if self.config.debug: print(f"processing chunk:\n{chunk}\n--------------------------\n")
             stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=False)[0]
             stoks = stoks[stoks != 512]
             if old_stoks is not None:
-                assert(len(stoks) < 750-overlap)
+                #assert(len(stoks) < 750-overlap) # TODO
                 stoks = torch.cat([old_stoks[-overlap:], stoks])
                 atoks_prompt = old_atoks[:,:,-overlap*3:]
             else:

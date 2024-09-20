@@ -48,7 +48,7 @@ class Config(object):
             self.rss_file = path.join(final_path,"index.rss")
             self.debug = debug
     class Speech(object):
-        def __init__(self, temp_path = '', final_path = '', debug = False):
+        def __init__(self, temp_path = '', final_path = '', debug = False, engine = None):
             global openai_available
             global eleven_available
             global whisper_available
@@ -58,7 +58,7 @@ class Config(object):
                 openai_available = True
                 eleven_available = True
                 whisper_available = True
-            self.engine = e.get('ttspod_engine','')
+            self.engine = engine if engine else e.get('ttspod_engine','')
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice','Daniel')
             self.eleven_model = e.get('ttspod_eleven_model','eleven_monolingual_v1')
@@ -85,7 +85,7 @@ class Config(object):
                     pass
             else:
                 raise Exception("no valid TTS engine/API key found")
-    def __init__(self,debug):
+    def __init__(self,debug = False, engine = None):
         load_dotenv()
         self.debug = e.get('ttspod_debug',debug)
         if self.debug: print(f'debug mode is on')
@@ -96,7 +96,7 @@ class Config(object):
         self.final_path = f'{self.working_path}output/'
         self.pickle = f'{self.working_path}ttspod.pickle'
         self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
-        self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug)
+        self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
         self.content = self.Content(debug = self.debug)
         self.links = self.Links(debug = self.debug)
         self.wallabag = self.Wallabag(debug = self.debug)
