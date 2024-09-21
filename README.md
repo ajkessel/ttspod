@@ -28,5 +28,13 @@ cd ttspod
 ```
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
+## procmail
+The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example:
+```
+:0 Hc
+* To: my_tts_address
+| ${HOME}/ttspod/ttspod
+```
+
 ## License
 [MIT](LICENSE)
