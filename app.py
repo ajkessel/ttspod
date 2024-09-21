@@ -7,6 +7,7 @@ except ImportError:
 # third party modules
 from dotenv import load_dotenv
 import pypandoc
+import fitz
 import datetime
 import argparse
 import validators
@@ -126,47 +127,22 @@ class Main(object):
     def processLink(self, url, title = None):
         links = Links(self.config.links)
         items = links.getItems(url, title)
-        self.process(items)
-        return True
-    
-    def processFile(self,fname,title = None):
-        try:
-            with open(fname,'r') as f:
-                c = f.read()
-        except UnicodeDecodeError:
-            with open(fname,'rb') as f:
-                c = f.read()
-        except:
-            print(f'failed to process file {fname}')
-            return None
-        type = magic.from_buffer(c)
-        if self.config.debug: print(f'got file type: {type}')
-        if re.search('^return-path:', c, flags = re.MULTILINE | re.I):
-            return self.processContent(c, title)
-        try:
-            text = pypandoc.convert_file(fname, 'plain', extra_args = ['--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.working_path}noimage.lua'])
-            if self.config.debug: print(f'processFile: {text}')
-            if text:
-                content = Content(self.config.content)
-                items = content.getItems(text = text, title = fname)
-                self.process(items)
-                return True
-        except Exception as e:
-            print(f'failed to process file {fname}\nerror: {e}')
-        print(f'failed to process file {fname}')
-        return None
-
+        return self.process(items)
+        
     def processPocket(self,tag):
         p = TTSPocket(self.config.pocket)
         items = p.getItems(tag)
-        self.process(items)
-        return True
+        return self.process(items)
 
     def processContent(self, text, title = None):
         content = Content(self.config.content)
         items = content.getItems(text, title)
-        self.process(items)
-        return True
+        return self.process(items)
+    
+    def processFile(self, fname, title = None):
+        content = Content(self.config.content)
+        items = content.processFile(fname, title)
+        return self.process(items)
 
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')

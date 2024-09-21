@@ -1,3 +1,4 @@
+from os import path
 from uuid import uuid4
 from html import unescape
 from html2text import html2text
@@ -23,7 +24,10 @@ class Content(object):
         pass
 
     def processEmail(self, text, title = None):
-        msg = email.message_from_string(text)
+        if type(text) is str:
+            msg = email.message_from_string(text)
+        else:
+            msg = email.message_from_bytes(text)
         title_search = msg.get('subject')
         url = msg.get('message-id')
         if not url:
@@ -35,6 +39,8 @@ class Content(object):
         entry = None
         longest_plain_part = ''
         longest_html_part = ''
+        entries = []
+        attachments = []
         for part in msg.walk():
             if part.get_content_type().lower() == 'text/plain':
                 this_part = part.get_payload(decode=True)
@@ -44,6 +50,19 @@ class Content(object):
                 this_part = part.get_payload(decode=True)
                 if len(this_part) > len(longest_html_part):
                     longest_html_part = this_part
+            elif self.config.attachments and part.get_content_type():
+                try:
+                    this_part = part.get_payload(decode=True)
+                    try:
+                        this_filename = part.get_filename()
+                    except:
+                        this_filename = str(uuid4())
+                    if this_part:
+                        with open(path.join(self.config.attachment_path,this_filename),"wb") as f:
+                            f.write(this_part)
+                            attachments.append(path.join(self.config.attachment_path,this_filename))
+                except:
+                    pass
         if longest_html_part:
             try:
                 longest_html_part = str(cleanHTML(longest_html_part))
@@ -57,19 +76,20 @@ class Content(object):
             text = longest_plain_part
         else:
             text = ''
-        text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
-        text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
-        text = re.sub(r'[^A-Za-z\:0-9 \n\-.,!"\']',' ',text)
-        text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
-        text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
-        text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
-        text = re.sub(r'\n\n+','\n\n',text)
-        text = re.sub(r' +',' ',text)
-        text = text.strip()
+        text = cleanText(text)
         if text:
             entry = ( title, text, url )
+            entries.append(entry)
         if self.config.debug: print(f'email entry {entry}')
-        return [ entry ]
+        for attachment in attachments:
+            try:
+                if self.config.debug: print(f'attempting to process attachment {attachment}')
+                entry = self.processFile(attachment)
+                entries.append(entry)
+                if self.config.debug: print(f'success')
+            except:
+                pass
+        return entries
 
     def processHTML(self, rawhtml, title = None):
         url = hashlib.md5(str(rawhtml).encode()).hexdigest()
@@ -119,6 +139,40 @@ class Content(object):
             title = "Untitled Content"
         entry = (title, text, url)
         return entry
+
+    def processFile(self,fname,title = None):
+        try:
+            with open(fname,'r') as f:
+                c = f.read()
+        except UnicodeDecodeError:
+            with open(fname,'rb') as f:
+                c = f.read()
+        except:
+            print(f'failed to process file {fname}')
+            return None
+        title = title if title else fname
+        type = magic.from_buffer(c).lower()
+        if self.config.debug: print(f'got file type: {type}')
+        if re.search('^return-path:', str(c), flags = re.MULTILINE | re.I):
+            return self.processEmail(c, title)
+        if "pdf" in type:
+            doc = fitz.Document(stream=c)
+            text = ""
+            for page in doc:
+                text += page.get_text()
+            if text:
+                items = self.getItems(text = text, title = title)
+        else:
+            try:
+                text = pypandoc.convert_file(fname, 'plain', extra_args = ['--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.lua_path}noimage.lua'])
+                if self.config.debug: print(f'processFile: {text}')
+                if text:
+                    items = self.getItems(text = text, title = title)
+            except Exception as e:
+                print(f'failed to process file {fname}\nerror: {e}')
+        if items:
+            return self.process(items)
+        return None
 
     def getItems(self, text, title = None):
         entries = []

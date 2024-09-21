@@ -8,8 +8,12 @@ except:
 
 class Config(object):
     class Content(object):
-        def __init__(self, debug = False):
+        def __init__(self, debug = False, working_path = None):
             self.debug = debug
+            self.attachment_path = path.join(working_path, "attachments")
+            self.lua_path = working_path
+            Path(self.attachment_path).mkdir(parents=True, exist_ok=True)
+            self.attachments = True
             return
     class Links(object):
         def __init__(self, debug = False):
@@ -102,7 +106,7 @@ class Config(object):
             self.cache_path = None
         self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
         self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
-        self.content = self.Content(debug = self.debug)
+        self.content = self.Content(debug = self.debug, working_path = self.working_path)
         self.links = self.Links(debug = self.debug)
         self.wallabag = self.Wallabag(debug = self.debug)
         self.pocket = self.Pocket(debug = self.debug)
