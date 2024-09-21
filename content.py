@@ -43,27 +43,29 @@ class Content(object):
                 if len(this_part) > len(longest_html_part):
                     longest_html_part = this_part
         if longest_html_part:
-            if not "<html" in str(longest_html_part):
-                longest_html_part = f'<html>{longest_html_part}</html>'
             try:
                 longest_html_part = str(self.cleanHTML(longest_html_part))
             except:
                 longest_html_part = ''
         if longest_plain_part:
             longest_plain_part = longest_plain_part.decode('ascii','ignore')
-            longest_plain_part = longest_plain_part.replace('|', '').replace('-', ' ').replace('+', ' ')
-            longest_plain_part = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',longest_plain_part)
-            longest_plain_part = re.sub(r'^.{1,3}$','',longest_plain_part,flags = re.MULTILINE)
-            longest_plain_part = re.sub(r'^[^A-Za-z]*$','',longest_plain_part,flags = re.MULTILINE)
-            longest_plain_part = re.sub(r'^ *$','\n',longest_plain_part,flags = re.MULTILINE)
-            longest_plain_part = re.sub(r'\n\n+','\n\n',longest_plain_part)
-            longest_plain_part = re.sub(r' +',' ',longest_plain_part)
+        print(f'longest_html_part {longest_html_part}')
+        print(f'longest_plain_part {longest_plain_part}')
         if len(longest_html_part) > len(longest_plain_part):
-            text = longest_html_part.strip()
+            text = longest_html_part
         elif longest_plain_part:
-            text = longest_plain_part.strip()
+            text = longest_plain_part
         else:
             text = ''
+        text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
+        text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018d',"'").replace(u'\u2019d',"'")
+        text = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',text)
+        text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
+        text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
+        text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
+        text = re.sub(r'\n\n+','\n\n',text)
+        text = re.sub(r' +',' ',text)
+        text = text.strip()
         if text:
             entry = ( title, text, url )
         if self.config.debug: print(f'email entry {entry}')
@@ -77,13 +79,6 @@ class Content(object):
                     extra_args=['--wrap=none', '--strip-comments']
                     )
          text = text.encode('ascii', 'ignore').decode('ascii','ignore')
-         text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
-         text = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',text)
-         text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
-         text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
-         text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
-         text = re.sub(r'\n\n+','\n\n',text)
-         text = re.sub(r' +',' ',text)
          return text
 
     def processHTML(self, rawhtml, title = None):

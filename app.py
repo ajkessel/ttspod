@@ -6,12 +6,13 @@ except ImportError:
 
 # third party modules
 from dotenv import load_dotenv
+import datetime
 import argparse
 import validators
 from pathlib import Path
 from pydub import AudioSegment
 from io import BytesIO
-from shutil import copyfile
+from shutil import copyfile, move
 import html2text
 import json
 import ntpath
@@ -34,9 +35,10 @@ from ttspocket import TTSPocket
 from wallabag import Wallabag
 
 class Main(object):
-    def __init__(self, debug = False, engine = None):
+    def __init__(self, debug = False, engine = None, force = False, wipe = False):
         self.config = Config(debug = debug, engine = engine)
         self.p = None
+        self.force = force
         self.cache = []
         self.pod = None
         if self.config.cache_path:
@@ -59,7 +61,10 @@ class Main(object):
                     if self.config.debug: print(f'cache file synced successfully')
                 except Exception as e:
                     print(f'something went wrong syncing the cache file {e}')
-        if (os.path.exists(self.config.pickle)):
+        if wipe:
+            if self.config.debug: print(f'moving {self.config.pickle} cache file and starting fresh')
+            move(self.config.pickle, self.config.pickle + int(datetime.datetime.now().timestamp()))
+        if os.path.exists(self.config.pickle):
             try:
                 with open(self.config.pickle, 'rb') as f:
                     [self.cache,self.pod] = pickle.load(f)
@@ -73,7 +78,7 @@ class Main(object):
     def process(self, items):
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
-            if url in self.cache:
+            if url in self.cache and not self.force:
                 if self.config.debug: print(f'{title} is already in the feed, skipping')
                 continue
             if len(content) > self.config.max_length:
@@ -141,18 +146,23 @@ class Main(object):
 
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
-    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs to add to your podcast feed")
+    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local files to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
+    parser.add_argument("-c", "--clean", action = 'store_true', help = "wipe cache clean and start new podcast feed")
+    parser.add_argument("-f", "--force", action = 'store_true', help = "force addition of podcast even if cache indicates it has already been added")
     parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
     parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")
+    
     args = parser.parse_args()
-    debug = hasattr(args,'debug')
-    title=args.title if hasattr(args,'title') else None
-    engine=args.engine if hasattr(args,'engine') else None
+    debug = hasattr(args, 'debug')
+    force = hasattr(args, 'force')
+    wipe = hasattr(args, 'wipe')
+    title = args.title if hasattr(args,'title') else None
+    engine = args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
-    main = Main(debug = debug, engine = engine)
+    main = Main(debug = debug, engine = engine, force = force, wipe = wipe)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
     if args.url: main.processLinks(args.url)
     if args.wallabag: main.processWallabag(args.wallabag)
