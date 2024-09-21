@@ -2,7 +2,7 @@
 
 Real documentation to come.
 
-But the gist of it is that this app will take various forms of content and turn it into speech and then a podcast feed.
+But the gist of it is that this app will take various forms of content and turn it into audible speech and then a podcast feed.
 
 ## Inputs 
 
@@ -29,6 +29,8 @@ cd ttspod
 ```
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
+
+You'll also need somewhere to host your RSS feed and MP3 audio files if you want to listen with a podcatcher. 
 ## procmail
 The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example:
 ```
