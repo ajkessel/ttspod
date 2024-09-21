@@ -108,41 +108,41 @@ class Speech(object):
                         segments.append(sentence)
             else:
                 segments.append(para)
-            combined = AudioSegment.empty()
-            for (item,segment) in enumerate(segments):
-                segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
-                if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
-                try:
-                    if self.config.engine == "eleven":
-                        audio = self.tts.generate(
-                            text=segment,
-                            voice=self.config.eleven_voice,
-                            model=self.config.eleven_model
-                            )
-                        save(audio, segment_audio)
-                    elif self.config.engine == "openai":
-                        response = self.tts.audio.speech.create(
-                            model = self.config.openai_model,
-                            voice = self.config.openai_voice,
-                            input = segment
-                            )
-                        response.stream_to_file(segment_audio)
-                    if self.config.debug: print(f'segment successful')
-                except Exception as e:
-                    if self.config.debug: print(f'TTS failed {e}')
-                else:
-                    combined += AudioSegment.from_mp3(segment_audio)
+        combined = AudioSegment.empty()
+        for (item,segment) in enumerate(segments):
+            segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
+            if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
             try:
-                if combined.duration_seconds > 2:
-                    combined.export(out_file, format="mp3")
-                    os.chmod(out_file, 0o644)
-                    return (out_file)
-                else:
-                    if self.config.debug: print(f'did not generate a long enough file')
-                    return None
+                if self.config.engine == "eleven":
+                    audio = self.tts.generate(
+                        text=segment,
+                        voice=self.config.eleven_voice,
+                        model=self.config.eleven_model
+                        )
+                    save(audio, segment_audio)
+                elif self.config.engine == "openai":
+                    response = self.tts.audio.speech.create(
+                        model = self.config.openai_model,
+                        voice = self.config.openai_voice,
+                        input = segment
+                        )
+                    response.stream_to_file(segment_audio)
+                if self.config.debug: print(f'segment successful')
             except Exception as e:
                 if self.config.debug: print(f'TTS failed {e}')
-            return None
+            else:
+                combined += AudioSegment.from_mp3(segment_audio)
+        try:
+            if combined.duration_seconds > 2:
+                combined.export(out_file, format="mp3")
+                os.chmod(out_file, 0o644)
+                return (out_file)
+            else:
+                if self.config.debug: print(f'did not generate a long enough file')
+                return None
+        except Exception as e:
+            if self.config.debug: print(f'TTS failed {e}')
+        return None
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
         sentences = sent_tokenize(text)
