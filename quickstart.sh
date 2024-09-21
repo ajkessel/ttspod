@@ -13,7 +13,7 @@ then
   echo pip3 not found, exiting.
   exit 1
 fi
-pyexe=python3.11
+pyexe="python3.11"
 if ! command -v "${pyexe}" &> /dev/null
 then
   echo -n 'This is only tested with python3.11, which seems to be missing from your system. Do you want to proceed anyway? (y/n)'
