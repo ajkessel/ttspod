@@ -134,6 +134,7 @@ class Speech(object):
             if combined.duration_seconds > 2:
                 combined.export(out_file, format="mp3")
                 os.chmod(out_file, 0o644)
+                if self.config.debug: print(f'final audio successful')
                 return (out_file)
             else:
                 if self.config.debug: print(f'did not generate a long enough file')
