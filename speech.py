@@ -171,8 +171,8 @@ class Speech(object):
         old_stoks = None
         old_atoks = None
         for i, chunk in enumerate(chunks):
-            if self.config.debug: print(f"processing chunk {i+1} of {len(chunks)}:\n{chunk}\n--------------------------\n")
-            stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=False)[0]
+            if self.config.debug: print(f"processing chunk {i+1} of {len(chunks)}\n--------------------------\n{chunk}\n--------------------------\n")
+            stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=self.config.debug)[0]
             stoks = stoks[stoks != 512]
             if old_stoks is not None:
                 #assert(len(stoks) < 750-overlap) # TODO
@@ -180,7 +180,7 @@ class Speech(object):
                 atoks_prompt = old_atoks[:,:,-overlap*3:]
             else:
                 atoks_prompt = None
-            atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(0), show_progress_bar=False)
+            atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(0), show_progress_bar=self.config.debug)
             if atoks_prompt is not None: atoks = atoks[:,:,overlap*3+1:]
             r.append(atoks)
             old_stoks = stoks

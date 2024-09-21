@@ -5,6 +5,10 @@ try:
     from torch import cuda
 except:
     pass
+try:
+    from torch.backends import mps
+except:
+    pass
 
 class Config(object):
     class Content(object):
@@ -83,9 +87,16 @@ class Config(object):
                 self.engine = 'eleven'
             elif self.engine in 'whisper' and whisper_available:
                 self.engine = 'whisper'
+                if self.debug: print("checking GPU support")
                 try:
                     if cuda.is_available():
+                        if self.debug: print("found cuda")
                         self.device = 'cuda'
+                except:
+                    pass
+                try:
+                    if mps.is_available():
+                        if self.debug: print("found mps")
                 except:
                     pass
             else:
