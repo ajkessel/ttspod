@@ -31,7 +31,7 @@ from ttspocket import TTSPocket
 from wallabag import Wallabag
 
 class Main(object):
-    def __init__(self, debug = False, engine = None, force = False, wipe = False):
+    def __init__(self, debug = False, engine = None, force = False, clean = False):
         self.config = Config(debug = debug, engine = engine)
         self.p = None
         self.force = force
@@ -46,7 +46,7 @@ class Main(object):
                         destination=self.config.pickle,
                         sync_source_contents=False
                         )
-                    if self.config.debug: print(f'cache file synced successfully')
+                    if self.config.debug: print(f'cache file synced successfully from server')
                 except Exception as e:
                     print(f'something went wrong syncing the cache file {e}')
                     if "code 23" in str(e):
@@ -54,10 +54,10 @@ class Main(object):
             else:
                 try:
                     copyfile(f'{path}/ttspod.pickle',self.config.pickle)
-                    if self.config.debug: print(f'cache file synced successfully')
+                    if self.config.debug: print(f'cache file synced successfully from path')
                 except Exception as e:
                     print(f'something went wrong syncing the cache file {e}')
-        if wipe:
+        if clean:
             if self.config.debug: print(f'moving {self.config.pickle} cache file and starting fresh')
             move(self.config.pickle, self.config.pickle + int(datetime.datetime.now().timestamp()))
         if os.path.exists(self.config.pickle):
@@ -102,13 +102,13 @@ class Main(object):
                                 destination_ssh=domain,
                                 sync_source_contents=False
                                 )
-                            if self.config.debug: print(f'cache file synced successfully')
+                            if self.config.debug: print(f'cache file synced successfully to server')
                         except Exception as e:
                             print(f'something went wrong syncing the cache file {e}')
                     else:
                         try:
                             copyfile(self.config.pickle, self.config.cache_path)
-                            if self.config.debug: print(f'cache file synced successfully')
+                            if self.config.debug: print(f'cache file synced successfully to path')
                         except Exception as e:
                             print(f'something went wrong syncing the cache file {e}')
             else:
@@ -120,13 +120,13 @@ class Main(object):
         wallabag = Wallabag(self.config.wallabag)
         items = wallabag.getItems(tag)
         self.process(items)
-        return
-        
+        return True
+    
     def processLink(self,url):
         links = Links(self.config.links)
         items = links.getItems(url)
         self.process(items)
-        return
+        return True
     
     def processFile(self,fname):
         try:
@@ -146,13 +146,13 @@ class Main(object):
         p = TTSPocket(self.config.pocket)
         items = p.getItems(tag)
         self.process(items)
-        return
+        return True
 
     def processContent(self, text, title = None):
         content = Content(self.config.content)
         items = content.getItems(text, title)
         self.process(items)
-        return
+        return True
 
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
@@ -163,16 +163,15 @@ def main():
     parser.add_argument("-c", "--clean", action = 'store_true', help = "wipe cache clean and start new podcast feed")
     parser.add_argument("-f", "--force", action = 'store_true', help = "force addition of podcast even if cache indicates it has already been added")
     parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
-    parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")
-    
+    parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")    
     args = parser.parse_args()
-    debug = hasattr(args, 'debug')
-    force = hasattr(args, 'force')
-    wipe = hasattr(args, 'wipe')
+    debug = args.debug
+    force = args.force
+    clean = args.clean
     title = args.title if hasattr(args,'title') else None
     engine = args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
-    main = Main(debug = debug, engine = engine, force = force, wipe = wipe)
+    main = Main(debug = debug, engine = engine, force = force, clean = clean)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)

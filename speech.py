@@ -151,7 +151,6 @@ class Speech(object):
             sentence = re.sub('[()]', ",", sentence).strip()
             sentence = re.sub(",+", ",", sentence)
             sentence = re.sub('"+', "", sentence)
-            sentence = re.sub("/", "", sentence)
             if len(chunk) + len(sentence) < 20*cps:
                 chunk += " " + sentence
             elif chunk:
@@ -159,7 +158,6 @@ class Speech(object):
                 chunk = sentence
             elif sentence:
                 chunks.append(sentence)
-            
         if chunk: chunks.append(chunk)
         return chunks
     

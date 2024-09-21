@@ -10,6 +10,7 @@ import pypandoc
 import re
 import time
 import validators
+from util import cleanHTML, cleanText
 try:
     import trafilatura # to extract readable content from webpages
     trafilatura_available = True
@@ -45,7 +46,7 @@ class Content(object):
                     longest_html_part = this_part
         if longest_html_part:
             try:
-                longest_html_part = str(self.cleanHTML(longest_html_part))
+                longest_html_part = str(cleanHTML(longest_html_part))
             except:
                 longest_html_part = ''
         if longest_plain_part:
@@ -69,16 +70,6 @@ class Content(object):
             entry = ( title, text, url )
         if self.config.debug: print(f'email entry {entry}')
         return [ entry ]
-
-    def cleanHTML(self, rawhtml):
-         text = pypandoc.convert_text(
-                    rawhtml,
-                    'plain',
-                    format='html',
-                    extra_args=['--wrap=none', '--strip-comments']
-                    )
-         text = self.cleanText(text)
-         return text
 
     def processHTML(self, rawhtml, title = None):
         url = hashlib.md5(str(rawhtml).encode()).hexdigest()
@@ -106,26 +97,13 @@ class Content(object):
         if not text:
             if self.config.debug: print(f'attempting pandoc extraction')
             try:
-                text = self.cleanHTML(rawhtml)
+                text = cleanHTML(rawhtml)
             except:
                 pass
-        text = self.cleanText(text)
+        text = cleanText(text)
         if text:
             entry = (title, text, url)
         return entry
-    
-    def cleanText(self, text):
-        try:
-            text = unescape(text)
-            text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
-            text = re.sub(r'[^A-Za-z0-9 \n_.,!"\']',' ',text)
-            text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
-            text = re.sub(r'\n\n+','\n\n',text)
-            text = re.sub(r' +',' ',text)
-            text = text.strip()
-        except:
-            pass
-        return text
     
     def hashText(self, text):
         try:
@@ -136,7 +114,7 @@ class Content(object):
     
     def processText(self, text, title = None):
         url = self.hashText(text)
-        text = self.cleanText(text)
+        text = cleanText(text)
         if not title:
             title = "Untitled Content"
         entry = (title, text, url)
