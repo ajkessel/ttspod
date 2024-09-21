@@ -69,7 +69,7 @@ class Speech(object):
             'ascii', 'ignore').decode('ascii')
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
-    def speechify(self, title = "missing", raw_text):
+    def speechify(self, title = "missing", raw_text = ""):
         out_file = self.config.final_path + self.slugify(title) + ".mp3"
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
