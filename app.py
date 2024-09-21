@@ -10,6 +10,7 @@ import pypandoc
 import datetime
 import argparse
 import validators
+import magic
 from pathlib import Path
 from pydub import AudioSegment
 from io import BytesIO
@@ -122,13 +123,26 @@ class Main(object):
         self.process(items)
         return True
     
-    def processLink(self,url):
+    def processLink(self, url, title = None):
         links = Links(self.config.links)
-        items = links.getItems(url)
+        items = links.getItems(url, title)
         self.process(items)
         return True
     
-    def processFile(self,fname):
+    def processFile(self,fname,title = None):
+        try:
+            with open(fname,'r') as f:
+                c = f.read()
+        except UnicodeDecodeError:
+            with open(fname,'rb') as f:
+                c = f.read()
+        except:
+            print(f'failed to process file {fname}')
+            return None
+        type = magic.from_buffer(c)
+        if self.config.debug: print(f'got file type: {type}')
+        if re.search('^return-path:', c, flags = re.MULTILINE | re.I):
+            return self.processContent(c, title)
         try:
             text = pypandoc.convert_file(fname, 'plain', extra_args = ['--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.working_path}noimage.lua'])
             if self.config.debug: print(f'processFile: {text}')
@@ -177,9 +191,9 @@ def main():
     if args.pocket: main.processPocket(args.pocket)
     for i in args.url:
         if validators.url(i):
-            main.processLink(i)
+            main.processLink(i,title)
         elif os.path.isfile(i):
-            main.processFile(i)        
+            main.processFile(i,title)
         else:
             print(f'argument {i} not recognized')  
     main.pod.save()
