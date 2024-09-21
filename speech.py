@@ -69,7 +69,7 @@ class Speech(object):
             'ascii', 'ignore').decode('ascii')
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
-    def speechify(self, title, raw_text):
+    def speechify(self, title = "missing", raw_text):
         out_file = self.config.final_path + self.slugify(title) + ".mp3"
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
@@ -84,6 +84,7 @@ class Speech(object):
             paragraphs = BlanklineTokenizer().tokenize(text)
         else:
             paragraphs = text.split('\n\n')
+        if self.config.debug: print(f'paragraphs {paragraphs}')
         segments = []
         for para in paragraphs:
             if self.config.debug: print(f"paragraph {para}")
@@ -137,9 +138,11 @@ class Speech(object):
                     os.chmod(out_file, 0o644)
                     return (out_file)
                 else:
+                    if self.config.debug: print(f'did not generate a long enough file')
                     return None
-            except:
-                return None
+            except Exception as e:
+                if self.config.debug: print(f'TTS failed {e}')
+            return None
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
         sentences = sent_tokenize(text)
