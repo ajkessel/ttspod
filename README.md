@@ -31,6 +31,10 @@ cd ttspod
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
 
 You'll also need somewhere to host your RSS feed and MP3 audio files if you want to listen with a podcatcher. 
+
+## Platforms
+This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
+
 ## procmail
 The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example:
 ```
@@ -42,3 +46,5 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 
 ## License
 [MIT](LICENSE)
+
+Contributions welcome.
