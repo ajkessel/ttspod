@@ -2,8 +2,7 @@
 yesno() {
   echo -n "${1} (y/n) "
   read answer
-  l=${answer,,}
-  f=${l:0:1}
+  f=$(echo "${answer}" | tr "A-Z" "a-z" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
 [ $(uname) == "Darwin" ] && MAC=1
