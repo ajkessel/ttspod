@@ -25,34 +25,48 @@ class Content(object):
         title_search = msg.get('subject')
         url = msg.get('message-id')
         if not url:
-            pass
-        # need to generate url based on contents TODO
+            url = hashlib.md5(str(text).encode()).hexdigest()
         if title_search:
             title = title_search
         elif not title:
             title = "Untitled Content"
-        html_part = False
-        longest_part = ''
+        entry = None
+        longest_plain_part = ''
+        longest_html_part = ''
         for part in msg.walk():
-            if part.get_content_type() == 'text/plain':
+            if part.get_content_type().lower() == 'text/plain':
                 this_part = part.get_payload(decode=True)
-                if len(this_part) > len(longest_part):
-                    longest_part = this_part
-                    html_part = False
-            elif part.get_content_type() == 'text/html':
-                if len(this_part) > len(longest_part):
-                    longest_part = this_part
-                    html_part = True
-        if html_part:
-            if not "<html" in longest_part:
-                longest_part = f'<html>{longest_part}</html>'
-            if self.config.debug: print(f'cleaning up HTML {longest_part}')
-            text = str(self.cleanHTML(longest_part))
+                if len(this_part) > len(longest_plain_part):
+                    longest_plain_part = this_part
+            elif part.get_content_type().lower() == 'text/html':
+                this_part = part.get_payload(decode=True)
+                if len(this_part) > len(longest_html_part):
+                    longest_html_part = this_part
+        if longest_html_part:
+            if not "<html" in str(longest_html_part):
+                longest_html_part = f'<html>{longest_html_part}</html>'
+            try:
+                longest_html_part = str(self.cleanHTML(longest_html_part))
+            except:
+                longest_html_part = ''
+        if longest_plain_part:
+            longest_plain_part = longest_plain_part.decode('ascii','ignore')
+            longest_plain_part = longest_plain_part.replace('|', '').replace('-', ' ').replace('+', ' ')
+            longest_plain_part = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',longest_plain_part)
+            longest_plain_part = re.sub(r'^.{1,3}$','',longest_plain_part,flags = re.MULTILINE)
+            longest_plain_part = re.sub(r'^[^A-Za-z]*$','',longest_plain_part,flags = re.MULTILINE)
+            longest_plain_part = re.sub(r'^ *$','\n',longest_plain_part,flags = re.MULTILINE)
+            longest_plain_part = re.sub(r'\n\n+','\n\n',longest_plain_part)
+            longest_plain_part = re.sub(r' +',' ',longest_plain_part)
+        if len(longest_html_part) > len(longest_plain_part):
+            text = longest_html_part.strip()
+        elif longest_plain_part:
+            text = longest_plain_part.strip()
         else:
-            if self.config.debug: print(f'cleaning up plain {longest_part}')
-            text = text.encode('ascii', 'ignore').decode('ascii')
-        entry = ( title, text, url )
-        if self.config.debug: print(f'entry {entry}')
+            text = ''
+        if text:
+            entry = ( title, text, url )
+        if self.config.debug: print(f'email entry {entry}')
         return [ entry ]
 
     def cleanHTML(self, rawhtml):
@@ -62,9 +76,11 @@ class Content(object):
                     format='html',
                     extra_args=['--wrap=none', '--strip-comments']
                     )
-         text = text.encode('ascii', 'ignore').decode('ascii')
+         text = text.encode('ascii', 'ignore').decode('ascii','ignore')
          text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
-         text = re.sub(r'[^A-Za-z0-9 \n\-_.,!"\']',' ',text)
+         text = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',text)
+         text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
+         text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
          text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
          text = re.sub(r'\n\n+','\n\n',text)
          text = re.sub(r' +',' ',text)
