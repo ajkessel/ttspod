@@ -84,7 +84,6 @@ class Speech(object):
             paragraphs = BlanklineTokenizer().tokenize(text)
         else:
             paragraphs = text.split('\n\n')
-        if self.config.debug: print(f'paragraphs {paragraphs}')
         segments = []
         for para in paragraphs:
             if self.config.debug: print(f"paragraph {para}")
