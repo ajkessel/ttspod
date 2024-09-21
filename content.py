@@ -1,3 +1,4 @@
+from uuid import uuid4
 from html import unescape
 from html2text import html2text
 from lxml import html
@@ -25,7 +26,7 @@ class Content(object):
         title_search = msg.get('subject')
         url = msg.get('message-id')
         if not url:
-            url = hashlib.md5(str(text).encode()).hexdigest()
+            url = self.hashText(text)
         if title_search:
             title = title_search
         elif not title:
@@ -49,8 +50,6 @@ class Content(object):
                 longest_html_part = ''
         if longest_plain_part:
             longest_plain_part = longest_plain_part.decode('ascii','ignore')
-        print(f'longest_html_part {longest_html_part}')
-        print(f'longest_plain_part {longest_plain_part}')
         if len(longest_html_part) > len(longest_plain_part):
             text = longest_html_part
         elif longest_plain_part:
@@ -59,7 +58,7 @@ class Content(object):
             text = ''
         text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
         text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
-        text = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',text)
+        text = re.sub(r'[^A-Za-z\:0-9 \n\-.,!"\']',' ',text)
         text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
         text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
         text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
@@ -78,12 +77,10 @@ class Content(object):
                     format='html',
                     extra_args=['--wrap=none', '--strip-comments']
                     )
-         text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
-         text = text.encode('ascii', 'ignore').decode('ascii','ignore')
+         text = self.cleanText(text)
          return text
 
     def processHTML(self, rawhtml, title = None):
-        print(f'got raw html {rawhtml}')
         url = hashlib.md5(str(rawhtml).encode()).hexdigest()
         title_search = re.search(r'<title>(.*?)</title>', string = str(rawhtml), flags = re.I | re.DOTALL)
         text = None
@@ -112,19 +109,34 @@ class Content(object):
                 text = self.cleanHTML(rawhtml)
             except:
                 pass
-        text = re.sub(r'[^A-Za-z0-9 \n_.,!"\']',' ',text)
-        text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
-        text = re.sub(r'\n\n+','\n\n',text)
-        text = re.sub(r' +',' ',text)
-        print(f'got processed html {text}')
-        time.sleep(600)
+        text = self.cleanText(text)
         if text:
             entry = (title, text, url)
         return entry
-        
+    
+    def cleanText(self, text):
+        try:
+            text = unescape(text)
+            text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
+            text = re.sub(r'[^A-Za-z0-9 \n_.,!"\']',' ',text)
+            text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
+            text = re.sub(r'\n\n+','\n\n',text)
+            text = re.sub(r' +',' ',text)
+            text = text.strip()
+        except:
+            pass
+        return text
+    
+    def hashText(self, text):
+        try:
+            hash = hashlib.md5(str(text).encode()).hexdigest()
+        except:
+            hash = str(uuid4())
+        return hash
+    
     def processText(self, text, title = None):
-        if self.config.debug: print(f'found plain-text content')
-        url = hashlib.md5(text.encode()).hexdigest()
+        url = self.hashText(text)
+        text = self.cleanText(text)
         if not title:
             title = "Untitled Content"
         entry = (title, text, url)
@@ -143,6 +155,7 @@ class Content(object):
                 if entry:
                     entries.append(entry)
         else:
+            if self.config.debug: print(f'processing plain text content')
             entry = self.processText(text, title)
             if entry:
                entries.append(entry)

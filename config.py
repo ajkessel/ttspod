@@ -110,6 +110,9 @@ class Config(object):
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
         chmod(self.final_path, 0o755)
+        if not path.isfile(f'{self.working_path}noimage.lua'):
+            with open(f'{self.working_path}noimage.lua',"w") as f:
+                f.write('function Image(el)\nreturn {}\n end')
         return
     def __str__(self):
         result = f'config: {str(vars(self))}\nwallabag: {str(vars(self.wallabag))}\npod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}'

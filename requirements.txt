@@ -5,6 +5,7 @@ lxml==5.3.0
 lxml_html_clean==0.2.2
 nltk==3.9.1
 pandoc==2.4
+pathvalidate==3.2.1
 pip_system_certs==4.0
 pocket==0.3.6
 pocket_api==0.1.5

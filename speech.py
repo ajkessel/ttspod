@@ -142,24 +142,27 @@ class Speech(object):
         except Exception as e:
             if self.config.debug: print(f'TTS failed {e}')
         return None
+    
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
         sentences = sent_tokenize(text)
         chunk = ""
         for sentence in sentences:
-            # replace fancy punctuation that was unseen during training
             sentence = re.sub('[()]', ",", sentence).strip()
             sentence = re.sub(",+", ",", sentence)
             sentence = re.sub('"+', "", sentence)
             sentence = re.sub("/", "", sentence)
-            # merge until the result is < 20s
             if len(chunk) + len(sentence) < 20*cps:
                 chunk += " " + sentence
-            else:
+            elif chunk:
                 chunks.append(chunk)
                 chunk = sentence
+            elif sentence:
+                chunks.append(sentence)
+            
         if chunk: chunks.append(chunk)
         return chunks
+    
     def whisper_long(self,chunks=[], cps=14, overlap=100, output=None, speaker=None):
         global atoks, stoks
         if speaker is None:
@@ -169,15 +172,8 @@ class Speech(object):
         r = []
         old_stoks = None
         old_atoks = None
-        add_to_chunk = ""
         for i, chunk in enumerate(chunks):
-#            chunk = add_to_chunk+" "+chunk
-#            if len(chunk) < 80 and i < len(chunks):
-#                add_to_chunk = chunk
-#                continue
-#            else:
-#                add_to_chunk = ""
-            if self.config.debug: print(f"processing chunk:\n{chunk}\n--------------------------\n")
+            if self.config.debug: print(f"processing chunk {i+1} of {len(chunks)}:\n{chunk}\n--------------------------\n")
             stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=False)[0]
             stoks = stoks[stoks != 512]
             if old_stoks is not None:

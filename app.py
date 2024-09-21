@@ -6,6 +6,7 @@ except ImportError:
 
 # third party modules
 from dotenv import load_dotenv
+import pypandoc
 import datetime
 import argparse
 import validators
@@ -13,17 +14,12 @@ from pathlib import Path
 from pydub import AudioSegment
 from io import BytesIO
 from shutil import copyfile, move
-import html2text
-import json
-import ntpath
 import os
 import pickle
-import pod2gen
 import re
-import requests
 from sysrsync import run as rsync
 import sys
-import unicodedata
+import validators
 
 # TTSPod modules
 from config import Config
@@ -126,11 +122,25 @@ class Main(object):
         self.process(items)
         return
         
-    def processLinks(self,urls):
+    def processLink(self,url):
         links = Links(self.config.links)
-        items = links.getItems(urls)
+        items = links.getItems(url)
         self.process(items)
         return
+    
+    def processFile(self,fname):
+        try:
+            text = pypandoc.convert_file(fname, 'plain', extra_args = ['--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.working_path}noimage.lua'])
+            if self.config.debug: print(f'processFile: {text}')
+            if text:
+                content = Content(self.config.content)
+                items = content.getItems(text = text, title = fname)
+                self.process(items)
+                return True
+        except Exception as e:
+            print(f'failed to process file {fname}\nerror: {e}')
+        print(f'failed to process file {fname}')
+        return None
 
     def processPocket(self,tag):
         p = TTSPocket(self.config.pocket)
@@ -146,7 +156,7 @@ class Main(object):
 
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
-    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local files to add to your podcast feed")
+    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local documents (plain text, HTML, Word documents, etc) to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
@@ -164,9 +174,15 @@ def main():
     got_pipe = not os.isatty(sys.stdin.fileno())
     main = Main(debug = debug, engine = engine, force = force, wipe = wipe)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
-    if args.url: main.processLinks(args.url)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)
+    for i in args.url:
+        if validators.url(i):
+            main.processLink(i)
+        elif os.path.isfile(i):
+            main.processFile(i)        
+        else:
+            print(f'argument {i} not recognized')  
     main.pod.save()
     main.pod.sync()
     main.saveCache()
