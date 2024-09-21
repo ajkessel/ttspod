@@ -127,10 +127,9 @@ class Speech(object):
                         )
                     response.stream_to_file(segment_audio)
                 if self.config.debug: print(f'segment successful')
+                combined += AudioSegment.from_mp3(segment_audio)
             except Exception as e:
                 if self.config.debug: print(f'TTS failed {e}')
-            else:
-                combined += AudioSegment.from_mp3(segment_audio)
         try:
             if combined.duration_seconds > 2:
                 combined.export(out_file, format="mp3")
