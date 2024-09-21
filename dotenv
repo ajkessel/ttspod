@@ -5,6 +5,8 @@
 ttspod_debug=1
 # path for temporary files (defaults to ./working relative to current directory)
 ttspod_working_path='./working'
+# include attachments to emails
+ttspod_attachments=1
 # max length - skip articles longer than this number of characters (default 20000)
 # if you are using a paid TTS service, you probably want to cap this to avoid uncontrolled spend
 ttspod_max_length=20000

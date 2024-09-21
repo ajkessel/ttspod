@@ -12,8 +12,9 @@ class Config(object):
             self.debug = debug
             self.attachment_path = path.join(working_path, "attachments")
             self.lua_path = working_path
-            Path(self.attachment_path).mkdir(parents=True, exist_ok=True)
-            self.attachments = True
+            self.attachments = e.get('ttspod_attachments')
+            if self.attachments and self.attachment_path:
+                Path(self.attachment_path).mkdir(parents=True, exist_ok=True)
             return
     class Links(object):
         def __init__(self, debug = False):
