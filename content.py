@@ -58,7 +58,7 @@ class Content(object):
         else:
             text = ''
         text = text.replace('|', '').replace('-', ' ').replace('+', ' ')
-        text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018d',"'").replace(u'\u2019d',"'")
+        text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
         text = re.sub(r'[^A-Za-z0-9 \n\-.,!"\']',' ',text)
         text = re.sub(r'^.{1,3}$','',text,flags = re.MULTILINE)
         text = re.sub(r'^[^A-Za-z]*$','',text,flags = re.MULTILINE)
@@ -78,6 +78,7 @@ class Content(object):
                     format='html',
                     extra_args=['--wrap=none', '--strip-comments']
                     )
+         text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
          text = text.encode('ascii', 'ignore').decode('ascii','ignore')
          return text
 
