@@ -10,10 +10,10 @@ But the gist of it is that this app will take various forms of content and turn 
 * Your Pocket feed
 * Your Instapaper feed (planned)
 * An arbitrary URL
-* An email (pipe the email into the script)
-* A locally-stored HTML file (pipe into script)
-* A locally-stored text file (pipe into script)
-* Office documents/PDFs (planned)
+* An email (pipe the email into the script, or provide as command-line argument)
+* A locally-stored HTML file
+* A locally-stored text file
+* Office documents/PDFs 
 
 ## Text-to-Speech Engines
 
@@ -43,6 +43,16 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 * To: my_tts_address
 | ${HOME}/ttspod/ttspod
 ```
+
+## TODO
+* Real installer (pip, maybe Debian, WinGet, etc)
+* Command-line options for all configuration settings
+* Interactive configuration
+* Pocket authentication workflow
+* Instapaper suport
+* Process links received by email
+* More TTS engines
+* More customizability of podcast feed
 
 ## License
 [MIT](LICENSE)
