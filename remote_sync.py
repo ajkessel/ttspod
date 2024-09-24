@@ -149,7 +149,11 @@ def sync(source = None, destination = None, port = 22, username = None, password
     source_user, source_host, source_dir = parse_location(source)
     destination_user, destination_host, destination_dir = parse_location(destination)
     if not keyfile and not password:
-        keyfile = os.path.join(Path.home(),'.ssh','id_rsa')
+        key_list = ['id_rsa', 'id_ecdsa', 'id_ecdsa_sk', 'id_ed25519', 'id_ed25519_sk', 'id_dsa']
+        for key in key_list:
+            keyfile = os.path.join(Path.home(),'.ssh',key)
+            if os.path.isfile(keyfile):
+                break
         if not os.path.isfile(keyfile):
             keyfile = None
         elif dbg: print(f'Found local ssh keyfile {keyfile}')

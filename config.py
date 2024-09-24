@@ -42,7 +42,7 @@ class Config(object):
             self.debug = debug
             return
     class Pod(object):
-        def __init__(self, final_path = '', debug = False):
+        def __init__(self, final_path = '', debug = False, ssh_keyfile = None, ssh_password = None):
             self.url = posixjoin(e.get('ttspod_pod_url'),'')
             self.name = e.get('ttspod_pod_name','TTS podcast')
             self.author = e.get('ttspod_pod_author','TTS podcast author')
@@ -52,8 +52,8 @@ class Config(object):
             self.description = e.get('ttspod_pod_description','TTS podcast description')
             self.language = e.get('ttspod_pod_language','en')
             self.ssh_server_path = e.get('ttspod_pod_server_path')
-            self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
-            self.ssh_password = e.get('ttspod_ssh_password')
+            self.ssh_keyfile = ssh_keyfile
+            self.ssh_password = ssh_password
             self.final_path = final_path
             self.rss_file = path.join(final_path,'index.rss')
             self.debug = debug
@@ -117,7 +117,6 @@ class Config(object):
             self.cache_path = posixjoin(e.get('ttspod_cache_path'),'')+self.pickle_filename
         else:
             self.cache_path = None
-        self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
         self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
         self.content = self.Content(debug = self.debug, working_path = self.working_path)
         self.links = self.Links(debug = self.debug)
@@ -125,8 +124,21 @@ class Config(object):
         self.pocket = self.Pocket(debug = self.debug)
         self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
         self.ssh_password = e.get('ttspod_ssh_password')
-        self.validate()
+        if not (self.ssh_keyfile or self.ssh_password):
+            key_list = ['id_rsa', 'id_ecdsa', 'id_ecdsa_sk', 'id_ed25519', 'id_ed25519_sk', 'id_dsa']
+            for key in key_list:
+                keyfile = path.join(Path.home(),'.ssh',key)
+                if path.isfile(keyfile):
+                    self.ssh_keyfile = keyfile
+                    break
+        self.pod = self.Pod(
+            final_path = self.final_path, 
+            debug = self.debug, 
+            ssh_keyfile = self.ssh_keyfile,
+            ssh_password = self.ssh_password
+        )
         self.makeFiles()
+        self.validate()
     def validate(self):
         if ':' in self.cache_path or ':' in self.pod.ssh_server_path:
             if not self.ssh_keyfile or self.ssh_password:
@@ -136,6 +148,14 @@ class Config(object):
         if self.ssh_keyfile and not path.isfile(self.ssh_keyfile) and not self.ssh_password:
             raise Exception(
                     f"ssh_keyfile {self.ssh_keyfile} does not exist or is not readable."
+                    )
+        if not (
+            path.isdir(self.working_path) and
+            path.isdir(self.temp_path) and 
+            path.isdir(self.final_path)
+        ):
+            raise Exception(
+                    f"Unable to access working path {self.working_path}."
                     )
     def makeFiles(self):
         try:
