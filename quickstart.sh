@@ -6,7 +6,7 @@ yesno() {
   [ "$f" == "y" ] && return 0
 }
 [ $(uname) == "Darwin" ] && MAC=1
-[ command -v brew &> /dev/null ] && BREW=1
+command -v brew &> /dev/null && BREW=1
 [ $EDITOR ] || command -v nano 2> /dev/null && EDITOR=nano || command -v vim 2> /dev/null && EDITOR=vim || command -v vi 2> /dev/null && EDITOR=vi 
 
 echo TTSPod Installer
