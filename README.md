@@ -34,7 +34,7 @@ This application does work on Windows with conda or pip but I haven't automated 
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
 
-You'll also need somewhere to host your RSS feed and MP3 audio files if you want to listen with a podcatcher. 
+You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcatcher. The application is set up to sync the podcast feed to a webserver over ssh.
 
 ## Platforms
 This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
