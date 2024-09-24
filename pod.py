@@ -7,7 +7,7 @@ import remote_sync
 class Pod(object):
     def __init__(self, config, p = None):
         self.config = config
-        self.p = self.new()
+        self.p = p if p else self.new()
         return
         
     def new(self):

@@ -37,7 +37,6 @@ class Main(object):
         self.p = None
         self.force = force
         self.cache = []
-        self.pod = None
         return
     def loadCache(self, debug = False, clean = False):
         if self.config.cache_path:
@@ -61,7 +60,7 @@ class Main(object):
         if os.path.exists(self.config.pickle):
             try:
                 with open(self.config.pickle, 'rb') as f:
-                    [self.cache,self.pod] = pickle.load(f)
+                    [self.cache,self.p] = pickle.load(f)
             except:
                 raise Exception(f"failed to open saved data file {f}")
         return True
@@ -85,7 +84,7 @@ class Main(object):
         try:
             if self.pod: # only save/sync cache if podcast data exists
                 with open(self.config.pickle, 'wb') as f:
-                    pickle.dump([self.cache, self.pod], f)
+                    pickle.dump([self.cache, self.pod.p], f)
                 if self.config.cache_path:
                     try:
                         remote_sync.sync(
@@ -147,8 +146,7 @@ def main():
         exit()
     main = Main(debug = debug, engine = engine, force = force)
     main.loadCache(debug = debug, clean = clean)
-    if not main.pod:
-        main.pod = Pod(main.config.pod)
+    main.pod = Pod(main.config.pod, main.p)
     main.pod.config.debug = main.config.debug
     main.speech = Speech(main.config.speech)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
