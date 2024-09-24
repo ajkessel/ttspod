@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 
-if 'VIRTUAL_ENV' not in os.environ:
+if 'VIRTUAL_ENV' not in os.environ and 'CONDA_PREFIX' not in os.environ:
   venv = os.path.join(os.path.dirname(__file__), '.venv')
   newpython = os.path.join(venv, 'bin', 'python')
   args = [newpython] + sys.argv
