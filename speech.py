@@ -172,20 +172,23 @@ class Speech(object):
         old_atoks = None
         for i, chunk in enumerate(chunks):
             if self.config.debug: print(f"processing chunk {i+1} of {len(chunks)}\n--------------------------\n{chunk}\n--------------------------\n")
-            stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=self.config.debug)[0]
-            stoks = stoks[stoks != 512]
-            if old_stoks is not None:
-                #assert(len(stoks) < 750-overlap) # TODO
-                stoks = torch.cat([old_stoks[-overlap:], stoks])
-                atoks_prompt = old_atoks[:,:,-overlap*3:]
-            else:
-                atoks_prompt = None
-            atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(0), show_progress_bar=self.config.debug)
-            if atoks_prompt is not None: atoks = atoks[:,:,overlap*3+1:]
-            r.append(atoks)
+            try:
+                stoks = self.tts.t2s.generate(chunk, cps=cps, show_progress_bar=self.config.debug)[0]
+                stoks = stoks[stoks != 512]
+                if old_stoks is not None:
+                    assert(len(stoks) < 750-overlap) # TODO
+                    stoks = torch.cat([old_stoks[-overlap:], stoks])
+                    atoks_prompt = old_atoks[:,:,-overlap*3:]
+                else:
+                    atoks_prompt = None
+                atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(0), show_progress_bar=self.config.debug)
+                if atoks_prompt is not None: atoks = atoks[:,:,overlap*3+1:]
+                r.append(atoks)
+                self.tts.vocoder.decode_to_notebook(atoks)
+            except Exception as e:
+                if self.config.debug: print(f'chunk {i+1} failed with error {e}')
             old_stoks = stoks
             old_atoks = atoks
-            self.tts.vocoder.decode_to_notebook(atoks)
         audios = []
         for i,atoks in enumerate(r):
             if i != 0: audios.append(torch.zeros((1, int(24000*0.5)), dtype=atoks.dtype, device=atoks.device))

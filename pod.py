@@ -2,7 +2,7 @@ import pod2gen
 from ntpath import split
 from os.path import getsize, join as j
 from os import chmod
-from sysrsync import run
+import remote_sync
 
 class Pod(object):
     def __init__(self, config, p = None):
@@ -28,19 +28,17 @@ class Pod(object):
         chmod(self.config.rss_file, 0o644)
 
     def sync(self):
-        if self.config.ssh_server_path and self.config.ssh_server:
-            run(source=self.config.final_path,
-                destination=self.config.ssh_server_path,
-                destination_ssh=self.config.ssh_server,
-                sync_source_contents=True,
-                options=['-a']
-                )
-        elif self.config.ssh_server_path:
-            run(source=self.config.final_path,
-                destination=self.config.ssh_server_path,
-                sync_source_contents=True,
-                options=['-a']
-                )
+        if self.config.ssh_server_path:
+            remote_sync.sync(
+                source = self.config.final_path,
+                destination = self.config.ssh_server_path,
+                password = self.config.ssh_password,
+                keyfile = self.config.ssh_keyfile,
+                recursive = False,
+                debug = self.config.debug,
+                dry_run = False,
+                size_only = True
+            )
         else:
             if self.config.debug: print("ssh_server_path not defined so not uploading results")
 

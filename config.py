@@ -50,11 +50,11 @@ class Config(object):
                 self.image = self.url + self.image
             self.description = e.get('ttspod_pod_description','TTS podcast description')
             self.language = e.get('ttspod_pod_language','en')
-            self.ssh_server_path = e.get('ttspod_pod_ssh_server_path')
-            if (self.ssh_server_path): self.ssh_server_path=path.join(self.ssh_server_path,'')
-            self.ssh_server = e.get('ttspod_pod_ssh_server')
+            self.ssh_server_path = e.get('ttspod_pod_server_path')
+            self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
+            self.ssh_password = e.get('ttspod_ssh_password')
             self.final_path = final_path
-            self.rss_file = path.join(final_path,"index.rss")
+            self.rss_file = path.join(final_path,'index.rss')
             self.debug = debug
     class Speech(object):
         def __init__(self, temp_path = '', final_path = '', debug = False, engine = None):
@@ -122,13 +122,27 @@ class Config(object):
         self.links = self.Links(debug = self.debug)
         self.wallabag = self.Wallabag(debug = self.debug)
         self.pocket = self.Pocket(debug = self.debug)
-        Path(self.working_path).mkdir(parents=True, exist_ok=True)
-        Path(self.temp_path).mkdir(parents=True, exist_ok=True)
-        Path(self.final_path).mkdir(parents=True, exist_ok=True)
-        chmod(self.final_path, 0o755)
-        if not path.isfile(f'{self.working_path}noimage.lua'):
-            with open(f'{self.working_path}noimage.lua',"w") as f:
-                f.write('function Image(el)\nreturn {}\n end')
+        self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
+        self.ssh_password = e.get('ttspod_ssh_password')
+        self.validate()
+        self.makeFiles()
+    def validate(self):
+        if ':' in self.cache_path or ':' in self.pod.ssh_server_path:
+            if not self.ssh_keyfile or self.ssh_password:
+                raise Exception(
+                    "Remote paths configured for syncing but no SSH keyfile or password provided."
+                    )
+    def makeFiles(self):
+        try:
+            Path(self.working_path).mkdir(parents=True, exist_ok=True)
+            Path(self.temp_path).mkdir(parents=True, exist_ok=True)
+            Path(self.final_path).mkdir(parents=True, exist_ok=True)
+            chmod(self.final_path, 0o755)
+            if not path.isfile(f'{self.working_path}noimage.lua'):
+                with open(f'{self.working_path}noimage.lua',"w") as f:
+                    f.write('function Image(el)\nreturn {}\n end')
+        except Exception as e:
+            raise Exception("Error setting up required folders: {e}")
         return
     def __str__(self):
         result = f'config: {str(vars(self))}\nwallabag: {str(vars(self.wallabag))}\npod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}'

@@ -8,9 +8,8 @@ import email
 import hashlib
 import magic
 import pypandoc
+import pymupdf
 import re
-import time
-import validators
 from util import cleanHTML, cleanText
 try:
     import trafilatura # to extract readable content from webpages
@@ -85,7 +84,7 @@ class Content(object):
             try:
                 if self.config.debug: print(f'attempting to process attachment {attachment}')
                 entry = self.processFile(attachment)
-                entries.append(entry)
+                entries.extend(entry)
                 if self.config.debug: print(f'success')
             except:
                 pass
@@ -152,11 +151,12 @@ class Content(object):
             return None
         title = title if title else fname
         type = magic.from_buffer(c).lower()
+        item = []
         if self.config.debug: print(f'got file type: {type}')
         if re.search('^return-path:', str(c), flags = re.MULTILINE | re.I):
             return self.processEmail(c, title)
         if "pdf" in type:
-            doc = fitz.Document(stream=c)
+            doc = pymupdf.Document(stream=c)
             text = ""
             for page in doc:
                 text += page.get_text()
@@ -170,9 +170,7 @@ class Content(object):
                     items = self.getItems(text = text, title = title)
             except Exception as e:
                 print(f'failed to process file {fname}\nerror: {e}')
-        if items:
-            return self.process(items)
-        return None
+        return items
 
     def getItems(self, text, title = None):
         entries = []

@@ -13,21 +13,20 @@ except:
 from links import Links
 
 class TTSPocket(object):
-    def __init__(self, config):
+    def __init__(self, config, links):
         global pocket_available        
-        if not pocket_available:
-            return None
         self.config = config
+        if not pocket_available or not self.config.consumer_key or not self.config.access_token:
+            if self.config.debug: print("Pocket support not enabled")
+            return
+        self.links = links
         self.p = pocket.Pocket(self.config.consumer_key, self.config.access_token)
         return
-        
     def getItems(self,tag):
         results = self.p.retrieve(detailType='complete',tag=tag)
         items = results['list']
         urls = [ items[x]['resolved_url'] for x in results['list'] ]
-        if urls:
-            links = Links(self.config.debug)
-            entries = links.getItems(urls)
-            return entries
-        else:
-            return None
+        entries = [ ]
+        for url in urls:
+            entries.extend(self.links.getItems(url))
+        return entries

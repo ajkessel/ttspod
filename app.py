@@ -7,7 +7,6 @@ except ImportError:
 # third party modules
 from dotenv import load_dotenv
 import pypandoc
-import fitz
 import datetime
 import argparse
 import validators
@@ -19,7 +18,7 @@ from shutil import copyfile, move
 import os
 import pickle
 import re
-from sysrsync import run as rsync
+import remote_sync
 import sys
 import validators
 
@@ -33,46 +32,39 @@ from ttspocket import TTSPocket
 from wallabag import Wallabag
 
 class Main(object):
-    def __init__(self, debug = False, engine = None, force = False, clean = False):
+    def __init__(self, debug = False, engine = None, force = False):
         self.config = Config(debug = debug, engine = engine)
         self.p = None
         self.force = force
         self.cache = []
         self.pod = None
+        return
+    def loadCache(self, debug = False, clean = False):
         if self.config.cache_path:
-            if self.config.cache_path.startswith("ssh://"):
-                try:
-                    (domain,path)=re.match(r'ssh://([^/]*)(.*)$',self.config.cache_path).group(1,2)
-                    rsync(source=f'{path}',
-                        source_ssh=domain,
-                        destination=self.config.pickle,
-                        sync_source_contents=False
-                        )
-                    if self.config.debug: print(f'cache file synced successfully from server')
-                except Exception as e:
-                    print(f'something went wrong syncing the cache file {e}')
-                    if "code 23" in str(e):
-                        print(f'if this is your first time running TTSPod, this is normal since the cache has never been synced')
-            else:
-                try:
-                    copyfile(f'{path}/ttspod.pickle',self.config.pickle)
-                    if self.config.debug: print(f'cache file synced successfully from path')
-                except Exception as e:
-                    print(f'something went wrong syncing the cache file {e}')
+            try:
+                remote_sync.sync(
+                    source = self.config.cache_path,
+                    destination = self.config.pickle,
+                    debug = self.config.debug,
+                    keyfile = self.config.ssh_keyfile,
+                    password = self.config.ssh_password,
+                    recursive = False
+                    )
+                if self.config.debug: print(f'cache file synced successfully from server')
+            except Exception as e:
+                print(f'something went wrong syncing the cache file {e}')
+                if "code 23" in str(e):
+                    print(f'if this is your first time running TTSPod, this is normal since the cache has never been synced')
         if clean:
             if self.config.debug: print(f'moving {self.config.pickle} cache file and starting fresh')
-            move(self.config.pickle, self.config.pickle + int(datetime.datetime.now().timestamp()))
+            move(self.config.pickle, self.config.pickle + str(int(datetime.datetime.now().timestamp())))
         if os.path.exists(self.config.pickle):
             try:
                 with open(self.config.pickle, 'rb') as f:
                     [self.cache,self.pod] = pickle.load(f)
             except:
                 raise Exception(f"failed to open saved data file {f}")
-        if not self.pod:
-            self.pod = Pod(self.config.pod)
-        self.speech = Speech(self.config.speech)
-        return
-
+        return True
     def process(self, items):
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
@@ -89,71 +81,60 @@ class Main(object):
                 self.cache.append(url)
             else:
                 if self.config.debug: print(f'something went wrong processing {title}')
-    
     def saveCache(self):
         try:
-            if self.cache and self.pod:
+            if self.pod: # only save/sync cache if podcast data exists
                 with open(self.config.pickle, 'wb') as f:
                     pickle.dump([self.cache, self.pod], f)
                 if self.config.cache_path:
-                    if self.config.cache_path.startswith("ssh://"):
-                        try:
-                            (domain,path)=re.match(r'ssh://([^/]*)(.*)$',self.config.cache_path).group(1,2)
-                            rsync(source=self.config.pickle,
-                                destination=path,
-                                destination_ssh=domain,
-                                sync_source_contents=False
-                                )
-                            if self.config.debug: print(f'cache file synced successfully to server')
-                        except Exception as e:
-                            print(f'something went wrong syncing the cache file {e}')
-                    else:
-                        try:
-                            copyfile(self.config.pickle, self.config.cache_path)
-                            if self.config.debug: print(f'cache file synced successfully to path')
-                        except Exception as e:
-                            print(f'something went wrong syncing the cache file {e}')
+                    try:
+                        remote_sync.sync(
+                            source = self.config.pickle,
+                            destination = self.config.cache_path,
+                            keyfile = self.config.ssh_keyfile,
+                            debug = self.config.debug,
+                            recursive = False,
+                            size_only = False
+                            )
+                        if self.config.debug: print(f'cache file synced successfully to server')
+                    except Exception as e:
+                        print(f'something went wrong syncing the cache file {e}')
             else:
-                if self.config.debug: print('cache save failed')
+                if self.config.debug: print('cache save failed, no podcast data exists')
         except Exception as e:
             if self.config.debug: print(f'cache save failed {e}')
-            
-    def processWallabag(self,tag):
+    def processWallabag(self, tag):
         wallabag = Wallabag(self.config.wallabag)
         items = wallabag.getItems(tag)
-        self.process(items)
-        return True
-    
+        return self.process(items)
     def processLink(self, url, title = None):
         links = Links(self.config.links)
         items = links.getItems(url, title)
         return self.process(items)
-        
-    def processPocket(self,tag):
-        p = TTSPocket(self.config.pocket)
+    def processPocket(self, tag):
+        links = Links(self.config.links)
+        p = TTSPocket(self.config.pocket, links)
         items = p.getItems(tag)
         return self.process(items)
-
     def processContent(self, text, title = None):
         content = Content(self.config.content)
         items = content.getItems(text, title)
         return self.process(items)
-    
     def processFile(self, fname, title = None):
         content = Content(self.config.content)
         items = content.processFile(fname, title)
         return self.process(items)
-
 def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
-    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local documents (plain text, HTML, Word documents, etc) to add to your podcast feed")
+    parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local documents (plain text, HTML, PDF, Word documents, etc) to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
     parser.add_argument("-c", "--clean", action = 'store_true', help = "wipe cache clean and start new podcast feed")
     parser.add_argument("-f", "--force", action = 'store_true', help = "force addition of podcast even if cache indicates it has already been added")
     parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
-    parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")    
+    parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")
+    parser.add_argument("-s", "--sync", action = 'store_true', help = "sync podcast episodes and cache file")
     args = parser.parse_args()
     debug = args.debug
     force = args.force
@@ -161,7 +142,15 @@ def main():
     title = args.title if hasattr(args,'title') else None
     engine = args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
-    main = Main(debug = debug, engine = engine, force = force, clean = clean)
+    if not (args.url or args.wallabag or args.pocket or args.sync or got_pipe):
+        parser.print_help()
+        exit()
+    main = Main(debug = debug, engine = engine, force = force)
+    main.loadCache(debug = debug, clean = clean)
+    if not main.pod:
+        main.pod = Pod(main.config.pod)
+    main.pod.config.debug = main.config.debug
+    main.speech = Speech(main.config.speech)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)

@@ -25,13 +25,16 @@ class Links(object):
         if self.config.debug: print(f"processing {url}")
         try:
             downloaded = trafilatura.fetch_url(url,config=self.my_config)
-            text = trafilatura.extract(downloaded, include_comments=False).replace('\n','\n\n')
-            if not title:
-                detect_title = trafilatura.extract_metadata(downloaded).title
-                title = detect_title if detect_title else url
-            entry = (title, text, url)
-            entries.append(entry)
-            if self.config.debug: print(f'successfully processed {url} {title}')
-        except:
-            if self.config.debug: print(f'failed to process {url}')
+            text = trafilatura.extract(downloaded, include_comments=False)
+            if text:
+                text.replace('\n','\n\n')
+                if not title:
+                    detect_title = trafilatura.extract_metadata(downloaded).title
+                    title = detect_title if detect_title else url
+                entry = (title, text, url)
+                entries.append(entry)
+                if self.config.debug: print(f'successfully processed {url} {title}')
+            if self.config.debug: print(f'failed to process {url}: no text returned')
+        except Exception as e:
+            if self.config.debug: print(f'failed to process {url}: {e}')
         return entries

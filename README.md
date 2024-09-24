@@ -21,6 +21,8 @@ But the gist of it is that this app will take various forms of content and turn 
 * OpenAI (paid, requires an API key)
 * Eleven (limited free version, requires an API key)
 
+If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system.
+
 ## Get Started
 ```
 git clone https://github.com/ajkessel/ttspod

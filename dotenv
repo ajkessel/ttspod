@@ -1,76 +1,69 @@
-# rename this file to .env and complete the settings
-
 # global parameters
-# debug - set to anything for verbose output
-ttspod_debug=1
-# path for temporary files (defaults to ./working relative to current directory)
-ttspod_working_path='./working'
+# debug - set to anything for verbose output, otherwise leave blank
+ttspod_debug=''
+# path for temporary files (defaults to ./working)
+ttspod_working_path="./working"
 # include attachments to emails
 ttspod_attachments=1
 # max length - skip articles longer than this number of characters (default 20000)
-# if you are using a paid TTS service, you probably want to cap this to avoid uncontrolled spend
 ttspod_max_length=20000
 # max number of articles to retrieve with each execution (default 5)
-# if you are using a paid TTS service, you probably want to cap this to avoid uncontrolled spend
 ttspod_max_articles=5
-# optional user-agent configuration - otherwise Python default requests will be used 
-#ttspod_user_agent='Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.54 Mobile Safari/537.36'
+# optional user-agent configuration
+#ttspod_user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+ttspod_user_agent=""
 # optional location to store cache file
-# if the path includes ssh:// the file will be synced to and from that location on each run
+# if the path includes a domain name the file will be synced to and from that location on each run
 # this allows you to have multiple instances of this script running on different boxes without duplicate blog entries
-#ttspod_cache_path = 'ssh://example.com/home/user/ttspod/working'
+# ttspod_cache_path="adam@example.com:ttspod/working"
+ttspod_cache_path=""
+
+# ssh settings - you"ll need to configure this to sync your podcast to a server
+# specify either a password or an ssh keyfile (e.g. ~/.ssh/id_rsa)
+ttspod_ssh_keyfile=""
+ttspod_ssh_password=""
 
 # wallabag parameters - you need to define these for anything to work
 # create a client at https://your.wallabag.url/developer/client/create
 # then populate with the information below
-#ttspod_wallabag_url=
-#ttspod_wallabag_username=
-#ttspod_wallabag_password=
-#ttspod_wallabag_client_id=
-#ttspod_wallabag_client_secret=
+ttspod_wallabag_url=""
+ttspod_wallabag_username=""
+ttspod_wallabag_password=""
+ttspod_wallabag_client_id=""
+ttspod_wallabag_client_secret=""
 
 # pocket parameters 
 # create a consumer key at https://getpocket.com/developer/
 # get access token from https://reader.fxneumann.de/plugins/oneclickpocket/auth.php
-# eventually, this workflow will be built into ttspod
-#ttspod_pocket_consumer_key=
-#ttspod_pocket_access_token=
-
-# instapaper parameters
-# TODO
+ttspod_pocket_consumer_key=""
+ttspod_pocket_access_token=""
 
 # podcast settings
-# Root URL for podcast rss feed and generated MP3 files - should just be a path; index.rss will be automatically appended
-#ttspod_pod_url="https://domain-name.com/path"
-ttspod_pod_name="ttspod generated pod feed"
-ttspod_pod_description="web content converted to audio"
-ttspod_pod_author="unknown"
+# Root URL for podcast rss file (index.rss) and generated MP3 files
+ttspod_pod_url=""
+ttspod_pod_name="A Custom TTS Feed"
+ttspod_pod_description="A podcast description"
+ttspod_pod_author="John Smith"
 ttspod_pod_image="icon.png"
 ttspod_pod_language="en"
-
 # Physical server and path corresponnding to the above URL
-# leave these blank to just keep the output local
-# ttspod expects that you already have rsync and an ssh key configured locally for your target server
-# this will be made configurable in the future
-#ttspod_pod_ssh_server_path="/home/user/public_html/domain-name.com/path"
-#ttspod_pod_ssh_server="domain-name.com"
+# format is username@domainname.com:/path/to/folder
+# for example
+# ttspod_pod_path="adam@example.com:public_html/mypodcast"
+ttspod_pod_server_path=""
 
 # TTS API keys and other parameters
-# Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough and has CUDA-enabled GPU) for free
+# Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
-ttspod_engine=whisper  # must be whisper, openai, or eleven
-# Whisper settings
-ttspod_whisper_t2s_model='whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model'
-ttspod_whisper_s2a_model='whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model'
-TORCH_LOGS='-all' # suppress console output
-# specify a sound file with a short (30 seconds) audio clip below to clone an existing voice for whisperspeech
-# e.g. "ttspod_whisper_voice=path/clip.mp3"
-#ttspod_whisper_voice=
-# Eleven settings
-#ttspod_eleven_api_key=
-ttspod_eleven_voice='Daniel'
-ttspod_eleven_model='eleven_monolingual_v1'
-# OpenAI settings
-#ttspod_openai_api_key=
-ttspod_openai_voice='onyx'
-ttspod_openai_model='tts-1-hd'
+ttspod_engine="whisper" # should be openai / eleven / whisper
+ttspod_whisper_t2s_model="whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model"
+ttspod_whisper_s2a_model="whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model"
+ttspod_whisper_voice="./sample_voices/reader2.mp3"
+ttspod_eleven_api_key=""
+ttspod_eleven_voice="Daniel"
+ttspod_eleven_model="eleven_monolingual_v1"
+ttspod_openai_api_key=""
+ttspod_openai_voice="onyx"
+ttspod_openai_model="tts-1-hd"
+# remove this line to get verbose TTS console output from Whisper
+TORCH_LOGS="-all"

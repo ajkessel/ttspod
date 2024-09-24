@@ -22,7 +22,6 @@ class Wallabag(object):
         if self.debug: print(self.username)
         if self.debug: print(token)
         self.access_token = token['access_token']
-        
     def getItems(self,tag):
         entries_url = j(self.url,f'api/entries.json?tags={tag}&sort=created&order=asc&page=1&perPage=500&since=0&detail=full')
         headers = {"Authorization": f"Bearer {self.access_token}"}
