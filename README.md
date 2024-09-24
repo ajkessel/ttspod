@@ -24,11 +24,13 @@ But the gist of it is that this app will take various forms of content and turn 
 If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system.
 
 ## Get Started
+This should work on a Linux or MacOS box.
 ```
 git clone https://github.com/ajkessel/ttspod
 cd ttspod
 ./quickstart.sh
 ```
+This application does work on Windows with conda or pip but I haven't automated the install workflow yet.
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
 
