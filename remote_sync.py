@@ -172,9 +172,9 @@ def sync(source = None, destination = None, port = 22, username = None, password
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
             if password:
-                ssh.connect(host, port, username, password)
+                ssh.connect(host, port, user, password)
             elif keyfile:
-                ssh.connect(host, port, username, key_filename = keyfile)
+                ssh.connect(host, port, user, key_filename = keyfile)
             else:
                 raise Exception("Either password or ssh key required to make connection")
         except Exception as e:
