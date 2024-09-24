@@ -1,6 +1,7 @@
 from os import chmod, path, environ as e
 from dotenv import load_dotenv
 from pathlib import Path
+from posixpath import join as posixjoin
 try:
     from torch import cuda
 except:
@@ -42,7 +43,7 @@ class Config(object):
             return
     class Pod(object):
         def __init__(self, final_path = '', debug = False):
-            self.url = path.join(e.get('ttspod_pod_url'),'')
+            self.url = posixjoin(e.get('ttspod_pod_url'),'')
             self.name = e.get('ttspod_pod_name','TTS podcast')
             self.author = e.get('ttspod_pod_author','TTS podcast author')
             self.image = e.get('ttspod_pod_image')
@@ -113,7 +114,7 @@ class Config(object):
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = f'{self.working_path}{self.pickle_filename}'
         if e.get('ttspod_cache_path'):
-            self.cache_path = path.join(e.get('ttspod_cache_path'),'')+self.pickle_filename
+            self.cache_path = posixjoin(e.get('ttspod_cache_path'),'')+self.pickle_filename
         else:
             self.cache_path = None
         self.pod = self.Pod(final_path = self.final_path, debug = self.debug)
@@ -131,6 +132,10 @@ class Config(object):
             if not self.ssh_keyfile or self.ssh_password:
                 raise Exception(
                     "Remote paths configured for syncing but no SSH keyfile or password provided."
+                    )
+        if self.ssh_keyfile and not path.isfile(self.ssh_keyfile) and not self.ssh_password:
+            raise Exception(
+                    f"ssh_keyfile {self.ssh_keyfile} does not exist or is not readable."
                     )
     def makeFiles(self):
         try:
