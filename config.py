@@ -2,6 +2,7 @@ from os import chmod, path, environ as e
 from dotenv import load_dotenv
 from pathlib import Path
 from posixpath import join as posixjoin
+import re
 try:
     from torch import cuda
 except:
