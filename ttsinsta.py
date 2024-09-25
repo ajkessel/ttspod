@@ -37,10 +37,13 @@ class TTSInsta(object):
             folder_id = [ x for x in folders if x['title'] == tag ][0]['folder_id']
         except:
             pass
-        if tag and not folder_id:
+        if tag and not tag == "ALL" and not folder_id:
             if self.config.debug: print("no folder found for {tag}")
             return None
-        results = self.p.bookmarks(folder = folder_id, limit = 500)
+        if tag == "ALL":
+            results = self.p.bookmarks(limit = 500)
+        else:
+            results = self.p.bookmarks(folder = folder_id, limit = 500)
         urls = [ x.url for x in results ]
         entries = [ ]
         for url in urls:

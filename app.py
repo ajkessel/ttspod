@@ -138,7 +138,7 @@ def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
     parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local documents (plain text, HTML, PDF, Word documents, etc) to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
-    parser.add_argument("-i", "--insta", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your instapaper feed to your podcast feed")
+    parser.add_argument("-i", "--insta", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your instapaper feed to your podcast feed, or use tag ALL for default inbox")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
     parser.add_argument("-c", "--clean", action = 'store_true', help = "wipe cache clean and start new podcast feed")
