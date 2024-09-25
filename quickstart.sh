@@ -26,6 +26,16 @@ venv() {
     fi
   done
 }
+title() {
+  len="${#1}"
+  pad=$((30-((len/2))))
+  padding=$(printf -- '-%.0s' `seq 1 $pad`)
+  echo "${padding} ${1} ${padding}"
+}
+footer() {
+  echo '--------------------------------------------------------------'
+}
+
 [ $(uname) == "Darwin" ] && MAC=1
 command -v brew &> /dev/null && BREW=1
 [ $EDITOR ] || command -v nano 2> /dev/null && EDITOR=nano || command -v vim 2> /dev/null && EDITOR=vim || command -v vi 2> /dev/null && EDITOR=vi 
@@ -81,13 +91,13 @@ then
   fi
 fi
 
-echo '----------------- venv install ----------------------'
+title 'venv install'
 [ -z "${skipvenv}" ] && venv
-echo '-----------------------------------------------------'
+footer
 
 if [ $MAC ]
 then
-  echo '----------------- mac install ----------------------'
+  title 'mac install'
   echo 'MacOS environment detected.'
   if [ $BREW ]
   then
@@ -103,9 +113,10 @@ then
   else
     echo 'tts requires libmagic, but I did not find a brew installation.'
   fi
-  echo '-----------------------------------------------------'
+  footer
 fi
 
+title 'customize'
 cp -i dotenv .env
 echo Just edit .env to configure your local settings and you will be good to go.
 if yesno "Do you want to edit .env now?"
@@ -116,4 +127,5 @@ then
   fi
   "${EDITOR}" .env
 fi
+footer
 echo get help with ./ttspod -h
