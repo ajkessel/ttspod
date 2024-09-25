@@ -41,10 +41,13 @@ except ImportError:
     eleven_available = False 
 
 class Speech(object):
-    def __init__(self, config):
+    def __init__(self, config, dry = False):
         self.config = config
         self.config.nltk = False
         self.final_path = config.final_path
+        self.dry = dry
+        if dry:
+            return
         match self.config.engine:
             case "openai":
                 self.tts = OpenAI(api_key = self.config.openai_api_key)
@@ -75,6 +78,9 @@ class Speech(object):
         temp = str(uuid.uuid4())
         if os.path.exists(out_file):
             out_file = self.config.final_path + self.slugify(title) + "-" + temp + ".mp3"
+        if self.dry:
+            if self.config.debug: print(f'dry run: not creating {out_file}')
+            return
         if self.config.engine == "whisper":
             chunks = self.split_and_prepare_text(text)
             self.whisper_long(chunks=chunks,output=out_file,speaker=self.config.whisper_voice)

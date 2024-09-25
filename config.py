@@ -34,13 +34,18 @@ class Config(object):
             self.client_id = e.get('ttspod_wallabag_client_id')
             self.client_secret = e.get('ttspod_wallabag_client_secret')
             self.debug = debug
-            return
     class Pocket(object):
         def __init__(self, debug = False):
             self.consumer_key = e.get('ttspod_pocket_consumer_key')
             self.access_token = e.get('ttspod_pocket_access_token')
             self.debug = debug
-            return
+    class Insta(object):
+        def __init__(self, debug = False):
+            self.key = e.get('ttspod_insta_key')
+            self.secret = e.get('ttspod_insta_secret')
+            self.username = e.get('ttspod_insta_username')
+            self.password = e.get('ttspod_insta_password')
+            self.debug = debug
     class Pod(object):
         def __init__(self, final_path = '', debug = False, ssh_keyfile = None, ssh_password = None):
             self.url = posixjoin(e.get('ttspod_pod_url'),'')
@@ -122,6 +127,7 @@ class Config(object):
         self.links = self.Links(debug = self.debug)
         self.wallabag = self.Wallabag(debug = self.debug)
         self.pocket = self.Pocket(debug = self.debug)
+        self.insta = self.Insta(debug = self.debug)
         self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
         self.ssh_password = e.get('ttspod_ssh_password')
         if not (self.ssh_keyfile or self.ssh_password):

@@ -38,6 +38,14 @@ ttspod_wallabag_client_secret=""
 ttspod_pocket_consumer_key=""
 ttspod_pocket_access_token=""
 
+# Instapaper parameters
+# request a consumer key at https://www.instapaper.com/main/request_oauth_consumer_token
+ttspod_insta_username=""
+ttspod_insta_password=""
+ttspod_insta_key=""
+ttspod_insta_secret=""
+
+
 # podcast settings
 # Root URL for podcast rss file (index.rss) and generated MP3 files
 ttspod_pod_url=""

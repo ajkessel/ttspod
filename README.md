@@ -8,7 +8,7 @@ But the gist of it is that this app will take various forms of content and turn 
 
 * Your Wallabag feed
 * Your Pocket feed
-* Your Instapaper feed (planned)
+* Your Instapaper feed 
 * An arbitrary URL
 * An email (pipe the email into the script, or provide as command-line argument)
 * A locally-stored HTML file
@@ -21,7 +21,7 @@ But the gist of it is that this app will take various forms of content and turn 
 * OpenAI (paid, requires an API key)
 * Eleven (limited free version, requires an API key)
 
-If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system.
+If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system. It seems to run reasonably fast on Windows or Linux with a GPU but is deathly slow in my MacOS experiments.
 
 ## Get Started
 This should work on a Linux or MacOS box.

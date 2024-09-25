@@ -29,13 +29,15 @@ from links import Links
 from pod import Pod
 from speech import Speech
 from ttspocket import TTSPocket
+from ttsinsta import TTSInsta
 from wallabag import Wallabag
 
 class Main(object):
-    def __init__(self, debug = False, engine = None, force = False):
+    def __init__(self, debug = False, engine = None, force = False, dry = False):
         self.config = Config(debug = debug, engine = engine)
         self.p = None
         self.force = force
+        self.dry = dry
         self.cache = []
         return
     def loadCache(self, debug = False, clean = False):
@@ -79,7 +81,7 @@ class Main(object):
                 self.pod.add((url,title,fullpath))
                 self.cache.append(url)
             else:
-                if self.config.debug: print(f'something went wrong processing {title}')
+                if self.config.debug and not self.dry: print(f'something went wrong processing {title}')
     def saveCache(self):
         try:
             if self.pod: # only save/sync cache if podcast data exists
@@ -115,6 +117,11 @@ class Main(object):
         p = TTSPocket(self.config.pocket, links)
         items = p.getItems(tag)
         return self.process(items)
+    def processInsta(self, tag):
+        links = Links(self.config.links)
+        p = TTSInsta(self.config.insta, links)
+        items = p.getItems(tag)
+        return self.process(items)
     def processContent(self, text, title = None):
         content = Content(self.config.content)
         items = content.getItems(text, title)
@@ -127,6 +134,7 @@ def main():
     parser = argparse.ArgumentParser(description='Convert any content to a podcast feed.')
     parser.add_argument('url', nargs = '*', action = 'store', type = str , default="", help="specify any number of URLs or local documents (plain text, HTML, PDF, Word documents, etc) to add to your podcast feed")
     parser.add_argument("-w", "--wallabag", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed")
+    parser.add_argument("-i", "--insta", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your instapaper feed to your podcast feed")
     parser.add_argument("-p", "--pocket", nargs='?',const='audio', default="", help = "add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
     parser.add_argument("-d", "--debug", action = 'store_true', help = "include debug output")
     parser.add_argument("-c", "--clean", action = 'store_true', help = "wipe cache clean and start new podcast feed")
@@ -134,24 +142,28 @@ def main():
     parser.add_argument("-t", "--title", action = 'store', help = "specify title for content provided via pipe")
     parser.add_argument("-e", "--engine", action = 'store', help = "specify TTS engine for this session (whisper, openai, eleven)")
     parser.add_argument("-s", "--sync", action = 'store_true', help = "sync podcast episodes and cache file")
+    parser.add_argument("-n", "--dry-run", action = 'store_true', help = "dry run: do not actually create or sync audio files")
     args = parser.parse_args()
     debug = args.debug
+    dry = args.dry_run
     force = args.force
     clean = args.clean
     title = args.title if hasattr(args,'title') else None
     engine = args.engine if hasattr(args,'engine') else None
     got_pipe = not os.isatty(sys.stdin.fileno())
-    if not (args.url or args.wallabag or args.pocket or args.sync or got_pipe):
+    if not (args.url or args.wallabag or args.pocket or args.sync or got_pipe or args.insta):
         parser.print_help()
         exit()
-    main = Main(debug = debug, engine = engine, force = force)
+    main = Main(debug = debug, engine = engine, force = force, dry = dry)
     main.loadCache(debug = debug, clean = clean)
     main.pod = Pod(main.config.pod, main.p)
     main.pod.config.debug = main.config.debug
-    main.speech = Speech(main.config.speech)
+    if main.config.debug and dry: print("dry-run mode") 
+    main.speech = Speech(main.config.speech, dry)
     if got_pipe: main.processContent(str(sys.stdin.read()),title)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)
+    if args.insta: main.processInsta(args.insta)
     for i in args.url:
         if validators.url(i):
             main.processLink(i,title)
@@ -159,9 +171,10 @@ def main():
             main.processFile(i,title)
         else:
             print(f'argument {i} not recognized')  
-    main.pod.save()
-    main.pod.sync()
-    main.saveCache()
+    if not dry:
+        main.pod.save()
+        main.pod.sync()
+        main.saveCache()
     return
 
 if __name__ == "__main__":
