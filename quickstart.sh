@@ -81,10 +81,13 @@ then
   fi
 fi
 
+echo '----------------- venv install ----------------------'
 [ -z "${skipvenv}" ] && venv
+echo '-----------------------------------------------------'
 
 if [ $MAC ]
 then
+  echo '----------------- mac install ----------------------'
   echo 'MacOS environment detected.'
   if [ $BREW ]
   then
@@ -100,6 +103,7 @@ then
   else
     echo 'tts requires libmagic, but I did not find a brew installation.'
   fi
+  echo '-----------------------------------------------------'
 fi
 
 cp -i dotenv .env

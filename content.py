@@ -8,14 +8,24 @@ import email
 import hashlib
 import magic
 import pypandoc
-import pymupdf
 import re
+
 from util import cleanHTML, cleanText
+
+try:
+    import pymupdf
+    available_fitz = True
+except:
+    try:
+        import fitz as pymupdf
+        available_fitz = True
+    except:
+        available_fitz = False
 try:
     import trafilatura # to extract readable content from webpages
-    trafilatura_available = True
+    available_trafilatura = True
 except ImportError:
-    trafilatura_available = False
+    available_trafilatura = False
 
 class Content(object):
     def __init__(self, config):
@@ -104,7 +114,7 @@ class Content(object):
         elif not title:
             title = "Untitled Content"
         if self.config.debug: print(f'found item with title {title}')
-        if trafilatura_available:
+        if available_trafilatura:
             try:
                 mytree = html.fromstring(rawhtml)
                 if self.config.debug: print(f'parsed html tree')
@@ -158,7 +168,7 @@ class Content(object):
         if self.config.debug: print(f'got file type: {type}')
         if re.search('^return-path:', str(c), flags = re.MULTILINE | re.I):
             return self.processEmail(c, title)
-        if "pdf" in type:
+        if "pdf" in type and available_fitz:
             doc = pymupdf.Document(stream=c)
             text = ""
             for page in doc:
