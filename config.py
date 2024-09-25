@@ -156,7 +156,7 @@ class Config(object):
                     f"ssh_keyfile {self.ssh_keyfile} does not exist or is not readable."
                     )
         if not (
-            path.isdir(self.working_path) and
+            path.isdir(str(self.working_path)) and
             path.isdir(self.temp_path) and 
             path.isdir(self.final_path)
         ):
