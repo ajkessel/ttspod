@@ -5,6 +5,22 @@ yesno() {
   f=$(echo "${answer}" | tr "A-Z" "a-z" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
+venv() {
+  echo creating local python venv under current directory
+  "${pyexe}" -m venv .venv
+  source .venv/bin/activate
+  echo installing requirements
+  pip3 install -r requirements.txt
+  optional=$(cat 'optional-requirements.txt')
+  echo 'optional requirements - you should install at least one TTS engine (Whisper, OpenAI, or Eleven)'
+  for line in $optional
+  do
+    if yesno "Install optional requirement ${line}?"
+    then
+      pip3 install "$line"
+    fi
+  done
+}
 [ $(uname) == "Darwin" ] && MAC=1
 command -v brew &> /dev/null && BREW=1
 [ $EDITOR ] || command -v nano 2> /dev/null && EDITOR=nano || command -v vim 2> /dev/null && EDITOR=vim || command -v vi 2> /dev/null && EDITOR=vi 
@@ -47,20 +63,20 @@ then
   exit 1
 fi
 
-echo creating local python venv under current directory
-"${pyexe}" -m venv .venv
-source .venv/bin/activate
-echo installing requirements
-pip3 install -r requirements.txt
-optional=$(cat 'optional-requirements.txt')
-echo 'optional requirements - you should install at least one TTS engine (Whisper, OpenAI, or Eleven)'
-for line in $optional
-do
-  if yesno "Install optional requirement ${line}?"
+if [ -d "./.venv" ]
+then
+  if yesno 'A .venv folder already exists under `pwd`. Do you want to move it out of the way and generate fresh?'
   then
-    pip3 install "$line"
+    timestamp=$(date +%s)
+    mv ".venv" ".venv-${timestamp}"
+    echo ".venv moved to .venv-${timestamp}"
+  elif yesno 'Do you want to continue and install into the existing .venv?'
+    venv
   fi
-done
+else
+  venv
+fi
+
 if [ $MAC ]
 then
   echo 'MacOS environment detected.'
