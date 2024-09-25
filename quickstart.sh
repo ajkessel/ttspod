@@ -33,14 +33,14 @@ title() {
   echo "${padding} ${1} ${padding}"
 }
 footer() {
-  echo '--------------------------------------------------------------'
+  printf -- '--------------------------------------------------------------\n\n'
 }
 
 [ $(uname) == "Darwin" ] && MAC=1
 command -v brew &> /dev/null && BREW=1
-[ $EDITOR ] || command -v nano 2> /dev/null && EDITOR=nano || command -v vim 2> /dev/null && EDITOR=vim || command -v vi 2> /dev/null && EDITOR=vi 
+[ $EDITOR ] || command -v nano &> /dev/null && EDITOR=nano || command -v vim &> /dev/null && EDITOR=vim || command -v vi &> /dev/null && EDITOR=vi 
 
-echo TTSPod Installer
+title TTSPod Installer
 echo This will set things up under your current directory `pwd`
 if ! yesno 'Proceed?'
 then
@@ -53,7 +53,9 @@ then
   echo pip3 not found, exiting.
   exit 1
 fi
+footer
 
+title Python
 pyexe="python3.11"
 if ! command -v "${pyexe}" &> /dev/null
 then
@@ -78,6 +80,10 @@ then
   exit 1
 fi
 
+echo "${pyexe} located."
+footer
+
+title 'venv'
 if [ -d "./.venv" ]
 then
   if yesno 'A .venv folder already exists under `pwd`. Do you want to move it out of the way and generate fresh?'
@@ -91,7 +97,6 @@ then
   fi
 fi
 
-title 'venv install'
 [ -z "${skipvenv}" ] && venv
 footer
 
