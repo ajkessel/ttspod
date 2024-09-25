@@ -169,7 +169,7 @@ class Speech(object):
     
     def whisper_long(self,chunks=[], cps=14, overlap=100, output=None, speaker=None):
         global atoks, stoks
-        if speaker is None:
+        if not speaker:
             speaker = self.tts.default_speaker 
         elif isinstance(speaker, (str, Path)): 
             speaker = self.tts.extract_spk_emb(speaker)
