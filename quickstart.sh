@@ -71,6 +71,7 @@ then
     mv ".venv" ".venv-${timestamp}"
     echo ".venv moved to .venv-${timestamp}"
   elif yesno 'Do you want to continue and install into the existing .venv?'
+  then
     venv
   fi
 else
