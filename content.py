@@ -40,6 +40,7 @@ class Content(object):
         longest_html_part = ''
         entries = []
         attachments = []
+        if self.config.debug: print(f'got title {title}')
         for part in msg.walk():
             if part.get_content_type().lower() == 'text/plain':
                 this_part = part.get_payload(decode=True)
