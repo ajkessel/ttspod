@@ -7,12 +7,17 @@ yesno() {
 }
 venv() {
   echo creating local python venv under current directory
-  "${pyexe}" -m venv .venv
+  if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you want to install all packages locally? (y/n)'
+  then
+    pipString='--system-site-packages'
+  fi
+  "${pyexe}" -m venv "${pipString}" .venv
   source .venv/bin/activate
   echo installing requirements
   pip3 install -r requirements.txt
   optional=$(cat 'optional-requirements.txt')
   echo 'optional requirements - you should install at least one TTS engine (Whisper, OpenAI, or Eleven)'
+  echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
   for line in $optional
   do
     if yesno "Install optional requirement ${line}?"

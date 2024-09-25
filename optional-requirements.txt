@@ -1,3 +1,4 @@
-WhisperSpeech==0.8.9
-openai==1.47.1
-elevenlabs==1.9.0
+WhisperSpeech
+openai
+elevenlabs
+truststore

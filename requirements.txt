@@ -12,12 +12,11 @@ pocket==0.3.6
 pocket_api==0.1.5
 pod2gen==1.0.3
 pydub==0.25.1
-pymupdf==1.24.10
+pymupdf
 pypandoc==1.13
 python-dotenv==1.0.1
 python_magic==0.4.27
 Requests==2.32.3
 trafilatura==1.12.2
-truststore==0.9.2
 validators==0.34.0
 webdataset
