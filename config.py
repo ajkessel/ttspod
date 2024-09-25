@@ -146,7 +146,7 @@ class Config(object):
         self.makeFiles()
         self.validate()
     def validate(self):
-        if ':' in self.cache_path or ':' in self.pod.ssh_server_path:
+        if ':' in str(self.cache_path) or ':' in str(self.pod.ssh_server_path):
             if not self.ssh_keyfile or self.ssh_password:
                 raise Exception(
                     "Remote paths configured for syncing but no SSH keyfile or password provided."
