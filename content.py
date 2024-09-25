@@ -42,6 +42,7 @@ class Content(object):
         attachments = []
         if self.config.debug: print(f'got title {title}')
         for part in msg.walk():
+            if self.config.debug: print(f'checking MIME part with type {part.get_content_type()}')
             if part.get_content_type().lower() == 'text/plain':
                 this_part = part.get_payload(decode=True)
                 if len(this_part) > len(longest_plain_part):

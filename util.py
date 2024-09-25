@@ -9,7 +9,7 @@ def cleanHTML(rawhtml):
             format='html',
             extra_args=['--wrap=none', '--strip-comments']
             )
-    text = self.cleanText(text)
+    text = cleanText(text)
     return text
 
 def cleanText(text):
