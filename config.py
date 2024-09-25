@@ -118,7 +118,7 @@ class Config(object):
         if self.working_path:
             self.working_path = re.sub(r'~/',str(Path.home())+'/',self.working_path)
         if self.working_path.startswith('./'):
-           self.working_path = os.path.join(os.path.dirname(__file__), self.working_path)
+           self.working_path = path.join(path.dirname(__file__), self.working_path)
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}output/'
         self.pickle_filename = 'ttspod.pickle'
