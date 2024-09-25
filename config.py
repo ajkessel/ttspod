@@ -114,6 +114,10 @@ class Config(object):
         self.max_length = int(e.get('ttspod_max_length',20000))
         self.max_articles = int(e.get('ttspod_max_articles',5))
         self.working_path = path.join(e.get('ttspod_working_path','./working'),'')
+        if self.working_path:
+            self.working_path = re.sub(r'~/',str(Path.home())+'/',self.working_path)
+        if self.working_path.startswith('./'):
+           self.working_path = os.path.join(os.path.dirname(__file__), self.working_path)
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}output/'
         self.pickle_filename = 'ttspod.pickle'
@@ -122,6 +126,8 @@ class Config(object):
             self.cache_path = posixjoin(e.get('ttspod_cache_path'),'')+self.pickle_filename
         else:
             self.cache_path = None
+        if self.cache_path:
+            self.cache_path = re.sub(r'~/',str(Path.home())+'/',self.cache_path)
         self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
         self.content = self.Content(debug = self.debug, working_path = self.working_path)
         self.links = self.Links(debug = self.debug)
@@ -130,6 +136,8 @@ class Config(object):
         self.insta = self.Insta(debug = self.debug)
         self.ssh_keyfile = e.get('ttspod_ssh_keyfile')
         self.ssh_password = e.get('ttspod_ssh_password')
+        if self.ssh_keyfile:
+            self.ssh_keyfile = re.sub(r'~/',str(Path.home())+'/',self.ssh_keyfile)
         if not (self.ssh_keyfile or self.ssh_password):
             key_list = ['id_rsa', 'id_ecdsa', 'id_ecdsa_sk', 'id_ed25519', 'id_ed25519_sk', 'id_dsa']
             for key in key_list:
