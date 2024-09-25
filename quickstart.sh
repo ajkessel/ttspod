@@ -74,36 +74,37 @@ then
   then
     skipvenv=1
   fi
+fi
 
-  [ -z "${skipvenv}" ] && venv
+[ -z "${skipvenv}" ] && venv
 
-  if [ $MAC ]
+if [ $MAC ]
+then
+  echo 'MacOS environment detected.'
+  if [ $BREW ]
   then
-    echo 'MacOS environment detected.'
-    if [ $BREW ]
+    if ! brew list libmagic > /dev/null 2>&1
     then
-      if ! brew list libmagic > /dev/null 2>&1
+      if yesno 'ttspod requires libmagic. install with brew?'
       then
-        if yesno 'ttspod requires libmagic. install with brew?'
-        then
-          brew install libmagic
-        fi
-      else
-        echo libmagic already installed
+        brew install libmagic
       fi
     else
-      echo 'tts requires libmagic, but I did not find a brew installation.'
+      echo libmagic already installed
     fi
+  else
+    echo 'tts requires libmagic, but I did not find a brew installation.'
   fi
+fi
 
-  cp -i dotenv .env
-  echo Just edit .env to configure your local settings and you will be good to go.
-  if yesno "Do you want to edit .env now?"
+cp -i dotenv .env
+echo Just edit .env to configure your local settings and you will be good to go.
+if yesno "Do you want to edit .env now?"
+then
+  if [ -z "${EDITOR}" ]
   then
-    if [ -z "${EDITOR}" ]
-    then
-      echo no editor found
-    fi
-    "${EDITOR}" .env
+    echo no editor found
   fi
-  echo get help with ./ttspod -h
+  "${EDITOR}" .env
+fi
+echo get help with ./ttspod -h
