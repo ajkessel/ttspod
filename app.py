@@ -67,6 +67,9 @@ class Main(object):
                 raise Exception(f"failed to open saved data file {f}")
         return True
     def process(self, items):
+        if not items:
+            if self.config.debug: print(f'no items found to process')
+            return False
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
             if url in self.cache and not self.force:
@@ -82,6 +85,7 @@ class Main(object):
                 self.cache.append(url)
             else:
                 if self.config.debug and not self.dry: print(f'something went wrong processing {title}')
+        return True
     def saveCache(self):
         try:
             if self.pod: # only save/sync cache if podcast data exists
