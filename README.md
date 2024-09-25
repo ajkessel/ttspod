@@ -32,7 +32,7 @@ cd ttspod
 ```
 This application does run on Windows as well with conda or pip but I haven't automated the install workflow yet.
 
-You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work.
+You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work. Minimal required settings include configuring your TTS speech and podcast URL.
 
 You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcatcher. The application is set up to sync the podcast feed to a webserver over ssh.
 
