@@ -70,41 +70,40 @@ then
     timestamp=$(date +%s)
     mv ".venv" ".venv-${timestamp}"
     echo ".venv moved to .venv-${timestamp}"
-  elif yesno 'Do you want to continue and install into the existing .venv?'
+  elif ! yesno 'Do you want to install into the existing .venv?'
   then
-    venv
+    skipvenv=1
   fi
-else
-  venv
-fi
 
-if [ $MAC ]
-then
-  echo 'MacOS environment detected.'
-  if [ $BREW ]
+  [ -z "${skipvenv}" ] && venv
+
+  if [ $MAC ]
   then
-    if ! brew list libmagic > /dev/null 2>&1
+    echo 'MacOS environment detected.'
+    if [ $BREW ]
     then
-      if yesno 'ttspod requires libmagic. install with brew?'
+      if ! brew list libmagic > /dev/null 2>&1
       then
-        brew install libmagic
+        if yesno 'ttspod requires libmagic. install with brew?'
+        then
+          brew install libmagic
+        fi
+      else
+        echo libmagic already installed
       fi
     else
-      echo libmagic already installed
+      echo 'tts requires libmagic, but I did not find a brew installation.'
     fi
-  else
-    echo 'tts requires libmagic, but I did not find a brew installation.'
   fi
-fi
 
-cp -i dotenv .env
-echo Just edit .env to configure your local settings and you will be good to go.
-if yesno "Do you want to edit .env now?"
-then
-  if [ -z "${EDITOR}" ]
+  cp -i dotenv .env
+  echo Just edit .env to configure your local settings and you will be good to go.
+  if yesno "Do you want to edit .env now?"
   then
-    echo no editor found
+    if [ -z "${EDITOR}" ]
+    then
+      echo no editor found
+    fi
+    "${EDITOR}" .env
   fi
-  "${EDITOR}" .env
-fi
-echo get help with ./ttspod -h
+  echo get help with ./ttspod -h
