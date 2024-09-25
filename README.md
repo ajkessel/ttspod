@@ -36,6 +36,58 @@ You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the 
 
 You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcatcher. The application is set up to sync the podcast feed to a webserver over ssh.
 
+## Usage
+```
+# ./ttspod -h
+
+usage: ttspod [-h] [-w [WALLABAG]] [-i [INSTA]] [-p [POCKET]] [-d] [-c] [-f]
+              [-t TITLE] [-e ENGINE] [-s] [-n]
+              [url ...]
+
+Convert any content to a podcast feed.
+
+positional arguments:
+  url                   specify any number of URLs or local documents (plain
+                        text, HTML, PDF, Word documents, etc) to add to your
+                        podcast feed
+
+options:
+  -h, --help            show this help message and exit
+  -w [WALLABAG], --wallabag [WALLABAG]
+                        add unprocessed items with specified tag (default
+                        audio) from your wallabag feed to your podcast feed
+  -i [INSTA], --insta [INSTA]
+                        add unprocessed items with specified tag (default
+                        audio) from your instapaper feed to your podcast feed
+  -p [POCKET], --pocket [POCKET]
+                        add unprocessed items with specified tag (default
+                        audio) from your pocket feed to your podcast feed
+  -d, --debug           include debug output
+  -c, --clean           wipe cache clean and start new podcast feed
+  -f, --force           force addition of podcast even if cache indicates it
+                        has already been added
+  -t TITLE, --title TITLE
+                        specify title for content provided via pipe
+  -e ENGINE, --engine ENGINE
+                        specify TTS engine for this session (whisper, openai,
+                        eleven)
+  -s, --sync            sync podcast episodes and cache file
+  -n, --dry-run         dry run: do not actually create or sync audio files
+```
+### Examples
+Add a URL to your podcast feed
+```
+# ./ttspod https://slashdot.org/story/24/09/24/2049204/human-reviewers-cant-keep-up-with-police-bodycam-videos-ai-now-gets-the-job
+```
+Update your podcast feed with all of your Wallabag items tagged "audio" that have not yet been processed
+```
+# ./ttspod -w
+```
+Create a podcast from the command-line
+```
+# echo this text will be turned into a podcast that I will be able to listen to later | ./ttspod -t 'The Title of the Podcast'
+```
+
 ## Platforms
 This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
 
