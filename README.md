@@ -102,6 +102,7 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 
 ## TODO
 * Real installer (pip, maybe Debian, WinGet, etc)
+* Concurrent processing with third-party TTS engines for better performance, possibly using concurrent.futures.ThreadPoolExecutor
 * Command-line options for all configuration settings
 * Interactive configuration
 * Pocket authentication workflow
