@@ -7,7 +7,7 @@ yesno() {
 }
 venv() {
   echo creating local python venv under current directory
-  if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you want to install all packages locally? (y/n)'
+  if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you use only local (rather than system) packages?'
   then
     pipString='--system-site-packages'
   fi
