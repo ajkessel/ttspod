@@ -76,6 +76,7 @@ class Content(object):
             text = longest_plain_part
         else:
             text = ''
+        if self.config.debug: print(f'found text {text}')
         text = cleanText(text)
         if text:
             entry = ( title, text, url )
