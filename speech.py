@@ -4,6 +4,7 @@ import re
 import textwrap
 import uuid
 import warnings
+from pydub import AudioSegment
 from pathlib import Path
 from anyascii import anyascii
 from concurrent.futures import ThreadPoolExecutor, wait
@@ -74,12 +75,13 @@ class Speech(object):
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
     def speechify(self, title = "missing", raw_text = ""):
-        out_file = self.config.final_path + self.slugify(title) + ".mp3"
+        clean_title = self.slugify(title)
+        out_file = self.config.final_path + clean_title + ".mp3"
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
         
         if os.path.exists(out_file):
-            out_file = self.config.final_path + self.slugify(title) + "-" + temp + ".mp3"
+            out_file = f'{self.config.final_path}{clean_title}-{temp}.mp3'
         
         if self.dry:
             if self.config.debug: print(f'dry run: not creating {out_file}')
@@ -125,14 +127,18 @@ class Speech(object):
             elif self.config.engine == "eleven":
                 tts_function = lambda z: self.tts.generate(voice = self.config.eleven_voice, model = self.config.eleven_model, text = z)
             futures = []
+            combined = AudioSegment.empty()
             with ThreadPoolExecutor(max_workers = self.config.max_workers) as executor:
                 for future in executor.map(tts_function, segments):
                     futures.append(future)
                 for future in futures:
+                    segment_audio = f'{self.config.temp_path}-{clean_title}.mp3'
                     if self.config.engine == "openai":
-                        future.stream_to_file(out_file)
+                        future.stream_to_file(segment_audio)
                     elif self.config.engine == "eleven":
-                        save(future, out_file)
+                        save(future, segment_audio)
+                    combined += AudioSegment.from_mp3(segment_audio)
+                combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
         except Exception as e:
