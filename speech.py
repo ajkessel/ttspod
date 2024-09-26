@@ -1,3 +1,4 @@
+from sys import maxsize
 import os
 import unicodedata
 import re
@@ -126,13 +127,18 @@ class Speech(object):
                 tts_function = lambda z: self.tts.audio.speech.create(model = self.config.openai_model, voice = self.config.openai_voice, input = z)
             elif self.config.engine == "eleven":
                 tts_function = lambda z: self.tts.generate(voice = self.config.eleven_voice, model = self.config.eleven_model, text = z)
+            else:
+                raise exception("No TTS engine configured.")
             futures = []
+            # TODO - use these hashes to see if any segment has already been transcribed
+            if self.config.debug: print(f'processing {len(segments)} segments')
+            hashes = [ str(hash(segment) % ((maxsize + 1) * 2)) for segment in segments ]
             combined = AudioSegment.empty()
             with ThreadPoolExecutor(max_workers = self.config.max_workers) as executor:
                 for future in executor.map(tts_function, segments):
                     futures.append(future)
-                for future in futures:
-                    segment_audio = f'{self.config.temp_path}-{clean_title}.mp3'
+                for i, future in enumerate(futures):
+                    segment_audio = f'{self.config.temp_path}{clean_title}-{hashes[i]}.mp3'
                     if self.config.engine == "openai":
                         future.stream_to_file(segment_audio)
                     elif self.config.engine == "eleven":
@@ -142,11 +148,8 @@ class Speech(object):
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
         except Exception as e:
-            if self.config.debug: print(f'TTS engine {self.config.engine} failed: {e}')
-        if os.path.isfile(out_file):
-            return out_file
-        else:
-            return None
+            if self.config.debug: print(f'TTS engine {self.config.engine} failed: {e}')        
+        return out_file if os.path.isfile(out_file) else None
     
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
