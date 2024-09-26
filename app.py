@@ -164,7 +164,10 @@ def main():
     main.pod.config.debug = main.config.debug
     if main.config.debug and dry: print("dry-run mode") 
     main.speech = Speech(main.config.speech, dry)
-    if got_pipe: main.processContent(str(sys.stdin.read()),title)
+    if got_pipe: 
+        pipe_input = str(sys.stdin.read())
+        if pipe_input:
+            main.processContent(pipe_input,title)
     if args.wallabag: main.processWallabag(args.wallabag)
     if args.pocket: main.processPocket(args.pocket)
     if args.insta: main.processInsta(args.insta)
