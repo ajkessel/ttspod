@@ -133,9 +133,14 @@ class Speech(object):
                         future.stream_to_file(out_file)
                     elif self.config.engine == "eleven":
                         save(future, out_file)
+                if os.path.isfile(out_file):
+                    os.chmod(out_file, 0o644)
         except Exception as e:
             if self.config.debug: print(f'TTS engine {self.config.engine} failed: {e}')
-        return out_file
+        if os.path.isfile(out_file):
+            return out_file
+        else:
+            return None
     
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
