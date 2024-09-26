@@ -8,6 +8,8 @@ ttspod_attachments=1
 # max_length: skip articles longer than this number of characters (default 20000)
 # you likely want to set some cap if you are using a paid TTS service (OpenAI or Eleven)
 ttspod_max_length=20000
+# max_workers: how many parallel threads to execute when performing OpenAI/Eleven TTS (default 10)
+ttspod_max_workers=10
 # max_articles: max number of articles to retrieve with each execution (default 5)
 # you likely want to set some cap if you are using a paid TTS service (OpenAI or Eleven)
 ttspod_max_articles=5

@@ -64,7 +64,7 @@ class Config(object):
             self.rss_file = path.join(final_path,'index.rss')
             self.debug = debug
     class Speech(object):
-        def __init__(self, temp_path = '', final_path = '', debug = False, engine = None):
+        def __init__(self, temp_path = '', final_path = '', debug = False, engine = None, max_workers = 10):
             global openai_available
             global eleven_available
             global whisper_available
@@ -84,6 +84,7 @@ class Config(object):
             self.whisper_t2s_model = e.get('ttspod_whisper_t2s_model','whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model')
             self.whisper_s2a_model = e.get('ttspod_whisper_s2a_model','whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.whisper_voice = e.get('ttspod_whisper_voice')
+            self.max_workers = max_workers
             self.temp_path = temp_path
             self.final_path = final_path
             self.debug = debug
@@ -113,11 +114,13 @@ class Config(object):
         self.debug = e.get('ttspod_debug',debug)
         if self.debug: print(f'debug mode is on')
         self.max_length = int(e.get('ttspod_max_length',20000))
+        self.max_workers = int(e.get('ttspod_max_workers',10))
         self.max_articles = int(e.get('ttspod_max_articles',5))
         self.working_path = path.join(e.get('ttspod_working_path','./working'),'')
         if self.working_path:
             self.working_path = re.sub(r'~/',str(Path.home())+'/',self.working_path)
         if self.working_path.startswith('./'):
+           self.working_path = re.sub(r'^./','',self.working_path)
            self.working_path = path.join(path.dirname(__file__), self.working_path)
         self.temp_path = f'{self.working_path}temp/'
         self.final_path = f'{self.working_path}output/'
@@ -129,7 +132,7 @@ class Config(object):
             self.cache_path = None
         if self.cache_path:
             self.cache_path = re.sub(r'~/',str(Path.home())+'/',self.cache_path)
-        self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine)
+        self.speech = self.Speech(temp_path = self.temp_path, final_path = self.final_path, debug = self.debug, engine = engine, max_workers = self.max_workers)
         self.content = self.Content(debug = self.debug, working_path = self.working_path)
         self.links = self.Links(debug = self.debug)
         self.wallabag = self.Wallabag(debug = self.debug)

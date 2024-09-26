@@ -6,7 +6,7 @@ import uuid
 import warnings
 from pathlib import Path
 from anyascii import anyascii
-from pydub import AudioSegment
+from concurrent.futures import ThreadPoolExecutor, wait
 
 try:
     import nltk
@@ -60,6 +60,7 @@ class Speech(object):
         try:
             nltk.data.find('tokenizers/punkt_tab')
             self.config.nltk = True
+            if self.config.debug: print("nltk found and activated")
         except LookupError:
             try:
                 nltk.download('punkt_tab')
@@ -76,21 +77,26 @@ class Speech(object):
         out_file = self.config.final_path + self.slugify(title) + ".mp3"
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
+        
         if os.path.exists(out_file):
             out_file = self.config.final_path + self.slugify(title) + "-" + temp + ".mp3"
+        
         if self.dry:
             if self.config.debug: print(f'dry run: not creating {out_file}')
             return
+        
         if self.config.engine == "whisper":
             chunks = self.split_and_prepare_text(text)
             self.whisper_long(chunks=chunks,output=out_file,speaker=self.config.whisper_voice)
             os.chmod(out_file, 0o644)
             return (out_file)
+        
         if self.config.nltk:
             paragraphs = BlanklineTokenizer().tokenize(text)
         else:
             paragraphs = text.split('\n\n')
         segments = []
+        
         for para in paragraphs:
             if self.config.debug: print(f"paragraph {para}")
             if len(para) < 8: # skip very short lines which are likely not text
@@ -113,41 +119,23 @@ class Speech(object):
                         segments.append(sentence)
             else:
                 segments.append(para)
-        combined = AudioSegment.empty()
-        for (item,segment) in enumerate(segments):
-            segment_audio = f'{self.config.temp_path}-{temp}-{item}.mp3'
-            if self.config.debug: print(f'processing text #{item+1} out of {len(segments)}\nitem length {len(segment)}:\n{segment}\n--------------------')
-            try:
-                if self.config.engine == "eleven":
-                    audio = self.tts.generate(
-                        text=segment,
-                        voice=self.config.eleven_voice,
-                        model=self.config.eleven_model
-                        )
-                    save(audio, segment_audio)
-                elif self.config.engine == "openai":
-                    response = self.tts.audio.speech.create(
-                        model = self.config.openai_model,
-                        voice = self.config.openai_voice,
-                        input = segment
-                        )
-                    response.stream_to_file(segment_audio)
-                if self.config.debug: print(f'segment successful')
-                combined += AudioSegment.from_mp3(segment_audio)
-            except Exception as e:
-                if self.config.debug: print(f'TTS failed {e}')
         try:
-            if combined.duration_seconds > 2:
-                combined.export(out_file, format="mp3")
-                os.chmod(out_file, 0o644)
-                if self.config.debug: print(f'final audio successful')
-                return (out_file)
-            else:
-                if self.config.debug: print(f'did not generate a long enough file')
-                return None
+            if self.config.engine == "openai":
+                tts_function = lambda z: self.tts.audio.speech.create(model = self.config.openai_model, voice = self.config.openai_voice, input = z)
+            elif self.config.engine == "eleven":
+                tts_function = lambda z: self.tts.generate(voice = self.config.eleven_voice, model = self.config.eleven_model, text = z)
+            futures = []
+            with ThreadPoolExecutor(max_workers = self.config.max_workers) as executor:
+                for future in executor.map(tts_function, segments):
+                    futures.append(future)
+                for future in futures:
+                    if self.config.engine == "openai":
+                        future.stream_to_file(out_file)
+                    elif self.config.engine == "eleven":
+                        save(future, out_file)
         except Exception as e:
-            if self.config.debug: print(f'TTS failed {e}')
-        return None
+            if self.config.debug: print(f'TTS engine {self.config.engine} failed: {e}')
+        return out_file
     
     def split_and_prepare_text(self, text, cps=14):
         chunks = []
