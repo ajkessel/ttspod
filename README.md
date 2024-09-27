@@ -17,9 +17,10 @@ But the gist of it is that this app will take various forms of content and turn 
 
 ## Text-to-Speech Engines
 
-* Whisper (free, requires substantial compute resources and probably a GPU)
-* OpenAI (paid, requires an API key)
-* Eleven (limited free version, requires an API key)
+* [Whisper](https://github.com/collabora/WhisperSpeech) (free, requires substantial compute resources and probably a GPU)
+* [Coqui](https://github.com/coqui-ai/TTS) (free, requires substantial compute resources and probably a GPU)
+* OpenAI (paid, requires an [API key](https://platform.openai.com/api-keys))
+* Eleven (limited free version or paid version, [requires an API key](https://elevenlabs.io/docs/api-reference/getting-started))
 
 If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system. It seems to run reasonably fast on Windows or Linux with a GPU but is deathly slow in my MacOS experiments.
 
