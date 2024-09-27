@@ -90,5 +90,4 @@ ttspod_openai_model="tts-1-hd"
 # remove this line to get verbose TTS console output from Whisper
 TORCH_LOGS="-all"
 # specify directory for huggingface cache files
-# if you are using Windows+Conda, you may need to specify this under your ttspod folder to avoid a permissions error
 #HF_HOME=""
