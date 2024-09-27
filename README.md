@@ -97,7 +97,7 @@ Create a podcast from the command-line
 This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
 
 ## procmail
-The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@myodmain.com to this script:
+The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script:
 ```
 :0 Hc
 * ^From:(.*\<(?)(me@example.com|you@domain.com)
