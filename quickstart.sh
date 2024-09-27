@@ -16,7 +16,7 @@ venv() {
   echo installing requirements
   pip3 install -r requirements.txt
   optional=$(cat 'optional-requirements.txt')
-  echo 'optional requirements - you should install at least one TTS engine (Whisper, OpenAI, or Eleven)'
+  echo 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
   echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
   for line in $optional
   do
