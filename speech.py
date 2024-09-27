@@ -81,7 +81,7 @@ class Speech(object):
                                     s2a_ref=self.config.whisper_s2a_model, device=self.config.device, optimize=True)
             case "coqui":
                 self.tts = TTS(model_name=self.config.coqui_model,
-                               gpu=True, progress_bar=False).to(cpu)
+                               progress_bar=False).to(cpu)
             case _:
                 raise Exception('TTS engine not configured')
         try:
