@@ -80,12 +80,8 @@ class Speech(object):
                 self.tts = Pipeline(t2s_ref=self.config.whisper_t2s_model,
                                     s2a_ref=self.config.whisper_s2a_model, device=self.config.device, optimize=True)
             case "coqui":
-                if cpu != "cpu":
-                    self.tts = TTS(model_name=self.config.coqui_model,
-                                   gpu=True, progress_bar=False)
-                else:
-                    self.tts = TTS(model_name=self.config.coqui_model,
-                                   gpu=False, progress_bar=False)
+                self.tts = TTS(model_name=self.config.coqui_model,
+                               gpu=True, progress_bar=False).to(cpu)
             case _:
                 raise Exception('TTS engine not configured')
         try:
@@ -158,20 +154,20 @@ class Speech(object):
                         segments.append(sentence)
             else:
                 segments.append(para)
-        try:
-            if self.config.engine == "coqui":
+        if self.config.engine == "coqui":
+            try:
                 combined = AudioSegment.empty()
                 for (i, segment) in enumerate(segments):
                     segment_audio = f'{self.config.temp_path}{clean_title}-{i}.wav'
                     self.tts.tts_to_file(text=segment, speaker=self.config.coqui_speaker,
-                                    language='en', file_path=segment_audio)
+                                         language='en', file_path=segment_audio)
                     combined += AudioSegment.from_file(segment_audio)
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
-        except Exception as e:
-            self.log.write(f'TTS engine {self.config.engine} failed: {e}')
-        return out_file if os.path.isfile(out_file) else None
+            except Exception as e:
+                self.log.write(f'TTS engine {self.config.engine} failed: {e}')
+            return out_file if os.path.isfile(out_file) else None
         try:
             if self.config.engine == "openai":
                 def tts_function(z): return self.tts.audio.speech.create(
