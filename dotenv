@@ -78,7 +78,9 @@ ttspod_whisper_s2a_model="whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model
 # whisper_voice: path to a sound file of a ~30 second voice sound clip to use as model for speech generation
 ttspod_whisper_voice=""
 ttspod_coqui_model="tts_models/en/ljspeech/tacotron2-DDC"
+# if you select a multi-speaker or multi-language coqui model, you will need to fill in values below
 ttspod_coqui_speaker=""
+ttspod_coqui_language=""
 ttspod_eleven_api_key=""
 ttspod_eleven_voice="Daniel"
 ttspod_eleven_model="eleven_monolingual_v1"

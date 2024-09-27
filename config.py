@@ -128,6 +128,7 @@ class Config(object):
             self.whisper_voice = e.get('ttspod_whisper_voice')
             self.coqui_model = e.get('ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
             self.coqui_speaker = e.get('ttspod_coqui_speaker')
+            self.coqui_language = e.get('ttspod_coqui_language')
             self.max_workers = max_workers
             self.temp_path = temp_path
             self.final_path = final_path

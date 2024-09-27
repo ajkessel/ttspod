@@ -30,7 +30,9 @@ except ImportError:
 try:
     from torch.backends import mps
     if mps.is_available():
-        cpu = 'mps'
+        cpu = 'cpu'
+        #cpu = 'mps'
+        # TODO: mps does not appear to work with coqui
 except ImportError:
     pass
 engines = {}
@@ -160,7 +162,7 @@ class Speech(object):
                 for (i, segment) in enumerate(segments):
                     segment_audio = f'{self.config.temp_path}{clean_title}-{i}.wav'
                     self.tts.tts_to_file(text=segment, speaker=self.config.coqui_speaker,
-                                         language='en', file_path=segment_audio)
+                                         language=self.config.coqui_language, file_path=segment_audio)
                     combined += AudioSegment.from_file(segment_audio)
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
