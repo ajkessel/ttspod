@@ -47,7 +47,8 @@ class Links(object):
                 entry = (title, text, url)
                 entries.append(entry)
                 self.log.write(f'successfully processed {url} {title}')
-            elself.log.write(f'failed to process {url}: no text returned')
+            else:
+                self.log.write(f'failed to process {url}: no text returned')
         except Exception as e:
             self.log.write(f'failed to process {url}: {e}')
         return entries

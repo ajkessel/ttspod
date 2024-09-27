@@ -7,7 +7,6 @@ nltk==3.9.1
 numpy<2
 pandoc==2.4
 paramiko==3.4.1
-pip_system_certs==4.0
 pocket==0.3.6
 pocket_api==0.1.5
 pod2gen==1.0.3
