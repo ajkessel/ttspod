@@ -38,10 +38,8 @@ You'll also need somewhere to host your RSS feed and MP3 audio files if you want
 
 ## Usage
 ```
-# ./ttspod -h
-
-usage: ttspod [-h] [-w [WALLABAG]] [-i [INSTA]] [-p [POCKET]] [-d] [-c] [-f]
-              [-t TITLE] [-e ENGINE] [-s] [-n]
+usage: ttspod [-h] [-w [WALLABAG]] [-i [INSTA]] [-p [POCKET]] [-l [LOG]]
+              [-q [QUIET]] [-d] [-c] [-f] [-t TITLE] [-e ENGINE] [-s] [-n]
               [url ...]
 
 Convert any content to a podcast feed.
@@ -58,10 +56,16 @@ options:
                         audio) from your wallabag feed to your podcast feed
   -i [INSTA], --insta [INSTA]
                         add unprocessed items with specified tag (default
-                        audio) from your instapaper feed to your podcast feed
+                        audio) from your instapaper feed to your podcast feed,
+                        or use tag ALL for default inbox
   -p [POCKET], --pocket [POCKET]
                         add unprocessed items with specified tag (default
                         audio) from your pocket feed to your podcast feed
+  -l [LOG], --log [LOG]
+                        log all output to specified filename
+  -q [QUIET], --quiet [QUIET]
+                        no visible output (all output will go to log if
+                        specified)
   -d, --debug           include debug output
   -c, --clean           wipe cache clean and start new podcast feed
   -f, --force           force addition of podcast even if cache indicates it
@@ -92,12 +96,12 @@ Create a podcast from the command-line
 This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
 
 ## procmail
-The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example:
+The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@myodmain.com to this script:
 ```
 :0 Hc
-* From: my_approved_address
-* To: my_tts_address
-| ${HOME}/ttspod/ttspod
+* ^From:(.*\<(?)(me@example.com|you@domain.com)
+* ^(To|X-Original-To):(.*\<(?)(myttsaddress@mydomain.com)
+| ${HOME}/ttspod/ttspod >> ${HOME}/log/tts.log 2>&1
 ```
 
 ## TODO
