@@ -68,15 +68,17 @@ ttspod_pod_language="en"
 ttspod_pod_server_path=""
 
 # TTS API keys and other parameters
-# Eleven and OpenAI require a paid API key; whisper can run on your device (if it is powerful enough) for free
+# Eleven and OpenAI require a paid API key; whisper or coqui can run on your device (if it is powerful enough) for free
 # if only one engine is defined, that will be used; otherwise specify engine on next line
-ttspod_engine="whisper" # should be openai / eleven / whisper
+ttspod_engine="whisper" # should be openai / eleven / whisper / coqui
 # sample models to use with whisper; I haven't done a lot of research here, but these seem to work okay
 # list of models available at https://huggingface.co/WhisperSpeech/WhisperSpeech/tree/main
 ttspod_whisper_t2s_model="whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model"
 ttspod_whisper_s2a_model="whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model"
 # whisper_voice: path to a sound file of a ~30 second voice sound clip to use as model for speech generation
 ttspod_whisper_voice=""
+ttspod_coqui_model="tts_models/en/ljspeech/tacotron2-DDC"
+ttspod_coqui_speaker=""
 ttspod_eleven_api_key=""
 ttspod_eleven_voice="Daniel"
 ttspod_eleven_model="eleven_monolingual_v1"

@@ -1,14 +1,19 @@
+# standard modules
 import pod2gen
 from ntpath import split
 from os.path import getsize, join as j
 from os import chmod
-import remote_sync
+
+
+# TTSPod modules
+from logger import Logger
+from remote_sync import sync as rsync
 
 class Pod(object):
-    def __init__(self, config, p = None):
+    def __init__(self, config, p = None, log = None):
+        self.log = log if log else Logger(debug=True)
         self.config = config
         self.p = p if p else self.new()
-        return
         
     def new(self):
         pod = pod2gen.Podcast()
@@ -29,7 +34,7 @@ class Pod(object):
 
     def sync(self):
         if self.config.ssh_server_path:
-            remote_sync.sync(
+            rsync(
                 source = self.config.final_path,
                 destination = self.config.ssh_server_path,
                 password = self.config.ssh_password,
@@ -40,7 +45,7 @@ class Pod(object):
                 size_only = True
             )
         else:
-            if self.config.debug: print("ssh_server_path not defined so not uploading results")
+            self.log.write("ssh_server_path not defined so not uploading results")
 
     def add(self, entry):
         (url, title, fullpath) = entry

@@ -11,13 +11,15 @@ except:
     pocket_available = False
 
 from links import Links
+from logger import Logger
 
 class TTSPocket(object):
     def __init__(self, config, links):
         global pocket_available        
+        self.log = log if log else Logger(debug=True)
         self.config = config
         if not pocket_available or not self.config.consumer_key or not self.config.access_token:
-            if self.config.debug: print("Pocket support not enabled")
+            self.log.write("Pocket support not enabled")
             return
         self.links = links
         self.p = pocket.Pocket(self.config.consumer_key, self.config.access_token)
