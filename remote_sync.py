@@ -1,16 +1,19 @@
-import shutil
-import stat
-import paramiko
-import os
-import hashlib
-import re
-from platform import system
-from posixpath import join as posixjoin, split as posixsplit
-from pathlib import Path
-from getpass import getuser
+try:
+    from getpass import getuser
+    from pathlib import Path
+    from platform import system
+    from posixpath import join as posixjoin, split as posixsplit
+    import hashlib
+    import os
+    import paramiko
+    import re
+    import shutil
+    import stat
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 dbg = False
-
 
 def md5(file_path):
     """Calculate MD5 hash of a file."""

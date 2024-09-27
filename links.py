@@ -6,10 +6,14 @@ except:
     pass
 
 # standard modules
-import trafilatura
-import validators
-from trafilatura.settings import DEFAULT_CONFIG
-from copy import deepcopy
+try:
+    import trafilatura
+    import validators
+    from trafilatura.settings import DEFAULT_CONFIG
+    from copy import deepcopy
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from logger import Logger

@@ -1,15 +1,19 @@
 # standard modules
-from os import path
-from uuid import uuid4
-from html import unescape
-from html2text import html2text
-from lxml import html
-from quopri import decodestring
-import email
-import hashlib
-import magic
-import pypandoc
-import re
+try:
+    from os import path
+    from uuid import uuid4
+    from html import unescape
+    from html2text import html2text
+    from lxml import html
+    from quopri import decodestring
+    import email
+    import hashlib
+    import magic
+    import pypandoc
+    import re
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # tts modules
 from logger import Logger

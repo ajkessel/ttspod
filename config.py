@@ -1,10 +1,14 @@
 # standard modules
-from os import chmod, path, environ as e
-from dotenv import load_dotenv
-from pathlib import Path
-from posixpath import join as posixjoin
-from warnings import filterwarnings
-import re
+try:
+    from os import chmod, path, environ as e
+    from dotenv import load_dotenv
+    from pathlib import Path
+    from posixpath import join as posixjoin
+    from warnings import filterwarnings
+    import re
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from logger import Logger

@@ -1,6 +1,10 @@
-from pypandoc import convert_text
-from html import unescape
-import re
+try:
+    from pypandoc import convert_text
+    from html import unescape
+    import re
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 platform=None
 try:

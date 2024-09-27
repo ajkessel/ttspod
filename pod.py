@@ -1,9 +1,12 @@
 # standard modules
-import pod2gen
-from ntpath import split
-from os.path import getsize, join as j
-from os import chmod
-
+try:
+    import pod2gen
+    from ntpath import split
+    from os.path import getsize, join as j
+    from os import chmod
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from logger import Logger

@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 # standard modules
-from dotenv import load_dotenv
-from argparse import ArgumentParser
-from os import isatty, path
-from sys import stdin
-from validators import url
+try:
+    from dotenv import load_dotenv
+    from argparse import ArgumentParser
+    from os import isatty, path
+    from sys import stdin
+    from validators import url
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from main import Main

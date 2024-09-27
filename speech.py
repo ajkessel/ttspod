@@ -1,13 +1,17 @@
 # standard modules
-from sys import maxsize
-import os
-import unicodedata
-import re
-import textwrap
-import uuid
-import warnings
-from anyascii import anyascii
-from concurrent.futures import ThreadPoolExecutor, wait
+try:
+    from anyascii import anyascii
+    from concurrent.futures import ThreadPoolExecutor, wait
+    from sys import maxsize
+    import os
+    import re
+    import textwrap
+    import unicodedata
+    import uuid
+    import warnings
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from logger import Logger

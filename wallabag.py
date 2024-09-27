@@ -1,7 +1,11 @@
-import requests
-import json
-from html2text import HTML2Text
-from urllib.parse import urljoin as j
+try:
+    from html2text import HTML2Text
+    from urllib.parse import urljoin as j
+    import json
+    import requests
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 class Wallabag(object):
     def __init__(self, config):

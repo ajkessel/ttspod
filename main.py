@@ -1,8 +1,12 @@
 # standard modules
-import datetime
-from shutil import move
-from os import path
-import pickle
+try:
+    from os import path
+    from shutil import move
+    import datetime
+    import pickle
+except Exception as e:
+    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+    exit()
 
 # TTSPod modules
 from remote_sync import sync as rsync
