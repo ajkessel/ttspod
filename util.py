@@ -2,6 +2,55 @@ from pypandoc import convert_text
 from html import unescape
 import re
 
+platform=None
+try:
+    import posix_ipc
+    platform='unix'
+except ImportError:
+    pass
+try:
+    import win32event
+    platform='windows'
+except ImportError:
+    pass
+
+def getLock(name='ttspod',timeout=5):
+    global platform
+    locked = False
+    match platform:
+        case 'unix':
+            sem = posix_ipc.Semaphore(f"/{name}", posix_ipc.O_CREAT, initial_value=1)
+            try:
+                sem.acquire(timeout=timeout)
+                locked = True
+            except:
+                pass
+        case 'windows':
+            sem=win32event.CreateSemaphore(None, 1, 1, "ttspod")
+            try:
+                result = win32event.WaitForSingleObject(sem, timeout*1000)
+                locked = True if result==0 else False
+            except:
+                pass
+    return locked
+
+def releaseLock(name='ttspod',timeout=5):
+    global platform
+    match platform:
+        case 'unix':
+            try:
+                sem = posix_ipc.Semaphore(f"/{name}")
+                sem.release()
+            except:
+                pass
+        case 'windows':
+            try:
+                sem=win32event.CreateSemaphore(None, 1, 1, "ttspod")
+                win32event.ReleaseSemaphore(sem, 1)
+            except:
+                pass
+    return True
+
 def cleanHTML(rawhtml):
     text = convert_text(
             rawhtml,

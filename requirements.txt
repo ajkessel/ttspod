@@ -22,3 +22,4 @@ trafilatura==1.12.2
 validators==0.34.0
 webdataset
 lxml_html_clean
+posix_ipc
