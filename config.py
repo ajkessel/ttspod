@@ -173,7 +173,7 @@ class Config(object):
             self.cache_path = None
         if self.cache_path:
             self.cache_path = re.sub(
-                r'~/', str(Path.home())+'/', self.cache_path).replace('\\','/')
+                r'~/', str(Path.home())+'/', self.cache_path).replace('\\\\','/')
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log)
         self.content = self.Content(
