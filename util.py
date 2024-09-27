@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 try:
-    import win32event
+    from semaphore_win_ctypes import Semaphore
     platform='windows'
 except ImportError:
     pass
@@ -26,30 +26,41 @@ def getLock(name='ttspod',timeout=5):
             except:
                 pass
         case 'windows':
-            sem=win32event.CreateSemaphore(None, 1, 1, "ttspod")
+            sem = Semaphore(name)
             try:
-                result = win32event.WaitForSingleObject(sem, timeout*1000)
-                locked = True if result==0 else False
+                sem.open()
+                result = sem.acquire(timeout_ms = timeout*1000)
+                locked = True if result else False
             except:
-                pass
+                try:
+                    sem.create(maximum_count = 1)
+                    result = sem.acquire(timeout_ms = timeout*1000)
+                    locked = True if result else False
+                except:
+                    pass
     return locked
 
 def releaseLock(name='ttspod',timeout=5):
     global platform
+    released = False
     match platform:
         case 'unix':
             try:
                 sem = posix_ipc.Semaphore(f"/{name}")
                 sem.release()
+                released = True
             except:
                 pass
         case 'windows':
             try:
-                sem=win32event.CreateSemaphore(None, 1, 1, "ttspod")
-                win32event.ReleaseSemaphore(sem, 1)
+                sem = Semaphore(name)
+                sem.open()
+                sem.release()
+                sem.close()
+                released = True
             except:
                 pass
-    return True
+    return released
 
 def cleanHTML(rawhtml):
     text = convert_text(

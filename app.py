@@ -9,6 +9,7 @@ from validators import url
 # TTSPod modules
 from main import Main
 from pod import Pod
+from util import getLock, releaseLock
 
 
 class App(object):
@@ -63,33 +64,44 @@ class App(object):
         return True
 
     def run(self):
-        self.main = Main(
-            debug=self.debug,
-            engine=self.engine,
-            force=self.force,
-            dry=self.dry,
-            clean=self.clean,
-            logfile=self.log,
-            quiet=self.quiet
-        )
-        if self.got_pipe:
-            pipe_input = str(stdin.read())
-            if pipe_input:
-                self.main.processContent(pipe_input, self.title)
-        if self.args.wallabag:
-            self.main.processWallabag(self.args.wallabag)
-        if self.args.pocket:
-            self.main.processPocket(self.args.pocket)
-        if self.args.insta:
-            self.main.processInsta(self.args.insta)
-        for i in self.args.url:
-            if url(i):
-                self.main.processLink(i, self.title)
-            elif path.isfile(i):
-                self.main.processFile(i, self.title)
-            else:
-                print(f'command-line argument {i} not recognized')
-        return self.main.finalize()
+        try:
+            if not getLock():
+                if not self.force:
+                    print('Another instance of ttspod was detected running. Execute with -f or --force to force execution.')
+                    return False
+                else:
+                    releaseLock()
+            self.main = Main(
+                debug=self.debug,
+                engine=self.engine,
+                force=self.force,
+                dry=self.dry,
+                clean=self.clean,
+                logfile=self.log,
+                quiet=self.quiet
+            )
+            if self.got_pipe:
+                pipe_input = str(stdin.read())
+                if pipe_input:
+                    self.main.processContent(pipe_input, self.title)
+            if self.args.wallabag:
+                self.main.processWallabag(self.args.wallabag)
+            if self.args.pocket:
+                self.main.processPocket(self.args.pocket)
+            if self.args.insta:
+                self.main.processInsta(self.args.insta)
+            for i in self.args.url:
+                if url(i):
+                    self.main.processLink(i, self.title)
+                elif path.isfile(i):
+                    self.main.processFile(i, self.title)
+                else:
+                    print(f'command-line argument {i} not recognized')
+            return self.main.finalize()
+        except Exception as e:
+            print(f'Error occurred: {e}')
+        finally:
+            releaseLock()
 
 
 def main():
