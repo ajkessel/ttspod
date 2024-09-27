@@ -157,7 +157,7 @@ class Config(object):
             e.get('ttspod_working_path', './working'), '')
         if self.working_path:
             self.working_path = re.sub(
-                r'~/', str(Path.home())+'/', self.working_path)
+                r'~/', str(Path.home())+'/', self.working_path).replace('\\','/')
         if self.working_path.startswith('./'):
             self.working_path = re.sub(r'^./', '', self.working_path)
             self.working_path = path.join(
@@ -173,7 +173,7 @@ class Config(object):
             self.cache_path = None
         if self.cache_path:
             self.cache_path = re.sub(
-                r'~/', str(Path.home())+'/', self.cache_path).replace('\\\\','/')
+                r'~/', str(Path.home())+'/', self.cache_path).replace('\\','/')
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log)
         self.content = self.Content(
@@ -186,12 +186,12 @@ class Config(object):
         self.ssh_password = e.get('ttspod_ssh_password')
         if self.ssh_keyfile:
             self.ssh_keyfile = re.sub(
-                r'~/', str(Path.home())+'/', self.ssh_keyfile)
+                r'~/', str(Path.home())+'/', self.ssh_keyfile).replace('\\','/')
         if not (self.ssh_keyfile or self.ssh_password):
             key_list = ['id_rsa', 'id_ecdsa', 'id_ecdsa_sk',
                         'id_ed25519', 'id_ed25519_sk', 'id_dsa']
             for key in key_list:
-                keyfile = path.join(Path.home(), '.ssh', key)
+                keyfile = path.join(Path.home(), '.ssh', key).replace('\\','/')
                 if path.isfile(keyfile):
                     self.ssh_keyfile = keyfile
                     break
