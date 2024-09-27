@@ -117,24 +117,24 @@ class Main(object):
             self.log.write(f'cache save failed {e}')
 
     def processWallabag(self, tag):
-        wallabag = Wallabag(self.config.wallabag)
+        wallabag = Wallabag(config = self.config.wallabag, log = self.log)
         items = wallabag.getItems(tag)
         return self.process(items)
 
     def processLink(self, url, title=None):
-        links = Links(self.config.links)
+        links = Links(config = self.config.links, log = self.log)
         items = links.getItems(url, title)
         return self.process(items)
 
-    def processPocket(self, tag):
-        links = Links(self.config.links)
-        p = TTSPocket(self.config.pocket, links)
+    def processPocket(self, tag = 'audio'):
+        links = Links(config = self.config.links, log = self.log)
+        p = TTSPocket(config = self.config.pocket, links = links, log = self.log)
         items = p.getItems(tag)
         return self.process(items)
 
     def processInsta(self, tag):
         links = Links(self.config.links)
-        p = TTSInsta(self.config.insta, links)
+        p = TTSInsta(config = self.config.insta, links = links, log = self.log)
         items = p.getItems(tag)
         return self.process(items)
 
@@ -144,7 +144,7 @@ class Main(object):
         return self.process(items)
 
     def processFile(self, fname, title=None):
-        content = Content(self.config.content)
+        content = Content(config=self.config.content,log=self.log)
         items = content.processFile(fname, title)
         return self.process(items)
 

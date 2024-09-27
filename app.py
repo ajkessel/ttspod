@@ -4,7 +4,7 @@ try:
     from dotenv import load_dotenv
     from argparse import ArgumentParser
     from os import isatty, path
-    from sys import stdin
+    from sys import stdin, exc_info
     from validators import url
 except Exception as e:
     print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
@@ -103,7 +103,10 @@ class App(object):
                     print(f'command-line argument {i} not recognized')
             return self.main.finalize()
         except Exception as e:
-            print(f'Error occurred: {e}')
+            exc_type, exc_obj, exc_tb = exc_info()
+            fname = path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print('Error occurred:\n', exc_type, fname, exc_tb.tb_lineno)
+
         finally:
             releaseLock()
 

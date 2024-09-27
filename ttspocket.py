@@ -14,7 +14,7 @@ from links import Links
 from logger import Logger
 
 class TTSPocket(object):
-    def __init__(self, config, links):
+    def __init__(self, config, links, log = None):
         global pocket_available        
         self.log = log if log else Logger(debug=True)
         self.config = config
