@@ -27,7 +27,7 @@ class App(object):
         parser.add_argument("-p", "--pocket", nargs='?', const='audio', default="",
                             help="add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed")
         parser.add_argument("-l", "--log", nargs='?',
-                            default="", help="log all output to filename")
+                            default="", help="log all output to specified filename")
         parser.add_argument("-q", "--quiet", nargs='?', default="",
                             help="no visible output (all output will go to log if specified)")
         parser.add_argument(
