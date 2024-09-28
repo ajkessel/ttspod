@@ -2,14 +2,17 @@
 try:
     from anyascii import anyascii
     from concurrent.futures import ThreadPoolExecutor
+    from pathlib import Path
+    from platform import processor
+    from pydub import AudioSegment
     from sys import maxsize
+    from traceback import format_exc
     import os
     import re
     import textwrap
     import unicodedata
     import uuid
     import warnings
-    from platform import processor
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -18,8 +21,6 @@ except ImportError as e:
 
 # TTSPod modules
 from logger import Logger
-from pydub import AudioSegment
-from pathlib import Path
 
 # optional modules
 try:
@@ -122,7 +123,8 @@ class Speech(object):
         temp = str(uuid.uuid4())
 
         if os.path.exists(out_file):
-            out_file = os.path.join(self.config.final_path,f'{clean_title}-{temp}.mp3')
+            out_file = os.path.join(
+                self.config.final_path, f'{clean_title}-{temp}.mp3')
 
         if self.dry:
             self.log.write(f'dry run: not creating {out_file}')
@@ -133,7 +135,7 @@ class Speech(object):
             self.whisper_long(chunks=chunks, output=out_file,
                               speaker=self.config.whisper_voice)
             os.chmod(out_file, 0o644)
-            return (out_file)
+            return out_file
 
         if self.config.nltk:
             paragraphs = BlanklineTokenizer().tokenize(text)
@@ -155,11 +157,11 @@ class Speech(object):
                 if self.config.nltk:
                     sentences = sent_tokenize(para)
                 else:
-                    sentences = textwrap.wrap(text = para, width = max_length)
+                    sentences = textwrap.wrap(text=para, width=max_length)
                 for sentence in sentences:
                     # break sentences greater than 4096 characters into smaller pieces
                     if len(sentence) > max_length:
-                        chunks = textwrap.wrap(text = sentence, width = max_length)
+                        chunks = textwrap.wrap(text=sentence, width=max_length)
                         for chunk in chunks:
                             if len(chunk) < max_length:
                                 segments.append(chunk)
@@ -174,25 +176,39 @@ class Speech(object):
             try:
                 combined = AudioSegment.empty()
                 for (i, segment) in enumerate(segments):
-                    segment_audio = os.path.join(self.config.temp_path,f'{clean_title}-{i}.wav')
+                    segment_audio = os.path.join(
+                        self.config.temp_path, f'{clean_title}-{i}.wav')
                     # pylint: disable=no-member
-                    self.tts.tts_to_file(text=segment, speaker=self.config.coqui_speaker,
-                                         language=self.config.coqui_language, file_path=segment_audio)
+                    self.tts.tts_to_file(
+                        text=segment,
+                        speaker=self.config.coqui_speaker,
+                        language=self.config.coqui_language,
+                        file_path=segment_audio
+                    )
                     # pylint: enable=no-member
                     combined += AudioSegment.from_file(segment_audio)
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
-            except Exception as e:
-                self.log.write(f'TTS engine {self.config.engine} failed: {e}')
+            except Exception as err:  # pylint: disable=broad-except
+                self.log.write(
+                    f'TTS engine {self.config.engine} failed: {err}\n'+format_exc())
             return out_file if os.path.isfile(out_file) else None
         try:
             if self.config.engine == "openai":
-                def tts_function(z): return self.tts.audio.speech.create(
-                    model=self.config.openai_model, voice=self.config.openai_voice, input=z)
+                def tts_function(z):
+                    return self.tts.audio.speech.create(
+                        model=self.config.openai_model,
+                        voice=self.config.openai_voice,
+                        input=z
+                    )
             elif self.config.engine == "eleven":
-                def tts_function(z): return self.tts.generate(
-                    voice=self.config.eleven_voice, model=self.config.eleven_model, text=z)
+                def tts_function(z):
+                    return self.tts.generate(
+                        voice=self.config.eleven_voice,
+                        model=self.config.eleven_model,
+                        text=z
+                    )
             else:
                 raise ValueError("No TTS engine configured.")
             futures = []
@@ -208,7 +224,7 @@ class Speech(object):
                     segment_audio = os.path.join(
                         self.config.temp_path,
                         f'{clean_title}-{hashes[i]}.mp3'
-                        )
+                    )
                     if self.config.engine == "openai":
                         future.stream_to_file(segment_audio)
                     elif self.config.engine == "eleven":
@@ -217,8 +233,10 @@ class Speech(object):
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
-        except Exception as e:
-            self.log.write(f'TTS engine {self.config.engine} failed: {e}')
+        except Exception as err:
+            self.log.write(
+                f'TTS engine {self.config.engine} failed: {err}\n'+format_exc()
+            )
         return out_file if os.path.isfile(out_file) else None
 
     def split_and_prepare_text(self, text, cps=14):
@@ -264,14 +282,18 @@ class Speech(object):
                     atoks_prompt = old_atoks[:, :, -overlap*3:]
                 else:
                     atoks_prompt = None
-                atoks = self.tts.s2a.generate(stoks, atoks_prompt=atoks_prompt, speakers=speaker.unsqueeze(
-                    0), show_progress_bar=False)
+                atoks = self.tts.s2a.generate(
+                    stoks,
+                    atoks_prompt=atoks_prompt,
+                    speakers=speaker.unsqueeze(0),
+                    show_progress_bar=False
+                )
                 if atoks_prompt is not None:
                     atoks = atoks[:, :, overlap*3+1:]
                 r.append(atoks)
                 self.tts.vocoder.decode_to_notebook(atoks)
-            except Exception as e:
-                self.log.write(f'chunk {i+1} failed with error {e}')
+            except Exception as err:  # pylint: disable=broad-except
+                self.log.write(f'chunk {i+1} failed with error {err}')
             old_stoks = stoks
             old_atoks = atoks
         audios = []
