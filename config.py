@@ -188,11 +188,16 @@ class Config(object):
                 path.dirname(__file__), self.working_path)
         self.temp_path = path.join(self.working_path, 'temp', '')
         self.final_path = path.join(self.working_path, 'output', '')
-        self.logfile = e.get('ttspod_log')
-        if self.logfile and not '/' in self.logfile and not '\\' in self.logfile:
-            self.logfile = path.join(self.working_path, self.logfile)
-        if self.logfile:
-            self.log.update(logfile=self.logfile)
+        self.log_path = e.get('ttspod_log')
+        if self.log_path:
+            self.log_path = re.sub(
+                r'~/', str(Path.home()).replace('\\', '/') + '/',
+                self.log_path
+                )
+        if self.log_path and not '/' in self.log_path and not '\\' in self.log_path:
+            self.log_path = path.join(self.working_path, self.log_path)
+        if self.log_path:
+            self.log.update(logfile=self.log_path)
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = path.join(self.working_path, self.pickle_filename)
         if e.get('ttspod_cache_path'):

@@ -15,18 +15,18 @@ class Logger(object):
     def __init__(self, debug=False, quiet=False, logfile=None):
         self.debug = debug
         self.quiet = quiet
-        self.logfile = logfile
+        self.log_path = logfile
         self.log_handle = None
         if self.debug:
             print("debug mode is on")
-        if self.logfile:
+        if self.log_path:
             try:
                 self.log_handle = open(
-                    self.logfile, "a", buffering=80, encoding="utf-8")
+                    self.log_path, "a", buffering=80, encoding="utf-8")
                 self.log_handle.write(
                     "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
             except Exception as err:  # pylint: disable=broad-except
-                print(f"error opening logfile {self.logfile}: {err}")
+                print(f"error opening logfile {self.log_path}: {err}")
 
     def write(self, text='', error=False):
         """write a message to screen and/or file"""
@@ -48,15 +48,15 @@ class Logger(object):
         if logfile is not None:
             if self.log_handle:
                 self.log_handle.close()
-            self.logfile = logfile
-        if self.logfile:
+            self.log_path = logfile
+        if self.log_path:
             try:
                 self.log_handle = open(
-                    self.logfile, "a", buffering=80, encoding="utf-8")
+                    self.log_path, "a", buffering=80, encoding="utf-8")
                 self.log_handle.write(
                     "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
             except Exception as err:  # pylint: disable=broad-except
-                print(f"error opening logfile {self.logfile}: {err}")
+                print(f"error opening logfile {self.log_path}: {err}")
         if new_debug and debug:
             self.write('debug mode is on')
 
