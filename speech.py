@@ -89,7 +89,9 @@ class Speech(object):
                 self.tts = ElevenLabs(api_key=self.config.eleven_api_key)
             case "whisper":
                 self.tts = Pipeline(t2s_ref=self.config.whisper_t2s_model,
-                                    s2a_ref=self.config.whisper_s2a_model, device=self.config.device, optimize=True)
+                                    s2a_ref=self.config.whisper_s2a_model,
+                                    device=self.config.device, optimize=True,
+                                    device=CPU)
             case "coqui":
                 self.tts = TTS(model_name=self.config.coqui_model,
                                progress_bar=False).to(CPU)
