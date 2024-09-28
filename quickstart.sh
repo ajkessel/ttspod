@@ -20,6 +20,7 @@ venv() {
       if yesno 'Do you want to try to install systemwide python3.11-venv with apt (requires sudo privileges)?'
       then
         sudo apt install python3.11-venv
+        "${pyexe}" -m venv "${pipString}" .venv
       fi
     fi
   fi
