@@ -81,6 +81,13 @@ def release_lock(name='ttspod'):
                 released = True
             except:
                 pass
+        case 'mac':
+            try:
+                sem = posix_ipc.Semaphore(f"/{name}")
+                sem.release()
+                released = True
+            except:
+                pass
         case 'windows':
             try:
                 sem = Semaphore(name)
