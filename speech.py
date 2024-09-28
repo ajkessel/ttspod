@@ -37,7 +37,7 @@ except ImportError:
 try:
     from torch.backends import mps
     if mps.is_available():
-        if platform() == 'arm':
+        if processor() == 'arm':
             CPU = 'mps'
         else:
             CPU = 'cpu'
