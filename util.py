@@ -34,9 +34,11 @@ else:
         pass
 
 # pylint: disable=bare-except
+# pylint: disable=c-extension-no-member
 
 
 def get_lock(name='ttspod', timeout=5):
+    """attempt to obtain a semaphore for the process"""
     locked = False
     match OS:
         case 'unix':
@@ -72,6 +74,7 @@ def get_lock(name='ttspod', timeout=5):
 
 
 def release_lock(name='ttspod'):
+    """release a previously locked semaphore"""
     released = False
     match OS:
         case 'unix':
@@ -102,6 +105,7 @@ def release_lock(name='ttspod'):
 
 
 def clean_html(raw_html):
+    """convert HTML to plaintext"""
     text = None
     try:
         text = convert_text(
@@ -110,12 +114,12 @@ def clean_html(raw_html):
             format='html',
             extra_args=['--wrap=none', '--strip-comments']
         )
-    except Exception: # py-lint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         pass
     if not text:
         try:
             text = html2text(raw_html)
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             pass
     if text:
         text = clean_text(text)
@@ -125,8 +129,10 @@ def clean_html(raw_html):
 
 
 def clean_text(text):
+    """remove as much non-speakable text as possible"""
     text = unescape(text)
     text = re.sub(r'https?:[^ ]*', '', text)
+    text = re.sub(r'mailto:[^ ]*', '', text)
     text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
         '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
     text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\']', ' ', text)
@@ -135,3 +141,5 @@ def clean_text(text):
     text = re.sub(r' +', ' ', text)
     text = unidecode(text.strip())
     return text
+
+# pylint: enable=c-extension-no-member
