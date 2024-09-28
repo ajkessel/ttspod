@@ -90,8 +90,7 @@ class Speech(object):
             case "whisper":
                 self.tts = Pipeline(t2s_ref=self.config.whisper_t2s_model,
                                     s2a_ref=self.config.whisper_s2a_model,
-                                    device=self.config.device, optimize=True,
-                                    device=CPU)
+                                    device=CPU, optimize=True)
             case "coqui":
                 self.tts = TTS(model_name=self.config.coqui_model,
                                progress_bar=False).to(CPU)
