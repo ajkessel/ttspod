@@ -101,6 +101,7 @@ class Speech(object):
                 nltk.download('punkt_tab')
                 self.config.nltk = True
             except Exception:  # pylint: disable=broad-except
+                self.log.write("nltk loading failed")
                 pass
 
     def slugify(self, value):
@@ -147,11 +148,11 @@ class Speech(object):
                 if self.config.nltk:
                     sentences = sent_tokenize(para)
                 else:
-                    sentences = textwrap.wrap(4096)
+                    sentences = textwrap.wrap(text = para, width = 4096)
                 for sentence in sentences:
                     # break sentences greater than 4096 characters into smaller pieces
                     if len(sentence) > 4096:
-                        chunks = textwrap.wrap(4096)
+                        chunks = textwrap.wrap(text = sentence, width = 4096)
                         for chunk in chunks:
                             if len(chunk) < 4096:
                                 segments.append(chunk)

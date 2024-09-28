@@ -15,7 +15,7 @@ except ImportError as e:
 
 # TTSPod modules
 from main import Main
-from util import getLock, releaseLock
+from util import getLock, release_lock
 
 
 class App(object):
@@ -107,7 +107,7 @@ class App(object):
                         'Execute with -f or --force to force execution.')
                     return False
                 else:
-                    releaseLock()
+                    release_lock()
             self.main = Main(
                 debug=self.debug,
                 engine=self.engine,
@@ -146,7 +146,7 @@ class App(object):
         # pylint: enable=W0718
 
         finally:
-            releaseLock()
+            release_lock()
 
 
 def main():

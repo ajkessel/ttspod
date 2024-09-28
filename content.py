@@ -6,9 +6,11 @@ try:
     from html import unescape
     from lxml import html
     import email
+    from email.header import decode_header
     import hashlib
     import magic
     import pypandoc
+    import quopri
     import re
 except ImportError as e:
     print(
@@ -44,17 +46,24 @@ class Content(object):
         self.log = log if log else Logger(debug=True)
         self.config = config
 
-    def process_email(self, text, title=None):
+    def process_email(self, text=None, title=None):
         """email input processor"""
         if isinstance(text, str):  # check if input is text or unicode
             msg = email.message_from_string(text)
         else:
             msg = email.message_from_bytes(text)
-        title_search = msg.get('subject')
+        try:
+            title_search = msg.get('subject')
+            if "utf-8" in title_search:
+                title_search = decode_header(title_search)[0][0].decode()
+            if title_search:
+                title = title_search
+        except Exception:
+            pass
         url = msg.get('message-id')
         if not url:
             url = self.hash_text(text)
-        if title_search:
+        if title_search and not title:
             title = title_search
         elif not title:
             title = "Untitled Content"
@@ -68,7 +77,7 @@ class Content(object):
             self.log.write(
                 f'checking MIME part with type {part.get_content_type()}')
             if part.get_content_type().lower() == 'text/plain':
-                this_part = part.get_payload(decode=True)
+                this_part = quopri.decodestring(part.get_payload(decode=True))
                 if len(this_part) > len(longest_plain_part):
                     longest_plain_part = this_part
             elif part.get_content_type().lower() == 'text/html':
@@ -94,6 +103,9 @@ class Content(object):
                 # pylint: enable=broad-exception-caught
         if longest_html_part:
             longest_html_part = str(clean_html(longest_html_part))
+        if "<html" in str(longest_plain_part):
+            longest_plain_part = re.search(r'<html.*</html>',str(longest_plain_part))[0]
+            longest_plain_part = str(clean_html(longest_plain_part))
         if longest_plain_part:
             longest_plain_part = longest_plain_part.decode('ascii', 'ignore')
         if len(longest_html_part) > len(longest_plain_part):
@@ -103,7 +115,6 @@ class Content(object):
         else:
             text = ''
         text = clean_text(text)
-        self.log.write(f'selected text from email:\n{text}')
         if text:
             entry = (title, text, url)
             entries.append(entry)
@@ -179,12 +190,13 @@ class Content(object):
         """read input file and try to determine filetype"""
         with open(fname, 'rb') as f:
             c = f.read()
-        title = title if title else fname
         buffer_type = magic.from_buffer(c).lower()
         items = []
         self.log.write(f'got file type: {buffer_type}')
-        if re.search('^return-path:', str(c), flags=re.MULTILINE | re.I):
+        if re.search('return-path:', str(c), flags=re.MULTILINE | re.I):
+            self.log.write('detected email input')
             return self.process_email(c, title)
+        title = title if title else fname
         if "pdf" in buffer_type and AVAILABLE_FITZ:
             doc = pymupdf.Document(stream=c)
             text = ""

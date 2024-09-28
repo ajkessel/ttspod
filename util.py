@@ -4,6 +4,7 @@ try:
     from html import unescape
     from html2text import html2text
     from os import name as platform
+    from unidecode import unidecode
     import re
 except ImportError as e:
     print(
@@ -55,7 +56,7 @@ def getLock(name='ttspod', timeout=5):
     return locked
 
 
-def releaseLock(name='ttspod'):
+def release_lock(name='ttspod'):
     released = False
     match OS:
         case 'unix':
@@ -87,7 +88,7 @@ def clean_html(raw_html):
             format='html',
             extra_args=['--wrap=none', '--strip-comments']
         )
-    except:
+    except Exception:
         pass
     if not text:
         try:
@@ -106,9 +107,9 @@ def clean_text(text):
     text = re.sub(r'https?:[^ ]*', '', text)
     text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
         '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
-    text = re.sub(r'[^A-Za-z0-9 \n\/\(\)_.,!"\']', ' ', text)
+    text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\']', ' ', text)
     text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
     text = re.sub(r'\n\n+', '\n\n', text)
     text = re.sub(r' +', ' ', text)
-    text = text.strip()
+    text = unidecode(text.strip())
     return text
