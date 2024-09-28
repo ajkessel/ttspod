@@ -75,7 +75,7 @@ def remote_isdir(sftp, remote_dir):
     try:
         fileattr = sftp.stat(remote_dir)
         isdir = stat.S_ISDIR(fileattr.st_mode)
-    except:
+    except Exception:  # pylint: disable=broad-except
         if dbg:
             print(f'Could not check {remote_dir}')
         return None
@@ -101,7 +101,7 @@ def remote_mkdir(sftp, remote_dir):
             if not remote_isdir(sftp, path):
                 sftp.mkdir(path)
         return True
-    except:
+    except Exception:  # pylint: disable=broad-except
         if dbg:
             print(f'Could not mkdir {remote_dir}')
         return None
@@ -111,7 +111,7 @@ def remote_isfile(sftp, remote_file):
     try:
         fileattr = sftp.stat(remote_file)
         isfile = stat.S_ISREG(fileattr.st_mode)
-    except:
+    except Exception:  # pylint: disable=broad-except
         if dbg:
             print(f'Could not check file {remote_file}')
         return None
@@ -191,7 +191,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             print(f'Found local ssh keyfile {keyfile}')
     # Establish SSH connection
     if source_host and destination_host:
-        raise Exception("Cannot sync from remote host to remote host")
+        raise ValueError("Cannot sync from remote host to remote host")
     if source_host or destination_host:
         host = source_host if source_host else destination_host
         if username:
@@ -203,7 +203,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
         elif getuser():
             user = getuser()
         else:
-            raise Exception(
+            raise ValueError(
                 "Remote host specified but no username provided or inferred.")
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -213,10 +213,10 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             elif keyfile:
                 ssh.connect(host, port, user, key_filename=keyfile)
             else:
-                raise Exception(
+                raise ValueError(
                     "Either password or ssh key required to make connection")
-        except Exception as e:
-            raise Exception(f'SSH connection failed {e}')
+        except Exception as err:
+            raise ValueError(f'SSH connection failed {err}')
         if dbg:
             print("connection succesful")
         # Open SFTP session
@@ -263,9 +263,9 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 try:
                     if not dry_run:
                         Path(parent_dir).mkdir(parents=True, exist_ok=True)
-                except Exception as e:
+                except Exception as err:
                     raise ValueError(
-                        f'Could not create destination directory {parent_dir}: {e}')
+                        f'Could not create destination directory {parent_dir}: {err}')
             # source is directory or source is file and dest ends with /
             if not fileonly or (fileonly and destination_trail):
                 try:

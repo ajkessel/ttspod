@@ -114,12 +114,12 @@ class Speech(object):
     def speechify(self, title="missing", raw_text=""):
         global engines, cpu
         clean_title = self.slugify(title)
-        out_file = self.config.final_path + clean_title + ".mp3"
+        out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
 
         if os.path.exists(out_file):
-            out_file = f'{self.config.final_path}{clean_title}-{temp}.mp3'
+            out_file = os.path.join(self.config.final_path,f'{clean_title}-{temp}.mp3')
 
         if self.dry:
             self.log.write(f'dry run: not creating {out_file}')
@@ -167,9 +167,11 @@ class Speech(object):
             try:
                 combined = AudioSegment.empty()
                 for (i, segment) in enumerate(segments):
-                    segment_audio = f'{self.config.temp_path}{clean_title}-{i}.wav'
+                    segment_audio = os.path.join(self.config.temp_path,f'{clean_title}-{i}.wav')
+                    # pylint: disable=no-member
                     self.tts.tts_to_file(text=segment, speaker=self.config.coqui_speaker,
                                          language=self.config.coqui_language, file_path=segment_audio)
+                    # pylint: enable=no-member
                     combined += AudioSegment.from_file(segment_audio)
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
@@ -196,7 +198,7 @@ class Speech(object):
                 for future in executor.map(tts_function, segments):
                     futures.append(future)
                 for i, future in enumerate(futures):
-                    segment_audio = f'{self.config.temp_path}{clean_title}-{hashes[i]}.mp3'
+                    segment_audio = os.path.join(self.config.temp_path,f'{clean_title}-{hashes[i]}.mp3')
                     if self.config.engine == "openai":
                         future.stream_to_file(segment_audio)
                     elif self.config.engine == "eleven":

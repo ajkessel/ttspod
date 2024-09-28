@@ -58,7 +58,7 @@ class Content(object):
                 title_search = decode_header(title_search)[0][0].decode()
             if title_search:
                 title = title_search
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             pass
         url = msg.get('message-id')
         if not url:

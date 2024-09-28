@@ -65,6 +65,7 @@ class Config(object):
     """configuration settings"""
     class Content(object):
         """content processor settings"""
+
         def __init__(self, working_path=None, log=None):
             self.log = log if log else Logger(debug=True)
             self.attachment_path = path.join(working_path, "attachments")
@@ -76,12 +77,14 @@ class Config(object):
 
     class Links(object):
         """link processor settings"""
+
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.user_agent = e.get('ttspod_user_agent')
 
     class Wallabag(object):
         """wallabag input settings"""
+
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.url = e.get('ttspod_wallabag_url')
@@ -92,6 +95,7 @@ class Config(object):
 
     class Pocket(object):
         """pocket input settings"""
+
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.consumer_key = e.get('ttspod_pocket_consumer_key')
@@ -99,6 +103,7 @@ class Config(object):
 
     class Insta(object):
         """instapaper input settings"""
+
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.key = e.get('ttspod_insta_key')
@@ -108,6 +113,7 @@ class Config(object):
 
     class Pod(object):
         """podcast output settings"""
+
         def __init__(self, final_path='', ssh_keyfile=None, ssh_password=None, log=None):
             self.log = log if log else Logger(debug=True)
             self.url = posix_join(e.get('ttspod_pod_url'), '')
@@ -127,6 +133,7 @@ class Config(object):
 
     class Speech(object):
         """tts processor settings"""
+
         def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None):
             self.log = log if log else Logger(debug=True)
             self.engine = engine if engine else e.get('ttspod_engine', '')
@@ -141,7 +148,7 @@ class Config(object):
                 'ttspod_whisper_t2s_model',
                 'whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model')
             self.whisper_s2a_model = e.get(
-                'ttspod_whisper_s2a_model', 
+                'ttspod_whisper_s2a_model',
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.whisper_voice = e.get('ttspod_whisper_voice')
             self.coqui_model = e.get(
@@ -179,10 +186,15 @@ class Config(object):
             self.working_path = re.sub(r'^./', '', self.working_path)
             self.working_path = path.join(
                 path.dirname(__file__), self.working_path)
-        self.temp_path = f'{self.working_path}temp/'
-        self.final_path = f'{self.working_path}output/'
+        self.temp_path = path.join(self.working_path, 'temp', '')
+        self.final_path = path.join(self.working_path, 'output', '')
+        self.logfile = e.get('ttspod_log')
+        if self.logfile and not '/' in self.logfile and not '\\' in self.logfile:
+            self.logfile = path.join(self.working_path, self.logfile)
+        if self.logfile:
+            self.log.update(logfile=self.logfile)
         self.pickle_filename = 'ttspod.pickle'
-        self.pickle = f'{self.working_path}{self.pickle_filename}'
+        self.pickle = path.join(self.working_path, self.pickle_filename)
         if e.get('ttspod_cache_path'):
             self.cache_path = posix_join(
                 e.get('ttspod_cache_path'), '')+self.pickle_filename
@@ -248,12 +260,12 @@ class Config(object):
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
         chmod(self.final_path, 0o755)
-        if not path.isfile(f'{self.working_path}noimage.lua'):
-            with open(f'{self.working_path}noimage.lua', 'w', encoding='ascii') as f:
+        if not path.isfile(path.join(self.working_path,'noimage.lua')):
+            with open(path.join(self.working_path,'noimage.lua'), 'w', encoding='ascii') as f:
                 f.write('function Image(el)\nreturn {}\n end')
         return True
 
     def __str__(self):
         result = (f'config: {str(vars(self))}\nwallabag: {str(vars(self.wallabag))}\n'
-        'pod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}')
+                  'pod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}')
         return result

@@ -1,3 +1,4 @@
+"""main module for triggering input and output modules"""
 # standard modules
 try:
     from os import path
@@ -52,7 +53,7 @@ class Main(object):
                     recursive=False
                 )
                 self.log.write('cache file synced successfully from server')
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 self.log.write(
                     f'something went wrong syncing the cache file {err}', True)
                 if "code 23" in str(err):
@@ -113,12 +114,12 @@ class Main(object):
                         )
                         self.log.write(
                             'cache file synced successfully to server')
-                    except Exception as err:
+                    except Exception as err:  # pylint: disable=broad-except
                         self.log.write(
                             f'something went wrong syncing the cache file {err}', True)
             else:
                 self.log.write('cache save failed, no podcast data exists')
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             self.log.write(f'cache save failed {err}')
 
     def process_wallabag(self, tag):

@@ -3,35 +3,33 @@
 try:
     import truststore
     truststore.inject_into_ssl()
-except:
+except ImportError:
     pass
 
 try:
     import instapaper
-    instapaper_available = True
-except:
-    instapaper_available = False
+    AVAILABLE_INSTAPAPER = True
+except ImportError:
+    AVAILABLE_INSTAPAPER = False
 
 # TTSPod modules
-from links import Links
 from logger import Logger
 
 
 class TTSInsta(object):
     def __init__(self, config, links, log):
-        global instapaper_available
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.p = None
-        if not (instapaper_available and self.config.username and self.config.password and self.config.key and self.config.secret):
+        if not (AVAILABLE_INSTAPAPER and self.config.username and self.config.password and self.config.key and self.config.secret):
             self.log.write("instapaper support not enabled")
             return
         self.links = links
         try:
             self.p = instapaper.Instapaper(self.config.key, self.config.secret)
             self.p.login(self.config.username, self.config.password)
-        except Exception as e:
-            self.log.write(f'instapaper login failed: {e}', error=True)
+        except Exception as err: # pylint: disable=broad-except
+            self.log.write(f'instapaper login failed: {err}', error=True)
         return
 
     def get_items(self, tag):
@@ -43,7 +41,7 @@ class TTSInsta(object):
             folders = self.p.folders()
             folder_id = [x for x in folders if x['title']
                          == tag][0]['folder_id']
-        except:
+        except Exception: # pylint: disable=broad-except
             pass
         if tag and not tag == "ALL" and not folder_id:
             self.log.write("no folder found for {tag}")
