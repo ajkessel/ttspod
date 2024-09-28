@@ -24,7 +24,8 @@ from logger import Logger
 
 
 class Main(object):
-    def __init__(self, debug=False, engine=None, force=False, dry=False, clean=False, logfile=None, quiet=False):
+    def __init__(self, debug=False, engine=None, force=False,
+                 dry=False, clean=False, logfile=None, quiet=False):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
         self.config = Config(engine=engine, log=self.log)
         self.p = None
@@ -54,10 +55,10 @@ class Main(object):
             except Exception as err:
                 self.log.write(
                     f'something went wrong syncing the cache file {err}', True)
-                if "code 23" in str(e):
+                if "code 23" in str(err):
                     self.log.write(
                         'if this is your first time running TTSPod, '
-                        'this is normal since the cache has never been synced', 
+                        'this is normal since the cache has never been synced',
                         True)
         if clean:
             self.log.write(
@@ -69,12 +70,12 @@ class Main(object):
                 with open(self.config.pickle, 'rb') as f:
                     [self.cache, self.p] = pickle.load(f)
             except:
-                raise Exception(f"failed to open saved data file {f}")
+                raise ValueError(f"failed to open saved data file {f}")
         return True
 
     def process(self, items):
         if not items:
-            self.log.write(f'no items found to process')
+            self.log.write('no items found to process')
             return False
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
@@ -111,14 +112,14 @@ class Main(object):
                             size_only=False
                         )
                         self.log.write(
-                            f'cache file synced successfully to server')
-                    except Exception as e:
+                            'cache file synced successfully to server')
+                    except Exception as err:
                         self.log.write(
-                            f'something went wrong syncing the cache file {e}', True)
+                            f'something went wrong syncing the cache file {err}', True)
             else:
                 self.log.write('cache save failed, no podcast data exists')
-        except Exception as e:
-            self.log.write(f'cache save failed {e}')
+        except Exception as err:
+            self.log.write(f'cache save failed {err}')
 
     def process_wallabag(self, tag):
         wallabag = Wallabag(config=self.config.wallabag, log=self.log)

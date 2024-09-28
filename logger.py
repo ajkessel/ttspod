@@ -1,3 +1,4 @@
+"""general purpose logging"""
 # standard modules
 try:
     from datetime import datetime
@@ -9,52 +10,57 @@ except ImportError as e:
 
 
 class Logger(object):
+    """screen and file logger"""
+
     def __init__(self, debug=False, quiet=False, logfile=None):
         self.debug = debug
         self.quiet = quiet
         self.logfile = logfile
-        self.loghandle = None
+        self.log_handle = None
         if self.debug:
             print("debug mode is on")
         if self.logfile:
             try:
-                self.loghandle = open(
+                self.log_handle = open(
                     self.logfile, "a", buffering=80, encoding="utf-8")
-                self.loghandle.write(
+                self.log_handle.write(
                     "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
-            except Exception as err:
-                print("error opening logfile {self.logfile}: {err}")
+            except Exception as err:  # pylint: disable=broad-except
+                print(f"error opening logfile {self.logfile}: {err}")
 
     def write(self, text='', error=False):
+        """write a message to screen and/or file"""
         if self.debug or (error and not self.quiet):
             print(text)
-        if self.loghandle:
-            self.loghandle.write(datetime.now().strftime(
+        if self.log_handle:
+            self.log_handle.write(datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S: ")+text+"\n")
 
     def update(self, debug=None, quiet=None, logfile=None):
-        newdebug = False
+        """update logging with new settings"""
+        new_debug = False
         if debug is not None:
             if self.debug != debug:
                 self.debug = debug
-                newdebug = True
+                new_debug = True
         if quiet is not None:
             self.quiet = quiet
         if logfile is not None:
-            if self.loghandle:
-                self.loghandle.close()
+            if self.log_handle:
+                self.log_handle.close()
             self.logfile = logfile
         if self.logfile:
             try:
-                self.loghandle = open(
+                self.log_handle = open(
                     self.logfile, "a", buffering=80, encoding="utf-8")
-                self.loghandle.write(
+                self.log_handle.write(
                     "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
-            except Exception as err:
-                print("error opening logfile {self.logfile}: {err}")
-        if newdebug and debug:
+            except Exception as err:  # pylint: disable=broad-except
+                print(f"error opening logfile {self.logfile}: {err}")
+        if new_debug and debug:
             self.write('debug mode is on')
 
     def close(self):
-        if self.loghandle:
-            self.loghandle.close()
+        """close and release log"""
+        if self.log_handle:
+            self.log_handle.close()

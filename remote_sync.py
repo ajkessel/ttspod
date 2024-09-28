@@ -2,7 +2,7 @@ try:
     from getpass import getuser
     from pathlib import Path
     from platform import system
-    from posixpath import join as posix_join, split as posixsplit
+    from posixpath import join as posix_join, split as posix_split
     import hashlib
     import os
     import paramiko
@@ -20,7 +20,6 @@ dbg = False
 
 def md5(file_path):
     """Calculate MD5 hash of a file."""
-    global dbg
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
@@ -32,7 +31,6 @@ def md5(file_path):
 
 def remote_get_md5(sftp, remote_file):
     """Calculate the MD5 hash of a remote file."""
-    global dbg
     try:
         # Open remote file
         with sftp.file(remote_file, "rb") as f:
@@ -50,7 +48,6 @@ def remote_get_md5(sftp, remote_file):
 
 def get_remote_size(sftp, remote_file):
     """Query the file size of a remote file."""
-    global dbg
     try:
         info = sftp.stat(remote_file)
         return info.st_size
@@ -60,7 +57,6 @@ def get_remote_size(sftp, remote_file):
 
 
 def parse_location(fullpath):
-    global dbg
     if not ':' in fullpath or (system() == 'Windows' and re.match(r'[A-Za-z]:', fullpath)):
         user = None
         domain = None
@@ -74,7 +70,6 @@ def parse_location(fullpath):
 
 
 def remote_isdir(sftp, remote_dir):
-    global dbg
     if dbg:
         print(f'Checking {remote_dir} for directory status')
     try:
@@ -95,7 +90,6 @@ def remote_isdir(sftp, remote_dir):
 
 
 def remote_mkdir(sftp, remote_dir):
-    global dbg
     remote_dir = remote_dir.rstrip('/')
     paths = [remote_dir]
     # sftp mkdir has no -p (parent) mode, so we simulate it by creating each parent directory
@@ -114,7 +108,6 @@ def remote_mkdir(sftp, remote_dir):
 
 
 def remote_isfile(sftp, remote_file):
-    global dbg
     try:
         fileattr = sftp.stat(remote_file)
         isfile = stat.S_ISREG(fileattr.st_mode)
@@ -133,7 +126,6 @@ def remote_isfile(sftp, remote_file):
 
 
 def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
-    global dbg
     initial_list = sftp.listdir(path=remote_dir)
     file_list = []
     for file in initial_list:
@@ -156,7 +148,6 @@ def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
 
 
 def local_get_filelist(local_dir='', recursive=False):
-    global dbg
     initial_list = os.listdir(local_dir)
     file_list = []
     for file in initial_list:
@@ -245,7 +236,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
         if remote_isfile(sftp, source_dir):
             fileonly = True
             # extract path and filename
-            source_dir, file = posixsplit(source_dir)
+            source_dir, file = posix_split(source_dir)
             # add single file to queue
             files.append(file)
             # if destination ends with /, sync to that directory,
@@ -272,18 +263,18 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 try:
                     if not dry_run:
                         Path(parent_dir).mkdir(parents=True, exist_ok=True)
-                except Exceptions as e:
-                    raise Exception(
-                        'Could not create destination directory {parent_dir}: {e}')
+                except Exception as e:
+                    raise ValueError(
+                        f'Could not create destination directory {parent_dir}: {e}')
             # source is directory or source is file and dest ends with /
             if not fileonly or (fileonly and destination_trail):
                 try:
                     if not dry_run:
                         Path(destination_dir).mkdir(
                             parents=True, exist_ok=True)
-                except Exceptions as e:
-                    raise Exception(
-                        'Could not create destination directory {destination_dir}: {e}')
+                except Exception as err:
+                    raise ValueError(
+                        f'Could not create destination directory {destination_dir}: {err}')
     elif destination_host:                               # local source, remote destination
         if os.path.isfile(source_dir):                   # source is file?
             fileonly = True
@@ -309,9 +300,10 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 try:
                     # if not, create it
                     remote_mkdir(sftp, destination_dir)
-                except Exception as e:
-                    raise Exception(
-                        'Could not create remote destination directory {destination_dir}: {e}')
+                except Exception as err:
+                    raise ValueError(
+                        'Could not create remote destination directory '
+                        f'{destination_dir}: {err}')
     else:                                                  # source and destination both local
         # source is file, not directory
         if os.path.isfile(source_dir):
@@ -335,9 +327,10 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                     if not dry_run:
                         Path(destination_dir).mkdir(
                             parents=True, exist_ok=True)
-                except Exception as e:
-                    raise Exception(
-                        'Could not create destination directory {destination_dir}: {e}')
+                except Exception as err:
+                    raise ValueError(
+                        'Could not create destination directory '
+                        f'{destination_dir}: {err}')
 
     if dbg:
         print(
@@ -473,8 +466,8 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                             Path(remote_file_path).mkdir(
                                 parents=True, exist_ok=True)
                         shutil.copy2(local_file, remote_file)
-                except Exception as e:
-                    print(f'Copy failed with error {e}')
+                except Exception as err:
+                    print(f'Copy failed with error {err}')
 
     if sftp and ssh:
         # Close connection

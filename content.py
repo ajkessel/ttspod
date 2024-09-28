@@ -38,12 +38,15 @@ except ImportError:
 
 
 class Content(object):
+    """content input processor"""
+
     def __init__(self, config, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
 
     def process_email(self, text, title=None):
-        if type(text) is str:
+        """email input processor"""
+        if isinstance(text, str):  # check if input is text or unicode
             msg = email.message_from_string(text)
         else:
             msg = email.message_from_bytes(text)
@@ -73,21 +76,22 @@ class Content(object):
                 if len(this_part) > len(longest_html_part):
                     longest_html_part = this_part
             elif self.config.attachments and part.get_content_type():
+                # if anything goes wrong extracting an attachment, just move on
+                # pylint: disable=broad-exception-caught
                 try:
                     this_part = part.get_payload(decode=True)
                     try:
                         this_filename = part.get_filename()
-                    # pylint: disable=broad-exception-caught
                     except Exception:
                         this_filename = str(uuid4())
-                    # pylint: enable=broad-exception-caught
                     if this_part:
                         with open(path.join(self.config.attachment_path, this_filename), "wb") as f:
                             f.write(this_part)
                             attachments.append(
                                 path.join(self.config.attachment_path, this_filename))
-                except:
+                except Exception:
                     pass
+                # pylint: enable=broad-exception-caught
         if longest_html_part:
             longest_html_part = str(clean_html(longest_html_part))
         if longest_plain_part:
@@ -105,17 +109,21 @@ class Content(object):
             entries.append(entry)
         self.log.write(f'email entry {entry}')
         for attachment in attachments:
+            # if anything goes wrong extracting an attachment, just move on
+            # pylint: disable=broad-exception-caught
             try:
                 self.log.write(
                     f'attempting to process attachment {attachment}')
                 entry = self.process_file(attachment)
                 entries.extend(entry)
                 self.log.write('success')
-            except:
+            except Exception:
                 pass
+            # pylint: enable=broad-exception-caught
         return entries
 
     def process_html(self, raw_html, title=None):
+        """clean up HTML and convert to plain text"""
         url = hashlib.md5(str(raw_html).encode()).hexdigest()
         title_search = re.search(
             r'<title>(.*?)</title>', string=str(raw_html), flags=re.I | re.DOTALL)
@@ -127,6 +135,8 @@ class Content(object):
         elif not title:
             title = "Untitled Content"
         self.log.write(f'found item with title {title}')
+        # do our best with Trafilatura; if that fails, try pandoc
+        # pylint: disable=broad-exception-caught
         if AVAILABLE_TRAFILATURA:
             try:
                 my_tree = html.fromstring(raw_html)
@@ -135,26 +145,29 @@ class Content(object):
                 title_search = trafilatura.extract_metadata(my_tree).title
                 if title_search and not title:
                     title = unescape(title_search)
-            except:
+            except Exception:
                 pass
         if not text:
             self.log.write('attempting pandoc extraction')
             try:
                 text = clean_html(raw_html)
-            except:
+            except Exception:
                 pass
+        # pylint: enable=broad-exception-caught
         text = clean_text(text)
         if text:
             entry = (title, text, url)
         return entry
 
     def hash_text(self, text):
+        """generate a unique hash from the input text for caching"""
         my_hash = hashlib.md5(str(text).encode()).hexdigest()
         if not my_hash:
             my_hash = str(uuid4())
         return my_hash
 
     def process_text(self, text, title=None):
+        """clean up text and convert into a TTS entry item"""
         url = self.hash_text(text)
         text = clean_text(text)
         if not title:
@@ -163,15 +176,9 @@ class Content(object):
         return entry
 
     def process_file(self, fname, title=None):
-        try:
-            with open(fname, 'r') as f:
-                c = f.read()
-        except UnicodeDecodeError:
-            with open(fname, 'rb') as f:
-                c = f.read()
-        except:
-            self.log.write(f'failed to process file {fname}', True)
-            return None
+        """read input file and try to determine filetype"""
+        with open(fname, 'rb') as f:
+            c = f.read()
         title = title if title else fname
         buffer_type = magic.from_buffer(c).lower()
         items = []
@@ -193,7 +200,7 @@ class Content(object):
                                              '--ascii',
                                              f'--lua-filter={self.config.lua_path}noimage.lua'
                                              ])
-            except:
+            except Exception:  # pylint: disable=broad-except
                 text = None
             if not text:
                 try:
@@ -207,7 +214,7 @@ class Content(object):
                                                      '--lua-filter='
                                                      f'{self.config.lua_path}noimage.lua'
                                                  ])
-                except:
+                except Exception:  # pylint: disable=broad-except
                     text = None
             self.log.write(f'process_file got raw text: {text}')
             if text:

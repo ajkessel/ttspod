@@ -1,7 +1,7 @@
 # standard modules
 try:
     from anyascii import anyascii
-    from concurrent.futures import ThreadPoolExecutor, wait
+    from concurrent.futures import ThreadPoolExecutor
     from sys import maxsize
     import os
     import re
@@ -23,7 +23,7 @@ from pathlib import Path
 # optional modules
 try:
     import nltk
-    from nltk.tokenize import sent_tokenize, word_tokenize, BlanklineTokenizer
+    from nltk.tokenize import sent_tokenize, BlanklineTokenizer
 except ImportError:
     pass
 cpu = 'cpu'
@@ -100,7 +100,7 @@ class Speech(object):
             try:
                 nltk.download('punkt_tab')
                 self.config.nltk = True
-            except:
+            except Exception:  # pylint: disable=broad-except
                 pass
 
     def slugify(self, value):
@@ -184,7 +184,7 @@ class Speech(object):
                 def tts_function(z): return self.tts.generate(
                     voice=self.config.eleven_voice, model=self.config.eleven_model, text=z)
             else:
-                raise exception("No TTS engine configured.")
+                raise ValueError("No TTS engine configured.")
             futures = []
             # TODO - use these hashes to see if any segment has already been transcribed
             self.log.write(f'processing {len(segments)} segments')

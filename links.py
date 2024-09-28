@@ -1,3 +1,4 @@
+"""process webpages via URL"""
 # optional modules (to trust local certificate store)
 try:
     import truststore
@@ -23,6 +24,7 @@ from logger import Logger
 
 
 class Links(object):
+    """URL input processor"""
     def __init__(self, config, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
@@ -31,6 +33,7 @@ class Links(object):
             self.my_config["DEFAULT"]["USER_AGENTS"] = self.config.user_agent
 
     def get_items(self, url, title=None):
+        """retrieve content in url"""
         entries = []
         if not validators.url(url):
             self.log.write(
@@ -53,6 +56,6 @@ class Links(object):
                 self.log.write(f"successfully processed {url} {title}")
             else:
                 self.log.write(f"failed to process {url}: no text returned")
-        except Exception as err:
+        except Exception as err: # pylint: disable=broad-except
             self.log.write(f"failed to process {url}: {err}")
         return entries
