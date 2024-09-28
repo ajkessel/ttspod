@@ -26,26 +26,26 @@ try:
     from nltk.tokenize import sent_tokenize, BlanklineTokenizer
 except ImportError:
     pass
-cpu = 'cpu'
+CPU = 'cpu'
 try:
     from torch import cuda
     if cuda.is_available():
-        cpu = 'cuda'
+        CPU = 'cuda'
 except ImportError:
     pass
 try:
     from torch.backends import mps
     if mps.is_available():
-        cpu = 'cpu'
+        CPU = 'cpu'
         # cpu = 'mps'
         # TODO: mps does not appear to work with coqui
 except ImportError:
     pass
-engines = {}
+ENGINES = {}
 try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import save
-    engines['eleven'] = True
+    ENGINES['eleven'] = True
 except ImportError:
     pass
 try:
@@ -53,19 +53,19 @@ try:
     import torch
     import torchaudio
     warnings.filterwarnings("ignore")  # to suppress TTS output
-    engines['whisper'] = True
+    ENGINES['whisper'] = True
 except ImportError:
     pass
 try:
     from TTS.api import TTS
-    engines['coqui'] = True
+    ENGINES['coqui'] = True
 except ImportError:
     pass
 try:
     from openai import OpenAI
     # necessary for OpenAI TTS streaming
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    engines['openai'] = True
+    ENGINES['openai'] = True
 except ImportError:
     pass
 
@@ -89,9 +89,9 @@ class Speech(object):
                                     s2a_ref=self.config.whisper_s2a_model, device=self.config.device, optimize=True)
             case "coqui":
                 self.tts = TTS(model_name=self.config.coqui_model,
-                               progress_bar=False).to(cpu)
+                               progress_bar=False).to(CPU)
             case _:
-                raise Exception('TTS engine not configured')
+                raise ValueError('TTS engine not configured')
         try:
             nltk.data.find('tokenizers/punkt_tab')
             self.config.nltk = True
@@ -112,7 +112,6 @@ class Speech(object):
         return re.sub(r'[-\s]+', '-', value).strip('-_')
 
     def speechify(self, title="missing", raw_text=""):
-        global engines, cpu
         clean_title = self.slugify(title)
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         text = anyascii(raw_text)
@@ -137,26 +136,30 @@ class Speech(object):
         else:
             paragraphs = text.split('\n\n')
         segments = []
+        if self.config.engine == 'coqui':
+            max_length = 250
+        else:
+            max_length = 4096
 
         for para in paragraphs:
             self.log.write(f"paragraph {para}")
             if len(para) < 8:  # skip very short lines which are likely not text
                 continue
-            if len(para) > 4096:  # break paragraphs greater than 4096 characters into sentences
+            if len(para) > max_length:  # break overlong paras into sentences
                 self.log.write(
                     f"further splitting paragraph of length {len(para)}")
                 if self.config.nltk:
                     sentences = sent_tokenize(para)
                 else:
-                    sentences = textwrap.wrap(text = para, width = 4096)
+                    sentences = textwrap.wrap(text = para, width = max_length)
                 for sentence in sentences:
                     # break sentences greater than 4096 characters into smaller pieces
-                    if len(sentence) > 4096:
-                        chunks = textwrap.wrap(text = sentence, width = 4096)
+                    if len(sentence) > max_length:
+                        chunks = textwrap.wrap(text = sentence, width = max_length)
                         for chunk in chunks:
-                            if len(chunk) < 4096:
+                            if len(chunk) < max_length:
                                 segments.append(chunk)
-                            else:  # if we can't find pieces smaller than 4096 characters, we give up
+                            else:  # if we can't find a small enough piece, we give up
                                 self.log.write(
                                     "abnormal sentence fragment found, skipping")
                     else:
@@ -198,7 +201,10 @@ class Speech(object):
                 for future in executor.map(tts_function, segments):
                     futures.append(future)
                 for i, future in enumerate(futures):
-                    segment_audio = os.path.join(self.config.temp_path,f'{clean_title}-{hashes[i]}.mp3')
+                    segment_audio = os.path.join(
+                        self.config.temp_path,
+                        f'{clean_title}-{hashes[i]}.mp3'
+                        )
                     if self.config.engine == "openai":
                         future.stream_to_file(segment_audio)
                     elif self.config.engine == "eleven":
@@ -230,8 +236,7 @@ class Speech(object):
             chunks.append(chunk)
         return chunks
 
-    def whisper_long(self, chunks=[], cps=14, overlap=100, output=None, speaker=None):
-        global atoks, stoks
+    def whisper_long(self, chunks=None, cps=14, overlap=100, output=None, speaker=None):
         if not speaker:
             speaker = self.tts.default_speaker
         elif isinstance(speaker, (str, Path)):
@@ -241,13 +246,16 @@ class Speech(object):
         old_atoks = None
         for i, chunk in enumerate(chunks):
             self.log.write(
-                f"processing chunk {i+1} of {len(chunks)}\n--------------------------\n{chunk}\n--------------------------\n")
+                f"processing chunk {i+1} of {len(chunks)}\n"
+                "--------------------------\n"
+                f"{chunk}\n"
+                "--------------------------\n")
             try:
                 stoks = self.tts.t2s.generate(
                     chunk, cps=cps, show_progress_bar=False)[0]
                 stoks = stoks[stoks != 512]
                 if old_stoks is not None:
-                    assert (len(stoks) < 750-overlap)  # TODO
+                    assert len(stoks) < 750-overlap  # TODO
                     stoks = torch.cat([old_stoks[-overlap:], stoks])
                     atoks_prompt = old_atoks[:, :, -overlap*3:]
                 else:

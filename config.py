@@ -31,11 +31,11 @@ try:
         CPU = 'mps'
 except ImportError:
     pass
-engines = {}
+ENGINES = {}
 try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import save
-    engines['eleven'] = True
+    ENGINES['eleven'] = True
 except ImportError:
     pass
 try:
@@ -43,19 +43,19 @@ try:
     import torch
     import torchaudio
     filterwarnings("ignore")  # to suppress TTS output
-    engines['whisper'] = True
+    ENGINES['whisper'] = True
 except ImportError:
     pass
 try:
     from TTS.api import TTS
-    engines['coqui'] = True
+    ENGINES['coqui'] = True
 except ImportError:
     pass
 try:
     from openai import OpenAI
     # necessary for OpenAI TTS streaming
     filterwarnings("ignore", category=DeprecationWarning)
-    engines['openai'] = True
+    ENGINES['openai'] = True
 except ImportError:
     pass
 # pylint: enable=unused-import
