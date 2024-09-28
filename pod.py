@@ -1,3 +1,4 @@
+"""podcast feed generator"""
 # standard modules
 try:
     import pod2gen
@@ -16,12 +17,15 @@ from remote_sync import sync as rsync
 
 
 class Pod(object):
+    """podcast feed generator"""
+
     def __init__(self, config, p=None, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.p = p if p else self.new()
 
     def new(self):
+        """create new feed when none exists"""
         pod = pod2gen.Podcast()
         pod.name = self.config.name
         pod.website = self.config.url
@@ -35,10 +39,12 @@ class Pod(object):
         return pod
 
     def save(self):
+        """save feed to disk"""
         self.p.rss_file(self.config.rss_file, minimize=False)
         chmod(self.config.rss_file, 0o644)
 
     def sync(self):
+        """sync feed and mp3 files to server"""
         if self.config.ssh_server_path:
             rsync(
                 source=self.config.final_path,
@@ -55,6 +61,7 @@ class Pod(object):
                 "ssh_server_path not defined so not uploading results")
 
     def add(self, entry):
+        """add an item to the podcast feed"""
         (url, title, fullpath) = entry
         filename = split(fullpath)[1]
         size = getsize(fullpath)

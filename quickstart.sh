@@ -1,8 +1,8 @@
 #!/bin/bash
 yesno() {
   echo -n "${1} (y/n) "
-  read answer
-  f=$(echo "${answer}" | tr "A-Z" "a-z" | grep -o '^.')
+  read -r answer
+  f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
 venv() {
@@ -29,6 +29,7 @@ venv() {
     echo Virtual environment creation failed. Exiting.
     exit 1
   fi
+  # shellcheck source=.venv/bin/activate
   source .venv/bin/activate
   echo installing requirements
   pip3 install -r requirements.txt
@@ -45,20 +46,20 @@ venv() {
 }
 title() {
   len="${#1}"
-  pad=$((30-((len/2))))
-  padding=$(printf -- '-%.0s' `seq 1 $pad`)
+  pad=$((30-(len/2)))
+  padding=$(printf -- '-%.0s' $(seq 1 $pad))
   echo "${padding} ${1} ${padding}"
 }
 footer() {
   printf -- '--------------------------------------------------------------\n\n'
 }
 
-[ $(uname) == "Darwin" ] && MAC=1
+[ "$(uname)" == "Darwin" ] && MAC=1
 command -v brew &> /dev/null && BREW=1
-[ $EDITOR ] || command -v nano &> /dev/null && EDITOR=nano || command -v vim &> /dev/null && EDITOR=vim || command -v vi &> /dev/null && EDITOR=vi 
+[ "$EDITOR" ] || command -v nano &> /dev/null && EDITOR="nano" || command -v vim &> /dev/null && EDITOR="vim" || command -v vi &> /dev/null && EDITOR="vi" 
 
 title TTSPod Installer
-echo This will set things up under your current directory `pwd`
+echo "This will set things up under your current directory $(pwd)"
 if ! yesno 'Proceed?'
 then
   echo OK, exiting.
@@ -77,7 +78,7 @@ pyexe="python3.11"
 if ! command -v "${pyexe}" &> /dev/null
 then
   echo 'This is only tested with python3.11, which seems to be missing from your system.'
-  if [ $MAC ] && [ $BREW ]
+  if [ "${MAC}" ] && [ "${BREW}" ]
   then
     if yesno 'Do you want to install with homebrew?'
     then
@@ -103,7 +104,7 @@ footer
 title 'venv'
 if [ -d "./.venv" ]
 then
-  if yesno 'A .venv folder already exists under `pwd`. Do you want to move it out of the way and generate fresh?'
+  if yesno "A .venv folder already exists under $(pwd). Do you want to move it out of the way and generate fresh?"
   then
     timestamp=$(date +%s)
     mv ".venv" ".venv-${timestamp}"
@@ -117,11 +118,11 @@ fi
 [ -z "${skipvenv}" ] && venv
 footer
 
-if [ $MAC ]
+if [ "${MAC}" ]
 then
   title 'mac install'
   echo 'MacOS environment detected.'
-  if [ $BREW ]
+  if [ "${BREW}" ]
   then
     if ! brew list libmagic > /dev/null 2>&1
     then

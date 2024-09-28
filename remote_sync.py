@@ -1,3 +1,4 @@
+"""python-native inefficient implementation of rsync"""
 try:
     from getpass import getuser
     from pathlib import Path
@@ -59,6 +60,7 @@ def get_remote_size(sftp, remote_file):
 
 
 def parse_location(fullpath):
+    """split path into username, domain name, and filesystem path"""
     if not ':' in fullpath or (system() == 'Windows' and re.match(r'[A-Za-z]:', fullpath)):
         user = None
         domain = None
@@ -72,11 +74,12 @@ def parse_location(fullpath):
 
 
 def remote_isdir(sftp, remote_dir):
+    """check if remote path is a directory"""
     if dbg:
         print(f'Checking {remote_dir} for directory status')
     try:
-        fileattr = sftp.stat(remote_dir)
-        isdir = stat.S_ISDIR(fileattr.st_mode)
+        file_attribute = sftp.stat(remote_dir)
+        isdir = stat.S_ISDIR(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
         if dbg:
             print(f'Could not check {remote_dir}')
@@ -92,6 +95,7 @@ def remote_isdir(sftp, remote_dir):
 
 
 def remote_mkdir(sftp, remote_dir):
+    """create remote directory if it does not exist"""
     remote_dir = remote_dir.rstrip('/')
     paths = [remote_dir]
     # sftp mkdir has no -p (parent) mode, so we simulate it by creating each parent directory
@@ -110,9 +114,10 @@ def remote_mkdir(sftp, remote_dir):
 
 
 def remote_isfile(sftp, remote_file):
+    """check if remote path is a file"""
     try:
-        fileattr = sftp.stat(remote_file)
-        isfile = stat.S_ISREG(fileattr.st_mode)
+        file_attribute = sftp.stat(remote_file)
+        isfile = stat.S_ISREG(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
         if dbg:
             print(f'Could not check file {remote_file}')
@@ -128,6 +133,7 @@ def remote_isfile(sftp, remote_file):
 
 
 def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
+    """get remote list of files to sync"""
     initial_list = sftp.listdir(path=remote_dir)
     file_list = []
     for file in initial_list:
@@ -150,6 +156,7 @@ def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
 
 
 def local_get_filelist(local_dir='', recursive=False):
+    """build a local list of files to sync"""
     initial_list = os.listdir(local_dir)
     file_list = []
     for file in initial_list:
@@ -171,7 +178,18 @@ def local_get_filelist(local_dir='', recursive=False):
     return file_list
 
 
-def sync(source=None, destination=None, port=22, username=None, password=None, keyfile=None, size_only=False, debug=False, dry_run=False, recursive=False):
+def sync(
+    source=None,
+    destination=None,
+    port=22,
+    username=None,
+    password=None,
+    keyfile=None,
+    size_only=False,
+    debug=False,
+    dry_run=False,
+    recursive=False
+):
     """Sync source folder or file to destination folder."""
     global dbg  # pylint: disable=global-statement
     dbg = debug
@@ -220,7 +238,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
         except Exception as err:
             raise ValueError(f'SSH connection failed {err}') from err
         if dbg:
-            print("connection succesful")
+            print("connection successful")
         # Open SFTP session
         sftp = ssh.open_sftp()
     else:
@@ -231,12 +249,12 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
 
     source_trail = source.endswith('/')
     destination_trail = destination.endswith('/')
-    fileonly = False
+    file_only = False
 
     if source_host:                                    # remote source, local destination
         # check if source is a file or directory
         if remote_isfile(sftp, source_dir):
-            fileonly = True
+            file_only = True
             # extract path and filename
             source_dir, file = posix_split(source_dir)
             # add single file to queue
@@ -247,8 +265,9 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 # normalize destination path for POSIX
                 destination_dir = os.path.join(destination_dir, '')
         else:                                          # directory transfer
-            fileonly = False
-            # if neither source nor destination ends with /, add last part of source directory to destination path
+            file_only = False
+            # if neither source nor destination ends with /
+            # add last part of source dir to destination path
             if not source_trail and not destination_trail:
                 destination_dir = os.path.join(
                     destination_dir, os.path.basename(os.path.normpath(source_dir)))
@@ -259,7 +278,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
         # create destination directory if:
         if not os.path.isdir(destination_dir):
             # there is a leading path in the destination directory
-            if fileonly and not destination_trail and destination_dir.count('/') > 1:
+            if file_only and not destination_trail and destination_dir.count('/') > 1:
                 parent_dir = re.sub(
                     r'/[^/]*$', '', destination_dir.rstrip('/'))
                 try:
@@ -269,7 +288,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                     raise ValueError(
                         f'Could not create destination directory {parent_dir}: {err}') from err
             # source is directory or source is file and dest ends with /
-            if not fileonly or (fileonly and destination_trail):
+            if not file_only or (file_only and destination_trail):
                 try:
                     if not dry_run:
                         Path(destination_dir).mkdir(
@@ -279,7 +298,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                         f'Could not create destination directory {destination_dir}: {err}') from err
     elif destination_host:                               # local source, remote destination
         if os.path.isfile(source_dir):                   # source is file?
-            fileonly = True
+            file_only = True
             source_dir, file = os.path.split(
                 source_dir)  # extract path and filename
             # add single file to queue
@@ -295,10 +314,10 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 local_dir=source_dir, recursive=recursive)
             destination_dir = posix_join(destination_dir, '')
         else:                                          # source is neither file nor directory
-            raise Exception(f'Error checking status of source {source_dir}')
+            raise ValueError(f'Error checking status of source {source_dir}')
         # check if remote directory exists
         if not remote_isdir(sftp, destination_dir):
-            if not fileonly or (fileonly and destination_trail):
+            if not file_only or (file_only and destination_trail):
                 try:
                     # if not, create it
                     remote_mkdir(sftp, destination_dir)
@@ -309,14 +328,14 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
     else:                                                  # source and destination both local
         # source is file, not directory
         if os.path.isfile(source_dir):
-            fileonly = True
+            file_only = True
             source_dir, file = os.path.split(
                 source_dir)   # extract path and filename
             # add single file to queue
             files.append(file)
-            if destination_trail:                          # if destination ends with /, assume it is a dircetory
+            if destination_trail:  # if destination ends with /, assume it is a dir
                 destination_dir = os.path.join(destination_dir, '')
-        else:                                              # source is directory
+        else:  # source is directory
             if not source_trail and not destination_trail:
                 destination_dir = os.path.join(
                     destination_dir, os.path.basename(os.path.normpath(source_dir)))
@@ -324,7 +343,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             files = local_get_filelist(source_dir, recursive=recursive)
             destination_dir = os.path.join(destination_dir, '')
         if not os.path.isdir(destination_dir):
-            if not fileonly or (fileonly and destination_trail):
+            if not file_only or (file_only and destination_trail):
                 try:
                     if not dry_run:
                         Path(destination_dir).mkdir(
@@ -332,11 +351,15 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 except Exception as err:
                     raise ValueError(
                         'Could not create destination directory '
-                        f'{destination_dir}: {err}')
+                        f'{destination_dir}: {err}') from err
 
     if dbg:
         print(
-            f'source host: {source_host}\nsource: {source_dir}\ndestination host: {destination_host}\ndestination: {destination_dir}')
+            f'source host: {source_host}\n'
+            f'source: {source_dir}\n'
+            f'destination host: {destination_host}\n'
+            f'destination: {destination_dir}'
+        )
 
     # Sync files
     if destination_host:  # local source to remote destination
@@ -348,7 +371,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 if not dry_run:
                     remote_mkdir(sftp, posix_join(
                         destination_dir, local_file_path))
-            if fileonly and not destination_trail:
+            if file_only and not destination_trail:
                 remote_file = destination_dir
             else:
                 # assume remote system supports POSIX paths
@@ -390,14 +413,15 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
         for filename in files:
             # assume remote system supports POSIX paths
             remote_file = posix_join(source_dir, filename)
-            if not fileonly and remote_file.count('/') > 1:
+            if not file_only and remote_file.count('/') > 1:
                 remote_file_path = re.sub(r'^[^/]*/', '', remote_file)
                 remote_file_path = re.sub(r'/[^/]*$', '', remote_file_path)
                 if not dry_run:
                     Path(os.path.join(destination_dir, remote_file_path)).mkdir(
                         parents=True, exist_ok=True)
             local_file = os.path.join(
-                destination_dir, filename) if not fileonly or destination_trail else destination_dir
+                destination_dir, filename
+            ) if not file_only or destination_trail else destination_dir
             local_check = None
             if os.path.isfile(local_file):
                 remote_check = get_remote_size(
@@ -451,7 +475,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                     try:
                         if not dry_run:
                             shutil.copy2(local_file, remote_file)
-                    except Exception as err:
+                    except Exception as err:  # pylint: disable=broad-except
                         print(f'Copy failed with error {err}')
                 else:
                     if dbg:
@@ -468,7 +492,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                             Path(remote_file_path).mkdir(
                                 parents=True, exist_ok=True)
                         shutil.copy2(local_file, remote_file)
-                except Exception as err:
+                except Exception as err:  # pylint: disable=broad-except
                     print(f'Copy failed with error {err}')
 
     if sftp and ssh:

@@ -1,3 +1,4 @@
+"""instapaper input module"""
 # optional modules
 # truststore to trust local certificates
 try:
@@ -17,22 +18,31 @@ from logger import Logger
 
 
 class TTSInsta(object):
+    """instapaper input"""
+
     def __init__(self, config, links, log):
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.p = None
-        if not (AVAILABLE_INSTAPAPER and self.config.username and self.config.password and self.config.key and self.config.secret):
+        if not (
+            AVAILABLE_INSTAPAPER and
+            self.config.username and
+            self.config.password and
+            self.config.key and
+            self.config.secret
+        ):
             self.log.write("instapaper support not enabled")
             return
         self.links = links
         try:
             self.p = instapaper.Instapaper(self.config.key, self.config.secret)
             self.p.login(self.config.username, self.config.password)
-        except Exception as err: # pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except
             self.log.write(f'instapaper login failed: {err}', error=True)
         return
 
     def get_items(self, tag):
+        """retrieve items matching tag"""
         if not self.p:
             self.log.write("instapaper support not enabled")
             return None
@@ -41,7 +51,7 @@ class TTSInsta(object):
             folders = self.p.folders()
             folder_id = [x for x in folders if x['title']
                          == tag][0]['folder_id']
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             pass
         if tag and not tag == "ALL" and not folder_id:
             self.log.write("no folder found for {tag}")

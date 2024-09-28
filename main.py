@@ -25,6 +25,7 @@ from logger import Logger
 
 
 class Main(object):
+    """main orchestrating object"""
     def __init__(self, debug=False, engine=None, force=False,
                  dry=False, clean=False, logfile=None, quiet=False):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
@@ -42,6 +43,7 @@ class Main(object):
             self.log.write("dry-run mode")
 
     def load_cache(self, clean=False):
+        """load podcast and cache from pickle if available"""
         if self.config.cache_path:
             try:
                 rsync(
@@ -70,11 +72,12 @@ class Main(object):
             try:
                 with open(self.config.pickle, 'rb') as f:
                     [self.cache, self.p] = pickle.load(f)
-            except:
-                raise ValueError(f"failed to open saved data file {f}")
+            except Exception as err:
+                raise ValueError(f"failed to open saved data file {f}: {err}") from err
         return True
 
     def process(self, items):
+        """feed items retrieved by input modules to TTS output modules"""
         if not items:
             self.log.write('no items found to process')
             return False
@@ -98,6 +101,7 @@ class Main(object):
         return True
 
     def save_cache(self):
+        """save cache and podcast pickle"""
         try:
             if self.pod:  # only save/sync cache if podcast data exists
                 with open(self.config.pickle, 'wb') as f:
@@ -123,38 +127,45 @@ class Main(object):
             self.log.write(f'cache save failed {err}')
 
     def process_wallabag(self, tag):
+        """process wallabag items matching tag"""
         wallabag = Wallabag(config=self.config.wallabag, log=self.log)
         items = wallabag.get_items(tag)
         return self.process(items)
 
     def process_link(self, url, title=None):
+        """process link content from URL"""
         links = Links(config=self.config.links, log=self.log)
         items = links.get_items(url, title)
         return self.process(items)
 
     def process_pocket(self, tag='audio'):
+        """process pocket items matching tag"""
         links = Links(config=self.config.links, log=self.log)
         p = TTSPocket(config=self.config.pocket, links=links, log=self.log)
         items = p.get_items(tag)
         return self.process(items)
 
     def process_insta(self, tag):
+        """process instapaper items matching tag"""
         links = Links(self.config.links)
         p = TTSInsta(config=self.config.insta, links=links, log=self.log)
         items = p.get_items(tag)
         return self.process(items)
 
     def process_content(self, text, title=None):
+        """process any sort of text content"""
         content = Content(config=self.config.content, log=self.log)
         items = content.get_items(text, title)
         return self.process(items)
 
     def process_file(self, fname, title=None):
+        """process input from files"""
         content = Content(config=self.config.content, log=self.log)
         items = content.process_file(fname, title)
         return self.process(items)
 
     def finalize(self):
+        """finalize session by saving and syncing podcast and cache"""
         if not self.dry:
             self.pod.save()
             self.pod.sync()
