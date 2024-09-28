@@ -3,8 +3,8 @@ try:
     from pypandoc import convert_text
     from html import unescape
     from html2text import html2text
-    from os import name as platform
     from unidecode import unidecode
+    from platform import platform
     import re
 except ImportError as e:
     print(
@@ -13,10 +13,17 @@ except ImportError as e:
     exit()
 
 OS = None
-if platform == 'nt':
+my_platform = platform().lower()
+if "windows" in my_platform:
     try:
         from semaphore_win_ctypes import Semaphore
         OS = 'windows'
+    except ImportError:
+        pass
+elif "macos" in my_platform:
+    try:
+        import posix_ipc
+        OS = 'mac'
     except ImportError:
         pass
 else:
@@ -29,7 +36,7 @@ else:
 # pylint: disable=bare-except
 
 
-def getLock(name='ttspod', timeout=5):
+def get_lock(name='ttspod', timeout=5):
     locked = False
     match OS:
         case 'unix':
@@ -37,6 +44,14 @@ def getLock(name='ttspod', timeout=5):
                 f"/{name}", posix_ipc.O_CREAT, initial_value=1)
             try:
                 sem.acquire(timeout=timeout)
+                locked = True
+            except:
+                pass
+        case 'mac':
+            sem = posix_ipc.Semaphore(
+                f"/{name}", posix_ipc.O_CREAT, initial_value=1)
+            try:
+                sem.acquire(timeout=0)
                 locked = True
             except:
                 pass
@@ -88,12 +103,12 @@ def clean_html(raw_html):
             format='html',
             extra_args=['--wrap=none', '--strip-comments']
         )
-    except Exception:
+    except Exception: # py-lint: disable=broad-except
         pass
     if not text:
         try:
             text = html2text(raw_html)
-        except:
+        except Exception: # pylint: disable=broad-except
             pass
     if text:
         text = clean_text(text)

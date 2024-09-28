@@ -25,6 +25,7 @@ from logger import Logger
 
 class Links(object):
     """URL input processor"""
+
     def __init__(self, config, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
@@ -56,6 +57,6 @@ class Links(object):
                 self.log.write(f"successfully processed {url} {title}")
             else:
                 self.log.write(f"failed to process {url}: no text returned")
-        except Exception as err: # pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except
             self.log.write(f"failed to process {url}: {err}")
         return entries

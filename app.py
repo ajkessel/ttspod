@@ -15,7 +15,7 @@ except ImportError as e:
 
 # TTSPod modules
 from main import Main
-from util import getLock, release_lock
+from util import get_lock, release_lock
 
 
 class App(object):
@@ -100,7 +100,7 @@ class App(object):
     def run(self):
         """primary app loop"""
         try:
-            if not getLock():
+            if not get_lock():
                 if not self.force:
                     print(
                         'Another instance of ttspod was detected running. '

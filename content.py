@@ -58,7 +58,7 @@ class Content(object):
                 title_search = decode_header(title_search)[0][0].decode()
             if title_search:
                 title = title_search
-        except Exception: # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             pass
         url = msg.get('message-id')
         if not url:
@@ -104,7 +104,8 @@ class Content(object):
         if longest_html_part:
             longest_html_part = str(clean_html(longest_html_part))
         if "<html" in str(longest_plain_part):
-            longest_plain_part = re.search(r'<html.*</html>',str(longest_plain_part))[0]
+            longest_plain_part = re.search(
+                r'<html.*</html>', str(longest_plain_part))[0]
             longest_plain_part = str(clean_html(longest_plain_part))
         if longest_plain_part:
             longest_plain_part = longest_plain_part.decode('ascii', 'ignore')
