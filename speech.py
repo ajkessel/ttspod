@@ -1,3 +1,4 @@
+"""main TTS processor"""
 # standard modules
 try:
     from anyascii import anyascii
@@ -75,6 +76,7 @@ except ImportError:
 
 
 class Speech(object):
+    """main TTS processor"""
     def __init__(self, config, dry=False, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
@@ -107,9 +109,9 @@ class Speech(object):
                 self.config.nltk = True
             except Exception:  # pylint: disable=broad-except
                 self.log.write("nltk loading failed")
-                pass
 
     def slugify(self, value):
+        """convert an arbitrary string to a valid filename"""
         value = str(value)
         value = unicodedata.normalize('NFKD', value).encode(
             'ascii', 'ignore').decode('ascii')
@@ -117,6 +119,7 @@ class Speech(object):
         return re.sub(r'[-\s]+', '-', value).strip('-_')
 
     def speechify(self, title="missing", raw_text=""):
+        """workhorse TTS function"""
         clean_title = self.slugify(title)
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         text = anyascii(raw_text)
@@ -233,13 +236,14 @@ class Speech(object):
                 combined.export(out_file, format="mp3")
                 if os.path.isfile(out_file):
                     os.chmod(out_file, 0o644)
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             self.log.write(
                 f'TTS engine {self.config.engine} failed: {err}\n'+format_exc()
             )
         return out_file if os.path.isfile(out_file) else None
 
     def split_and_prepare_text(self, text, cps=14):
+        """break text into chunks for whisperspeech"""
         chunks = []
         sentences = sent_tokenize(text)
         chunk = ""
@@ -259,6 +263,7 @@ class Speech(object):
         return chunks
 
     def whisper_long(self, chunks=None, cps=14, overlap=100, output=None, speaker=None):
+        """main whisperspeech generator"""
         if not speaker:
             speaker = self.tts.default_speaker
         elif isinstance(speaker, (str, Path)):

@@ -15,6 +15,8 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
+# TODO: rework the debug/dbg and output logic
+# probably want to just generate a string with output and return it
 dbg = False
 
 
@@ -171,7 +173,7 @@ def local_get_filelist(local_dir='', recursive=False):
 
 def sync(source=None, destination=None, port=22, username=None, password=None, keyfile=None, size_only=False, debug=False, dry_run=False, recursive=False):
     """Sync source folder or file to destination folder."""
-    global dbg
+    global dbg  # pylint: disable=global-statement
     dbg = debug
     ssh = None
     sftp = None
@@ -216,7 +218,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 raise ValueError(
                     "Either password or ssh key required to make connection")
         except Exception as err:
-            raise ValueError(f'SSH connection failed {err}')
+            raise ValueError(f'SSH connection failed {err}') from err
         if dbg:
             print("connection succesful")
         # Open SFTP session
@@ -265,7 +267,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                         Path(parent_dir).mkdir(parents=True, exist_ok=True)
                 except Exception as err:
                     raise ValueError(
-                        f'Could not create destination directory {parent_dir}: {err}')
+                        f'Could not create destination directory {parent_dir}: {err}') from err
             # source is directory or source is file and dest ends with /
             if not fileonly or (fileonly and destination_trail):
                 try:
@@ -274,7 +276,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                             parents=True, exist_ok=True)
                 except Exception as err:
                     raise ValueError(
-                        f'Could not create destination directory {destination_dir}: {err}')
+                        f'Could not create destination directory {destination_dir}: {err}') from err
     elif destination_host:                               # local source, remote destination
         if os.path.isfile(source_dir):                   # source is file?
             fileonly = True
@@ -303,7 +305,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                 except Exception as err:
                     raise ValueError(
                         'Could not create remote destination directory '
-                        f'{destination_dir}: {err}')
+                        f'{destination_dir}: {err}') from err
     else:                                                  # source and destination both local
         # source is file, not directory
         if os.path.isfile(source_dir):
@@ -449,8 +451,8 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
                     try:
                         if not dry_run:
                             shutil.copy2(local_file, remote_file)
-                    except Exception as e:
-                        print(f'Copy failed with error {e}')
+                    except Exception as err:
+                        print(f'Copy failed with error {err}')
                 else:
                     if dbg:
                         print(
