@@ -9,6 +9,7 @@ try:
     import unicodedata
     import uuid
     import warnings
+    from platform import processor
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -36,9 +37,11 @@ except ImportError:
 try:
     from torch.backends import mps
     if mps.is_available():
-        CPU = 'cpu'
-        # cpu = 'mps'
-        # TODO: mps does not appear to work with coqui
+        if platform() == 'arm':
+            CPU = 'mps'
+        else:
+            CPU = 'cpu'
+        # TODO: mps does not appear to work with coqui on i386
 except ImportError:
     pass
 ENGINES = {}
