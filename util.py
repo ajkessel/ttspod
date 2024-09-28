@@ -1,29 +1,39 @@
+"""general purpose utility functions"""
 try:
     from pypandoc import convert_text
     from html import unescape
+    from html2text import html2text
+    from os import name as platform
     import re
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
-platform=None
-try:
-    import posix_ipc
-    platform='unix'
-except ImportError:
-    pass
-try:
-    from semaphore_win_ctypes import Semaphore
-    platform='windows'
-except ImportError:
-    pass
+OS = None
+if platform == 'nt':
+    try:
+        from semaphore_win_ctypes import Semaphore
+        OS = 'windows'
+    except ImportError:
+        pass
+else:
+    try:
+        import posix_ipc
+        OS = 'unix'
+    except ImportError:
+        pass
 
-def getLock(name='ttspod',timeout=5):
-    global platform
+# pylint: disable=bare-except
+
+
+def getLock(name='ttspod', timeout=5):
     locked = False
-    match platform:
+    match OS:
         case 'unix':
-            sem = posix_ipc.Semaphore(f"/{name}", posix_ipc.O_CREAT, initial_value=1)
+            sem = posix_ipc.Semaphore(
+                f"/{name}", posix_ipc.O_CREAT, initial_value=1)
             try:
                 sem.acquire(timeout=timeout)
                 locked = True
@@ -33,21 +43,21 @@ def getLock(name='ttspod',timeout=5):
             sem = Semaphore(name)
             try:
                 sem.open()
-                result = sem.acquire(timeout_ms = timeout*1000)
+                result = sem.acquire(timeout_ms=timeout*1000)
                 locked = True if result else False
             except:
                 try:
-                    sem.create(maximum_count = 1)
-                    result = sem.acquire(timeout_ms = timeout*1000)
+                    sem.create(maximum_count=1)
+                    result = sem.acquire(timeout_ms=timeout*1000)
                     locked = True if result else False
                 except:
                     pass
     return locked
 
-def releaseLock(name='ttspod',timeout=5):
-    global platform
+
+def releaseLock(name='ttspod'):
     released = False
-    match platform:
+    match OS:
         case 'unix':
             try:
                 sem = posix_ipc.Semaphore(f"/{name}")
@@ -65,27 +75,40 @@ def releaseLock(name='ttspod',timeout=5):
             except:
                 pass
     return released
+# pylint: enable=bare-except
 
-def cleanHTML(rawhtml):
-    text = convert_text(
-            rawhtml,
+
+def clean_html(raw_html):
+    text = None
+    try:
+        text = convert_text(
+            raw_html,
             'plain',
             format='html',
             extra_args=['--wrap=none', '--strip-comments']
-            )
-    text = cleanText(text)
-    return text
-
-def cleanText(text):
-    try:
-        text = unescape(text)
-        text = re.sub(r'https?:[^ ]*','',text)
-        text = text.replace(u'\u201c', '"').replace(u'\u201d', '"').replace(u'\u2018',"'").replace(u'\u2019',"'").replace(u'\u00a0',' ')
-        text = re.sub(r'[^A-Za-z0-9 \n\/\(\)_.,!"\']',' ',text)
-        text = re.sub(r'^ *$','\n',text,flags = re.MULTILINE)
-        text = re.sub(r'\n\n+','\n\n',text)
-        text = re.sub(r' +',' ',text)
-        text = text.strip()
+        )
     except:
         pass
+    if not text:
+        try:
+            text = html2text(raw_html)
+        except:
+            pass
+    if text:
+        text = clean_text(text)
+        return text
+    else:
+        return ""
+
+
+def clean_text(text):
+    text = unescape(text)
+    text = re.sub(r'https?:[^ ]*', '', text)
+    text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
+        '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
+    text = re.sub(r'[^A-Za-z0-9 \n\/\(\)_.,!"\']', ' ', text)
+    text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
+    text = re.sub(r'\n\n+', '\n\n', text)
+    text = re.sub(r' +', ' ', text)
+    text = text.strip()
     return text

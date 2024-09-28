@@ -9,8 +9,10 @@ try:
     import unicodedata
     import uuid
     import warnings
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
 # TTSPod modules
@@ -35,7 +37,7 @@ try:
     from torch.backends import mps
     if mps.is_available():
         cpu = 'cpu'
-        #cpu = 'mps'
+        # cpu = 'mps'
         # TODO: mps does not appear to work with coqui
 except ImportError:
     pass

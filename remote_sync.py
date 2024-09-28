@@ -2,18 +2,21 @@ try:
     from getpass import getuser
     from pathlib import Path
     from platform import system
-    from posixpath import join as posixjoin, split as posixsplit
+    from posixpath import join as posix_join, split as posixsplit
     import hashlib
     import os
     import paramiko
     import re
     import shutil
     import stat
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
 dbg = False
+
 
 def md5(file_path):
     """Calculate MD5 hash of a file."""
@@ -134,18 +137,18 @@ def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
     initial_list = sftp.listdir(path=remote_dir)
     file_list = []
     for file in initial_list:
-        if remote_isdir(sftp, posixjoin(remote_dir, file)):
+        if remote_isdir(sftp, posix_join(remote_dir, file)):
             if recursive:
                 if dbg:
                     print(f'adding remote {file} directory recursively')
-                new_list = remote_get_filelist(sftp=sftp, remote_dir=posixjoin(
+                new_list = remote_get_filelist(sftp=sftp, remote_dir=posix_join(
                     remote_dir, file), recursive=recursive)
-                new_list = [posixjoin(file, i) for i in new_list]
+                new_list = [posix_join(file, i) for i in new_list]
                 file_list.extend(new_list)
             elif dbg:
                 print(
                     f'remote {file} is a directory and recursion is disabled, skipping')
-        elif remote_isfile(sftp, posixjoin(remote_dir, file)):
+        elif remote_isfile(sftp, posix_join(remote_dir, file)):
             file_list.extend([file])
         elif dbg:
             print(f'remote {file} not directory or file, skipping')
@@ -256,7 +259,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             if not source_trail and not destination_trail:
                 destination_dir = os.path.join(
                     destination_dir, os.path.basename(os.path.normpath(source_dir)))
-            source_dir = posixjoin(source_dir, '')
+            source_dir = posix_join(source_dir, '')
             files = remote_get_filelist(
                 sftp=sftp, remote_dir=source_dir, recursive=recursive)
             destination_dir = os.path.join(destination_dir, '')
@@ -289,15 +292,15 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             # add single file to queue
             files.append(file)
             if destination_trail:
-                destination_dir = posixjoin(destination_dir, '')
+                destination_dir = posix_join(destination_dir, '')
         elif os.path.isdir(source_dir):                # source is directory?
             if not source_trail and not destination_trail:
-                destination_dir = posixjoin(
+                destination_dir = posix_join(
                     destination_dir, os.path.basename(os.path.normpath(source_dir)))
             source_dir = os.path.join(source_dir, '')
             files = local_get_filelist(
                 local_dir=source_dir, recursive=recursive)
-            destination_dir = posixjoin(destination_dir, '')
+            destination_dir = posix_join(destination_dir, '')
         else:                                          # source is neither file nor directory
             raise Exception(f'Error checking status of source {source_dir}')
         # check if remote directory exists
@@ -348,13 +351,13 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
             if filename.count('/'):
                 local_file_path = re.sub(r'/[^/]*$', '', filename)
                 if not dry_run:
-                    remote_mkdir(sftp, posixjoin(
+                    remote_mkdir(sftp, posix_join(
                         destination_dir, local_file_path))
             if fileonly and not destination_trail:
                 remote_file = destination_dir
             else:
                 # assume remote system supports POSIX paths
-                remote_file = posixjoin(destination_dir, filename)
+                remote_file = posix_join(destination_dir, filename)
             if os.path.isfile(local_file):
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
@@ -391,7 +394,7 @@ def sync(source=None, destination=None, port=22, username=None, password=None, k
     elif source_host:  # remote source to local destination
         for filename in files:
             # assume remote system supports POSIX paths
-            remote_file = posixjoin(source_dir, filename)
+            remote_file = posix_join(source_dir, filename)
             if not fileonly and remote_file.count('/') > 1:
                 remote_file_path = re.sub(r'^[^/]*/', '', remote_file)
                 remote_file_path = re.sub(r'/[^/]*$', '', remote_file_path)

@@ -4,8 +4,10 @@ try:
     from shutil import move
     import datetime
     import pickle
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
 # TTSPod modules
@@ -31,13 +33,13 @@ class Main(object):
         self.cache = []
         self.speech = Speech(config=self.config.speech,
                              dry=self.dry, log=self.log)
-        self.loadCache(clean=clean)
+        self.load_cache(clean=clean)
         self.pod = Pod(self.config.pod, self.p)
         self.pod.config.debug = self.config.debug
         if self.dry:
             self.log.write("dry-run mode")
 
-    def loadCache(self, clean=False):
+    def load_cache(self, clean=False):
         if self.config.cache_path:
             try:
                 rsync(
@@ -48,13 +50,15 @@ class Main(object):
                     password=self.config.ssh_password,
                     recursive=False
                 )
-                self.log.write(f'cache file synced successfully from server')
-            except Exception as e:
+                self.log.write('cache file synced successfully from server')
+            except Exception as err:
                 self.log.write(
-                    f'something went wrong syncing the cache file {e}', True)
+                    f'something went wrong syncing the cache file {err}', True)
                 if "code 23" in str(e):
                     self.log.write(
-                        f'if this is your first time running TTSPod, this is normal since the cache has never been synced', True)
+                        'if this is your first time running TTSPod, '
+                        'this is normal since the cache has never been synced', 
+                        True)
         if clean:
             self.log.write(
                 f'moving {self.config.pickle} cache file and starting fresh')
@@ -91,7 +95,7 @@ class Main(object):
                     f'something went wrong processing {title}', True)
         return True
 
-    def saveCache(self):
+    def save_cache(self):
         try:
             if self.pod:  # only save/sync cache if podcast data exists
                 with open(self.config.pickle, 'wb') as f:
@@ -116,42 +120,42 @@ class Main(object):
         except Exception as e:
             self.log.write(f'cache save failed {e}')
 
-    def processWallabag(self, tag):
-        wallabag = Wallabag(config = self.config.wallabag, log = self.log)
-        items = wallabag.getItems(tag)
+    def process_wallabag(self, tag):
+        wallabag = Wallabag(config=self.config.wallabag, log=self.log)
+        items = wallabag.get_items(tag)
         return self.process(items)
 
-    def processLink(self, url, title=None):
-        links = Links(config = self.config.links, log = self.log)
-        items = links.getItems(url, title)
+    def process_link(self, url, title=None):
+        links = Links(config=self.config.links, log=self.log)
+        items = links.get_items(url, title)
         return self.process(items)
 
-    def processPocket(self, tag = 'audio'):
-        links = Links(config = self.config.links, log = self.log)
-        p = TTSPocket(config = self.config.pocket, links = links, log = self.log)
-        items = p.getItems(tag)
+    def process_pocket(self, tag='audio'):
+        links = Links(config=self.config.links, log=self.log)
+        p = TTSPocket(config=self.config.pocket, links=links, log=self.log)
+        items = p.get_items(tag)
         return self.process(items)
 
-    def processInsta(self, tag):
+    def process_insta(self, tag):
         links = Links(self.config.links)
-        p = TTSInsta(config = self.config.insta, links = links, log = self.log)
-        items = p.getItems(tag)
+        p = TTSInsta(config=self.config.insta, links=links, log=self.log)
+        items = p.get_items(tag)
         return self.process(items)
 
-    def processContent(self, text, title=None):
+    def process_content(self, text, title=None):
         content = Content(config=self.config.content, log=self.log)
-        items = content.getItems(text, title)
+        items = content.get_items(text, title)
         return self.process(items)
 
-    def processFile(self, fname, title=None):
-        content = Content(config=self.config.content,log=self.log)
-        items = content.processFile(fname, title)
+    def process_file(self, fname, title=None):
+        content = Content(config=self.config.content, log=self.log)
+        items = content.process_file(fname, title)
         return self.process(items)
 
     def finalize(self):
         if not self.dry:
             self.pod.save()
             self.pod.sync()
-            self.saveCache()
+            self.save_cache()
         self.log.close()
         return True

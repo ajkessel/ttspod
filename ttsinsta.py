@@ -34,7 +34,7 @@ class TTSInsta(object):
             self.log.write(f'instapaper login failed: {e}', error=True)
         return
 
-    def getItems(self, tag):
+    def get_items(self, tag):
         if not self.p:
             self.log.write("instapaper support not enabled")
             return None
@@ -55,5 +55,5 @@ class TTSInsta(object):
         urls = [x.url for x in results]
         entries = []
         for url in urls:
-            entries.extend(self.links.getItems(url))
+            entries.extend(self.links.get_items(url))
         return entries

@@ -24,11 +24,11 @@ class TTSPocket(object):
         self.links = links
         self.p = pocket.Pocket(self.config.consumer_key, self.config.access_token)
         return
-    def getItems(self,tag):
+    def get_items(self,tag):
         results = self.p.retrieve(detailType='complete',tag=tag)
         items = results['list']
         urls = [ items[x]['resolved_url'] for x in results['list'] ]
         entries = [ ]
         for url in urls:
-            entries.extend(self.links.getItems(url))
+            entries.extend(self.links.get_items(url))
         return entries

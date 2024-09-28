@@ -1,39 +1,40 @@
+"""content processor (Office documents, emails, PDF)"""
 # standard modules
 try:
     from os import path
     from uuid import uuid4
     from html import unescape
-    from html2text import html2text
     from lxml import html
-    from quopri import decodestring
     import email
     import hashlib
     import magic
     import pypandoc
     import re
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
 # tts modules
 from logger import Logger
-from util import cleanHTML, cleanText
+from util import clean_html, clean_text
 
 # optional modules
 try:
     import pymupdf  # pymudf used to be named fitz, both are acceptable
-    available_fitz = True
-except:
+    AVAILABLE_FITZ = True
+except ImportError:
     try:
         import fitz as pymupdf
-        available_fitz = True
-    except:
-        available_fitz = False
+        AVAILABLE_FITZ = True
+    except ImportError:
+        AVAILABLE_FITZ = False
 try:
     import trafilatura  # to extract readable content from webpages
-    available_trafilatura = True
+    AVAILABLE_TRAFILATURA = True
 except ImportError:
-    available_trafilatura = False
+    AVAILABLE_TRAFILATURA = False
 
 
 class Content(object):
@@ -41,7 +42,7 @@ class Content(object):
         self.log = log if log else Logger(debug=True)
         self.config = config
 
-    def processEmail(self, text, title=None):
+    def process_email(self, text, title=None):
         if type(text) is str:
             msg = email.message_from_string(text)
         else:
@@ -49,7 +50,7 @@ class Content(object):
         title_search = msg.get('subject')
         url = msg.get('message-id')
         if not url:
-            url = self.hashText(text)
+            url = self.hash_text(text)
         if title_search:
             title = title_search
         elif not title:
@@ -76,8 +77,10 @@ class Content(object):
                     this_part = part.get_payload(decode=True)
                     try:
                         this_filename = part.get_filename()
-                    except:
+                    # pylint: disable=broad-exception-caught
+                    except Exception:
                         this_filename = str(uuid4())
+                    # pylint: enable=broad-exception-caught
                     if this_part:
                         with open(path.join(self.config.attachment_path, this_filename), "wb") as f:
                             f.write(this_part)
@@ -86,10 +89,7 @@ class Content(object):
                 except:
                     pass
         if longest_html_part:
-            try:
-                longest_html_part = str(cleanHTML(longest_html_part))
-            except:
-                longest_html_part = ''
+            longest_html_part = str(clean_html(longest_html_part))
         if longest_plain_part:
             longest_plain_part = longest_plain_part.decode('ascii', 'ignore')
         if len(longest_html_part) > len(longest_plain_part):
@@ -98,7 +98,7 @@ class Content(object):
             text = longest_plain_part
         else:
             text = ''
-        text = cleanText(text)
+        text = clean_text(text)
         self.log.write(f'selected text from email:\n{text}')
         if text:
             entry = (title, text, url)
@@ -108,65 +108,61 @@ class Content(object):
             try:
                 self.log.write(
                     f'attempting to process attachment {attachment}')
-                entry = self.processFile(attachment)
+                entry = self.process_file(attachment)
                 entries.extend(entry)
-                self.log.write(f'success')
+                self.log.write('success')
             except:
                 pass
         return entries
 
-    def processHTML(self, rawhtml, title=None):
-        url = hashlib.md5(str(rawhtml).encode()).hexdigest()
+    def process_html(self, raw_html, title=None):
+        url = hashlib.md5(str(raw_html).encode()).hexdigest()
         title_search = re.search(
-            r'<title>(.*?)</title>', string=str(rawhtml), flags=re.I | re.DOTALL)
+            r'<title>(.*?)</title>', string=str(raw_html), flags=re.I | re.DOTALL)
         text = None
         entry = None
         self.log.write(f'url {url}')
-        if title_search:
-            title = unescape(title_search[1])
+        if title_search and not title:
+            title = clean_text(unescape(title_search[1]))
         elif not title:
             title = "Untitled Content"
         self.log.write(f'found item with title {title}')
-        if available_trafilatura:
+        if AVAILABLE_TRAFILATURA:
             try:
-                mytree = html.fromstring(rawhtml)
-                self.log.write(f'parsed html tree')
+                my_tree = html.fromstring(raw_html)
                 text = trafilatura.extract(
-                    mytree, include_comments=False).replace('\n', '\n\n')
-                self.log.write(f'digested tree')
-                title_search = trafilatura.extract_metadata(mytree).title
-                self.log.write(f'extracted title')
-                if title_search:
+                    my_tree, include_comments=False).replace('\n', '\n\n')
+                title_search = trafilatura.extract_metadata(my_tree).title
+                if title_search and not title:
                     title = unescape(title_search)
             except:
                 pass
         if not text:
-            self.log.write(f'attempting pandoc extraction')
+            self.log.write('attempting pandoc extraction')
             try:
-                text = cleanHTML(rawhtml)
+                text = clean_html(raw_html)
             except:
                 pass
-        text = cleanText(text)
+        text = clean_text(text)
         if text:
             entry = (title, text, url)
         return entry
 
-    def hashText(self, text):
-        try:
-            hash = hashlib.md5(str(text).encode()).hexdigest()
-        except:
-            hash = str(uuid4())
-        return hash
+    def hash_text(self, text):
+        my_hash = hashlib.md5(str(text).encode()).hexdigest()
+        if not my_hash:
+            my_hash = str(uuid4())
+        return my_hash
 
-    def processText(self, text, title=None):
-        url = self.hashText(text)
-        text = cleanText(text)
+    def process_text(self, text, title=None):
+        url = self.hash_text(text)
+        text = clean_text(text)
         if not title:
             title = "Untitled Content"
         entry = (title, text, url)
         return entry
 
-    def processFile(self, fname, title=None):
+    def process_file(self, fname, title=None):
         try:
             with open(fname, 'r') as f:
                 c = f.read()
@@ -177,48 +173,64 @@ class Content(object):
             self.log.write(f'failed to process file {fname}', True)
             return None
         title = title if title else fname
-        type = magic.from_buffer(c).lower()
+        buffer_type = magic.from_buffer(c).lower()
         items = []
-        self.log.write(f'got file type: {type}')
+        self.log.write(f'got file type: {buffer_type}')
         if re.search('^return-path:', str(c), flags=re.MULTILINE | re.I):
-            return self.processEmail(c, title)
-        if "pdf" in type and available_fitz:
+            return self.process_email(c, title)
+        if "pdf" in buffer_type and AVAILABLE_FITZ:
             doc = pymupdf.Document(stream=c)
             text = ""
             for page in doc:
                 text += page.get_text()
             if text:
-                items = self.getItems(text=text, title=title)
+                items = self.get_items(text=text, title=title)
         else:
             try:
-                text = pypandoc.convert_file(source_file = fname, to = 'plain', extra_args=[ '--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.lua_path}noimage.lua'])
+                text = pypandoc.convert_file(source_file=fname, to='plain', extra_args=[
+                                             '--wrap=none',
+                                             '--strip-comments',
+                                             '--ascii',
+                                             f'--lua-filter={self.config.lua_path}noimage.lua'
+                                             ])
             except:
                 text = None
             if not text:
                 try:
-                    text = pypandoc.convert_file(source_file = fname, format = 'rst', to = 'plain', extra_args=[ '--wrap=none', '--strip-comments', '--ascii', f'--lua-filter={self.config.lua_path}noimage.lua'])
+                    text = pypandoc.convert_file(source_file=fname,
+                                                 format='rst',
+                                                 to='plain',
+                                                 extra_args=[
+                                                     '--wrap=none',
+                                                     '--strip-comments',
+                                                     '--ascii',
+                                                     '--lua-filter='
+                                                     f'{self.config.lua_path}noimage.lua'
+                                                 ])
                 except:
                     text = None
-            self.log.write(f'processFile got text: {text}')
+            self.log.write(f'process_file got raw text: {text}')
             if text:
-                items = self.getItems(text=text, title=title)
+                items = self.get_items(text=text, title=title)
+            self.log.write(f'process_file got cleaned text: {text}')
         return items
 
-    def getItems(self, text, title=None):
+    def get_items(self, text, title=None):
+        """retrieve plain text content from specified text input"""
         entries = []
-        type = magic.from_buffer(text)
-        if 'mail' in type.lower() or re.search(r'^return-path:', text, flags=re.I | re.MULTILINE):
-            self.log.write(f'processing email')
-            entries.extend(self.processEmail(text, title))
+        buffer_type = (magic.from_buffer(text)).lower()
+        if 'mail' in buffer_type or re.search(r'^return-path:', text, flags=re.I | re.MULTILINE):
+            self.log.write('processing email')
+            entries.extend(self.process_email(text, title))
         elif '<html' in text.lower():
-            self.log.write(f'processing html content')
+            self.log.write('processing html content')
             for i in re.findall('<html.*?</html>', string=text, flags=re.I | re.DOTALL):
-                entry = self.processHTML(i, title)
+                entry = self.process_html(i, title)
                 if entry:
                     entries.append(entry)
         else:
-            self.log.write(f'processing plain text content')
-            entry = self.processText(text, title)
+            self.log.write('processing plain text content')
+            entry = self.process_text(text, title)
             if entry:
                 entries.append(entry)
         return entries

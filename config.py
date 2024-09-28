@@ -1,30 +1,34 @@
+"""digest and validate configuration files"""
 # standard modules
 try:
     from os import chmod, path, environ as e
     from dotenv import load_dotenv
     from pathlib import Path
-    from posixpath import join as posixjoin
+    from posixpath import join as posix_join
     from warnings import filterwarnings
     import re
-except Exception as e:
-    print(f'Failed to import required module: {e}\nDo you need to run pip install -r requirements.txt?')
+except ImportError as e:
+    print(
+        f'Failed to import required module: {e}\n'
+        'Do you need to run pip install -r requirements.txt?')
     exit()
 
 # TTSPod modules
 from logger import Logger
 
-# optional modules
-cpu = 'cpu'
+# optional modules - disable linting since we are checking if modules exist
+# pylint: disable=unused-import
+CPU = 'cpu'
 try:
     from torch import cuda
     if cuda.is_available():
-        cpu = 'cuda'
+        CPU = 'cuda'
 except ImportError:
     pass
 try:
     from torch.backends import mps
     if mps.is_available():
-        cpu = 'mps'
+        CPU = 'mps'
 except ImportError:
     pass
 engines = {}
@@ -54,10 +58,13 @@ try:
     engines['openai'] = True
 except ImportError:
     pass
+# pylint: enable=unused-import
 
 
 class Config(object):
+    """configuration settings"""
     class Content(object):
+        """content processor settings"""
         def __init__(self, working_path=None, log=None):
             self.log = log if log else Logger(debug=True)
             self.attachment_path = path.join(working_path, "attachments")
@@ -68,11 +75,13 @@ class Config(object):
             return
 
     class Links(object):
+        """link processor settings"""
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.user_agent = e.get('ttspod_user_agent')
 
     class Wallabag(object):
+        """wallabag input settings"""
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.url = e.get('ttspod_wallabag_url')
@@ -82,12 +91,14 @@ class Config(object):
             self.client_secret = e.get('ttspod_wallabag_client_secret')
 
     class Pocket(object):
+        """pocket input settings"""
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.consumer_key = e.get('ttspod_pocket_consumer_key')
             self.access_token = e.get('ttspod_pocket_access_token')
 
     class Insta(object):
+        """instapaper input settings"""
         def __init__(self, log=None):
             self.log = log if log else Logger(debug=True)
             self.key = e.get('ttspod_insta_key')
@@ -96,9 +107,10 @@ class Config(object):
             self.password = e.get('ttspod_insta_password')
 
     class Pod(object):
+        """podcast output settings"""
         def __init__(self, final_path='', ssh_keyfile=None, ssh_password=None, log=None):
             self.log = log if log else Logger(debug=True)
-            self.url = posixjoin(e.get('ttspod_pod_url'), '')
+            self.url = posix_join(e.get('ttspod_pod_url'), '')
             self.name = e.get('ttspod_pod_name', 'TTS podcast')
             self.author = e.get('ttspod_pod_author', 'TTS podcast author')
             self.image = e.get('ttspod_pod_image')
@@ -114,8 +126,8 @@ class Config(object):
             self.rss_file = path.join(final_path, 'index.rss')
 
     class Speech(object):
+        """tts processor settings"""
         def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None):
-            global engines, cpu
             self.log = log if log else Logger(debug=True)
             self.engine = engine if engine else e.get('ttspod_engine', '')
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
@@ -126,20 +138,25 @@ class Config(object):
             self.openai_voice = e.get('ttspod_openai_voice', 'onyx')
             self.openai_model = e.get('ttspod_openai_model', 'tts-1-hd')
             self.whisper_t2s_model = e.get(
-                'ttspod_whisper_t2s_model', 'whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model')
+                'ttspod_whisper_t2s_model',
+                'whisperspeech/whisperspeech:t2s-fast-medium-en+pl+yt.model')
             self.whisper_s2a_model = e.get(
-                'ttspod_whisper_s2a_model', 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
+                'ttspod_whisper_s2a_model', 
+                'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.whisper_voice = e.get('ttspod_whisper_voice')
-            self.coqui_model = e.get('ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
+            self.coqui_model = e.get(
+                'ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
             self.coqui_speaker = e.get('ttspod_coqui_speaker')
             self.coqui_language = e.get('ttspod_coqui_language')
             self.max_workers = max_workers
             self.temp_path = temp_path
             self.final_path = final_path
-            if not self.engine: self.engine = 'whisper'
+            if not self.engine:
+                self.engine = 'whisper'
+            # FIXME: some more TTS engine validation
             if not self.engine in engines:
-                raise Exception("no valid TTS engine/API key found")
-            self.device = cpu
+                raise ValueError("no valid TTS engine/API key found")
+            self.device = CPU
             self.log.write(f'using {self.device} for local TTS processing')
 
     def __init__(self, debug=None, engine=None, log=None):
@@ -157,7 +174,7 @@ class Config(object):
             e.get('ttspod_working_path', './working'), '')
         if self.working_path:
             self.working_path = re.sub(
-                r'~/', str(Path.home()).replace('\\','/') + '/', self.working_path)
+                r'~/', str(Path.home()).replace('\\', '/') + '/', self.working_path)
         if self.working_path.startswith('./'):
             self.working_path = re.sub(r'^./', '', self.working_path)
             self.working_path = path.join(
@@ -167,13 +184,13 @@ class Config(object):
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = f'{self.working_path}{self.pickle_filename}'
         if e.get('ttspod_cache_path'):
-            self.cache_path = posixjoin(
+            self.cache_path = posix_join(
                 e.get('ttspod_cache_path'), '')+self.pickle_filename
         else:
             self.cache_path = None
         if self.cache_path:
             self.cache_path = re.sub(
-                r'~/', str(Path.home()).replace('\\','/') + '/', self.cache_path)
+                r'~/', str(Path.home()).replace('\\', '/') + '/', self.cache_path)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log)
         self.content = self.Content(
@@ -186,12 +203,13 @@ class Config(object):
         self.ssh_password = e.get('ttspod_ssh_password')
         if self.ssh_keyfile:
             self.ssh_keyfile = re.sub(
-                r'~/', str(Path.home()).replace('\\','/') + '/', self.ssh_keyfile)
+                r'~/', str(Path.home()).replace('\\', '/') + '/', self.ssh_keyfile)
         if not (self.ssh_keyfile or self.ssh_password):
             key_list = ['id_rsa', 'id_ecdsa', 'id_ecdsa_sk',
                         'id_ed25519', 'id_ed25519_sk', 'id_dsa']
             for key in key_list:
-                keyfile = path.join(Path.home(), '.ssh', key).replace('\\','/')
+                keyfile = path.join(Path.home(), '.ssh',
+                                    key).replace('\\', '/')
                 if path.isfile(keyfile):
                     self.ssh_keyfile = keyfile
                     break
@@ -201,17 +219,18 @@ class Config(object):
             ssh_password=self.ssh_password,
             log=self.log
         )
-        self.makeFiles()
+        self.make_files()
         self.validate()
 
     def validate(self):
+        """validate settings and throw error if necessary"""
         if ':' in str(self.cache_path) or ':' in str(self.pod.ssh_server_path):
             if not self.ssh_keyfile or self.ssh_password:
-                raise Exception(
+                raise ValueError(
                     "Remote paths configured for syncing but no SSH keyfile or password provided."
                 )
         if self.ssh_keyfile and not path.isfile(self.ssh_keyfile) and not self.ssh_password:
-            raise Exception(
+            raise ValueError(
                 f"ssh_keyfile {self.ssh_keyfile} does not exist or is not readable."
             )
         if not (
@@ -219,23 +238,22 @@ class Config(object):
             path.isdir(self.temp_path) and
             path.isdir(self.final_path)
         ):
-            raise Exception(
+            raise ValueError(
                 f"Unable to access working path {self.working_path}."
             )
 
-    def makeFiles(self):
-        try:
-            Path(self.working_path).mkdir(parents=True, exist_ok=True)
-            Path(self.temp_path).mkdir(parents=True, exist_ok=True)
-            Path(self.final_path).mkdir(parents=True, exist_ok=True)
-            chmod(self.final_path, 0o755)
-            if not path.isfile(f'{self.working_path}noimage.lua'):
-                with open(f'{self.working_path}noimage.lua', "w") as f:
-                    f.write('function Image(el)\nreturn {}\n end')
-        except Exception as e:
-            raise Exception("Error setting up required folders: {e}")
-        return
+    def make_files(self):
+        """create working files and directories"""
+        Path(self.working_path).mkdir(parents=True, exist_ok=True)
+        Path(self.temp_path).mkdir(parents=True, exist_ok=True)
+        Path(self.final_path).mkdir(parents=True, exist_ok=True)
+        chmod(self.final_path, 0o755)
+        if not path.isfile(f'{self.working_path}noimage.lua'):
+            with open(f'{self.working_path}noimage.lua', 'w', encoding='ascii') as f:
+                f.write('function Image(el)\nreturn {}\n end')
+        return True
 
     def __str__(self):
-        result = f'config: {str(vars(self))}\nwallabag: {str(vars(self.wallabag))}\npod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}'
+        result = (f'config: {str(vars(self))}\nwallabag: {str(vars(self.wallabag))}\n'
+        'pod {str(vars(self.pod))}\nspeech {str(vars(self.speech))}')
         return result
