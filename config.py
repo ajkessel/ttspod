@@ -161,7 +161,7 @@ class Config(object):
             if not self.engine:
                 self.engine = 'whisper'
             # FIXME: some more TTS engine validation
-            if not self.engine in engines:
+            if not self.engine in ENGINES:
                 raise ValueError("no valid TTS engine/API key found")
             self.device = CPU
             self.log.write(f'using {self.device} for local TTS processing')
