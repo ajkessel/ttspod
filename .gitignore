@@ -4,3 +4,9 @@
 __pycache__/
 venv/
 working/
+*.egg-info
+.vscode/settings.json
+MANIFEST.in
+build/
+dist/
+pyproject.toml

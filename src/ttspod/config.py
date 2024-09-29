@@ -1,8 +1,9 @@
 """digest and validate configuration files"""
 # standard modules
 try:
-    from os import chmod, path, environ as e
+    from os import chmod, path, environ as e, getcwd
     from dotenv import load_dotenv
+    from inspect import getsourcefile
     from pathlib import Path
     from posixpath import join as posix_join
     from warnings import filterwarnings
@@ -14,7 +15,7 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from logger import Logger
+from .logger import Logger
 
 # optional modules - disable linting since we are checking if modules exist
 # pylint: disable=unused-import
@@ -166,9 +167,25 @@ class Config(object):
             self.device = CPU
             self.log.write(f'using {self.device} for local TTS processing')
 
-    def __init__(self, debug=None, engine=None, log=None):
+    def __init__(self, debug=None, engine=None, config_path=None, log=None):
         self.log = log if log else Logger(debug=True)
-        load_dotenv()
+        if config_path:
+            if path.isfile(config_path):
+                self.config_path = config_path
+            elif path.isdir(config_path) and path.isfile(path.join(config_path,'.env')):
+                self.config_path = path.join(config_path,'.env')
+            elif path.isfile(path.join(getcwd(),'.env')):
+                self.config_path = path.join(getcwd(),'.env')
+            elif path.isfile(path.join(path.dirname(getsourcefile(lambda:0)),'.env')):
+                self.config_path = path.join(path.dirname(getsourcefile(lambda:0)),'.env')
+            elif path.isfile(path.join(path.dirname(path.realpath(__file__)),'.env')):
+                self.config_path = path.join(path.dirname(path.realpath(__file__)),'.env')
+        if self.config_path:
+            load_dotenv(self.config_path)
+        if not any("ttspod" in x for x in list(e.keys())):
+            raise ValueError(
+                'No settings found. Create a .env file or specify the location with --config.'
+                )
         if debug is None:
             self.debug = e.get('ttspod_debug', debug)
         else:
@@ -265,8 +282,8 @@ class Config(object):
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
         chmod(self.final_path, 0o755)
-        if not path.isfile(path.join(self.working_path,'noimage.lua')):
-            with open(path.join(self.working_path,'noimage.lua'), 'w', encoding='ascii') as f:
+        if not path.isfile(path.join(self.working_path,'no_image.lua')):
+            with open(path.join(self.working_path,'no_image.lua'), 'w', encoding='ascii') as f:
                 f.write('function Image(el)\nreturn {}\n end')
         return True
 

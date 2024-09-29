@@ -5,12 +5,12 @@ import sys
 
 if 'VIRTUAL_ENV' not in os.environ and 'CONDA_PREFIX' not in os.environ:
     venv = os.path.join(os.path.dirname(__file__), '.venv')
-    newpython = os.path.join(venv, 'bin', 'python')
-    args = [newpython] + sys.argv
+    new_python = os.path.join(venv, 'bin', 'python')
+    args = [new_python] + sys.argv
     os.environ['VIRTUAL_ENV'] = venv
-    os.execv(newpython, args)
+    os.execv(new_python, args)
 
-from app import main
+from ttspod.app import main
 import re
 import sys
 if __name__ == '__main__':

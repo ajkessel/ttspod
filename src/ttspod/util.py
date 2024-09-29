@@ -49,7 +49,7 @@ def get_lock(name='ttspod', timeout=5):
                 locked = True
             except:
                 pass
-        case 'mac':
+        case 'mac':  # semaphore timeout doesn't work on Mac
             sem = posix_ipc.Semaphore(
                 f"/{name}", posix_ipc.O_CREAT, initial_value=1)
             try:
@@ -141,5 +141,26 @@ def clean_text(text):
     text = re.sub(r' +', ' ', text)
     text = unidecode(text.strip())
     return text
+
+# If Windows getch() available, use that.  If not, use a
+# Unix version.
+try:
+    import msvcrt
+    get_character = msvcrt.getch
+except ImportError:
+    import sys, tty, termios
+    def _unix_getch():
+        """Get a single character from stdin, Unix version"""
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())          # Raw read
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+    get_character = _unix_getch
 
 # pylint: enable=c-extension-no-member

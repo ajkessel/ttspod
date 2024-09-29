@@ -12,8 +12,8 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from logger import Logger
-from remote_sync import sync as rsync
+from .logger import Logger
+from .remote_sync import sync as rsync
 
 
 class Pod(object):

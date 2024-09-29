@@ -27,9 +27,9 @@ If you are using Whisper to generate speech locally, you may need to pull a more
 ## Get Started
 This should work "out of the box" on Linux or MacOS.
 ```
-git clone https://github.com/ajkessel/ttspod
+mkdir ttspod
 cd ttspod
-./quickstart.sh
+curl -s https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/main/quickstart.sh | bash
 ```
 This application does run on Windows as well with conda or pip but I haven't automated the install workflow yet.
 
@@ -39,8 +39,9 @@ You'll also need somewhere to host your RSS feed and MP3 audio files if you want
 
 ## Usage
 ```
-usage: ttspod [-h] [-w [WALLABAG]] [-i [INSTA]] [-p [POCKET]] [-l [LOG]]
-              [-q [QUIET]] [-d] [-c] [-f] [-t TITLE] [-e ENGINE] [-s] [-n]
+usage: ttspod [-h] [-c [CONFIG]] [-g [GENERATE]] [-w [WALLABAG]] [-i [INSTA]]
+              [-p [POCKET]] [-l [LOG]] [-q [QUIET]] [-d] [-r] [-f] [-t TITLE]
+              [-e ENGINE] [-s] [-n] [-v]
               [url ...]
 
 Convert any content to a podcast feed.
@@ -52,6 +53,12 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  -c [CONFIG], --config [CONFIG]
+                        specify path for config file (default .env in current
+                        directory
+  -g [GENERATE], --generate [GENERATE]
+                        generate a new config file (default .env in current
+                        directory)
   -w [WALLABAG], --wallabag [WALLABAG]
                         add unprocessed items with specified tag (default
                         audio) from your wallabag feed to your podcast feed
@@ -68,25 +75,26 @@ options:
                         no visible output (all output will go to log if
                         specified)
   -d, --debug           include debug output
-  -c, --clean           wipe cache clean and start new podcast feed
+  -r, --restart         wipe cache clean and start new podcast feed
   -f, --force           force addition of podcast even if cache indicates it
                         has already been added
   -t TITLE, --title TITLE
                         specify title for content provided via pipe
   -e ENGINE, --engine ENGINE
-                        specify TTS engine for this session (whisper, openai,
-                        eleven)
+                        specify TTS engine for this session (whisper, coqui,
+                        openai, eleven)
   -s, --sync            sync podcast episodes and cache file
   -n, --dry-run         dry run: do not actually create or sync audio files
+  -v, --version         print version number
 ```
 ### Examples
 Add a URL to your podcast feed
 ```
-# ./ttspod https://slashdot.org/story/24/09/24/2049204/human-reviewers-cant-keep-up-with-police-bodycam-videos-ai-now-gets-the-job
+# ttspod https://slashdot.org/story/24/09/24/2049204/human-reviewers-cant-keep-up-with-police-bodycam-videos-ai-now-gets-the-job
 ```
 Update your podcast feed with all of your Wallabag items tagged "audio" that have not yet been processed
 ```
-# ./ttspod -w
+# ttspod -w
 ```
 Create a podcast from the command-line
 ```
@@ -106,8 +114,6 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 ```
 
 ## TODO
-* Real installer (pip, maybe Debian, WinGet, etc)
-* Concurrent processing with third-party TTS engines for better performance, possibly using concurrent.futures.ThreadPoolExecutor
 * Command-line options for all configuration settings
 * Interactive configuration
 * Pocket authentication workflow

@@ -12,24 +12,28 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from remote_sync import sync as rsync
-from config import Config
-from content import Content
-from links import Links
-from pod import Pod
-from speech import Speech
-from ttspocket import TTSPocket
-from ttsinsta import TTSInsta
-from wallabag import Wallabag
-from logger import Logger
+from .remote_sync import sync as rsync
+from .config import Config
+from .content import Content
+from .links import Links
+from .pod import Pod
+from .speech import Speech
+from .ttspocket import TTSPocket
+from .ttsinsta import TTSInsta
+from .wallabag import Wallabag
+from .logger import Logger
 
 
 class Main(object):
     """main orchestrating object"""
-    def __init__(self, debug=False, engine=None, force=False,
-                 dry=False, clean=False, logfile=None, quiet=False):
+
+    def __init__(self, debug=False, config_path=None, engine=None,
+                 force=False, dry=False, clean=False, logfile=None,
+                 quiet=False):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
-        self.config = Config(engine=engine, log=self.log)
+        self.config = Config(
+            engine=engine, config_path=config_path, log=self.log
+        )
         self.p = None
         self.force = force
         self.dry = dry
@@ -73,7 +77,8 @@ class Main(object):
                 with open(self.config.pickle, 'rb') as f:
                     [self.cache, self.p] = pickle.load(f)
             except Exception as err:
-                raise ValueError(f"failed to open saved data file {f}: {err}") from err
+                raise ValueError(
+                    f"failed to open saved data file {f}: {err}") from err
         return True
 
     def process(self, items):

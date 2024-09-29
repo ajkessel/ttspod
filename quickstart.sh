@@ -1,7 +1,8 @@
 #!/bin/bash
 yesno() {
   echo -n "${1} (y/n) "
-  read -r answer
+  read -n1 -r answer
+  echo ""
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
@@ -31,18 +32,18 @@ venv() {
   fi
   # shellcheck source=.venv/bin/activate
   source .venv/bin/activate
-  echo installing requirements
-  pip3 install -r requirements.txt
-  optional=$(cat 'optional-requirements.txt')
   echo 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
   echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
-  for line in $optional
-  do
-    if yesno "Install optional requirement ${line}?"
-    then
-      pip3 install "$line"
-    fi
-  done
+  add_on=''
+  yesno 'install Whisper speech engine?' && add_on+=',whisper,'
+  yesno 'install Coqui speech engine?' && add_on+=',coqui,'
+  yesno 'install OpenAI speech engine?' && add_on+=',openai,'
+  yesno 'install Eleven speech engine?' && add_on+=',eleven,'
+  yesno 'install truststore?' && add_on+=',truststore,'
+  add_on="$(echo ${add_on}|sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
+  echo "ttspod${add_on}"
+  echo installing ttspod and dependencies
+  pip3 install "ttspod${add_on}"
 }
 title() {
   len="${#1}"
@@ -151,4 +152,4 @@ then
   "${EDITOR}" .env
 fi
 footer
-echo get help with ./ttspod -h
+echo get help with ttspod -h

@@ -11,7 +11,7 @@ try:
 except ImportError:
     AVAILABLE_POCKET = False
 
-from logger import Logger
+from .logger import Logger
 
 
 class TTSPocket(object):

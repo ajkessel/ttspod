@@ -14,7 +14,7 @@ except ImportError:
     AVAILABLE_INSTAPAPER = False
 
 # TTSPod modules
-from logger import Logger
+from .logger import Logger
 
 
 class TTSInsta(object):
@@ -31,7 +31,7 @@ class TTSInsta(object):
             self.config.key and
             self.config.secret
         ):
-            self.log.write("instapaper support not enabled")
+            self.log.write("instapaper support not enabled, check .env")
             return
         self.links = links
         try:

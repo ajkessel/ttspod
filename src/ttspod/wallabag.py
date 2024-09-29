@@ -10,11 +10,11 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-from logger import Logger
+from .logger import Logger
 
 
 class Wallabag(object):
-    """wallabag processor"""
+    """wallabag input processor"""
 
     def __init__(self, config, log=None):
         self.url = config.url
