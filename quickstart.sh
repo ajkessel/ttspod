@@ -39,6 +39,13 @@ venv() {
   yesno 'install Coqui speech engine?' && add_on+=',coqui,'
   yesno 'install OpenAI speech engine?' && add_on+=',openai,'
   yesno 'install Eleven speech engine?' && add_on+=',eleven,'
+  if [ -z "${add_on}" ]
+  then
+    if ! yesno 'warning: you did not select any TTS engine. Are you sure you want to continue?'
+    then
+      exit 1
+    fi
+  fi
   yesno 'install truststore?' && add_on+=',truststore,'
   add_on="$(echo ${add_on}|sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
   echo "ttspod${add_on}"
