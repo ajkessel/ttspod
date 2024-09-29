@@ -1,4 +1,5 @@
 WhisperSpeech
+TTS
 openai
 elevenlabs
 truststore
