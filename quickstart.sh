@@ -141,7 +141,10 @@ then
 fi
 
 title 'customize'
-cp -i dotenv .env
+if [ ! -e .env ]
+then
+  curl https://github.com/ajkessel/ttspod/blob/main/examples/dotenv.env -o .env
+fi
 echo Just edit .env to configure your local settings and you will be good to go.
 if yesno "Do you want to edit .env now?"
 then

@@ -29,7 +29,8 @@ This should work "out of the box" on Linux or MacOS.
 ```
 mkdir ttspod
 cd ttspod
-curl -s https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/main/quickstart.sh | bash
+curl -s https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/main/quickstart.sh 
+bash quickstart.sh
 ```
 This application does run on Windows as well with conda or pip but I haven't automated the install workflow yet.
 
