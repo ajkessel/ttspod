@@ -70,6 +70,8 @@ def get_lock(name='ttspod', timeout=5):
                     locked = True if result else False
                 except:
                     pass
+        case _:
+            locked = True
     return locked
 
 
@@ -100,6 +102,8 @@ def release_lock(name='ttspod'):
                 released = True
             except:
                 pass
+        case _:
+            released = True
     return released
 # pylint: enable=bare-except
 
