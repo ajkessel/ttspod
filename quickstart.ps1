@@ -5,7 +5,7 @@ if ( -not ( get-command conda -ea silentlycontinue ) ) {
   if ($confirmation -eq 'y') {
     Invoke-WebRequest 'https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe' -OutFile 'Miniforge3-Windows-x86_64.exe'
     if ( test-path 'Miniforge3-Windows-x86_64' ) {
-      & 'Miniforge3-Windows-x86_64.exe'
+      Start-Process -Wait 'Miniforge3-Windows-x86_64.exe'
     }
     else {
       write-host "Download failed, exiting."
@@ -50,7 +50,7 @@ if ( ($add_on.length) -gt 0 ) {
 }
 
 $installString = ('ttspod' + $add_on)
-& "pip3.exe" install $installString
+Start-Process -Wait "pip3.exe" -ArgumentList "install",$installString
 
 $cuda = ( python -c "import torch; print(torch.cuda.is_available())" )
 if ( $cuda -ne 'True' ) {
