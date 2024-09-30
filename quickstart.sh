@@ -168,6 +168,13 @@ if command -v ttspod &> /dev/null && [ -d ~/.local/bin ]
 then
   if yesno "Do you want to create a symlink from ttspod into ~/.local/bin?"
   then
+    if [ -e ~/.local/bin/ttspod ]
+    then
+      if yesno "Overwrite existing symlink?"
+      then
+        rm ~/.local/bin/ttspod
+      fi
+    fi
     ln -s "$(which ttspod)" ~/.local/bin
     echo done.
   fi

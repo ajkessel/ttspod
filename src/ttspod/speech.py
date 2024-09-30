@@ -63,6 +63,7 @@ except ImportError:
     pass
 try:
     from TTS.api import TTS
+    from transformers import pytorch_utils
     ENGINES['coqui'] = True
 except ImportError:
     pass
@@ -91,10 +92,13 @@ class Speech(object):
             case "eleven":
                 self.tts = ElevenLabs(api_key=self.config.eleven_api_key)
             case "whisper":
+                os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
                 self.tts = Pipeline(t2s_ref=self.config.whisper_t2s_model,
                                     s2a_ref=self.config.whisper_s2a_model,
                                     device=CPU, optimize=True)
             case "coqui":
+                os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+                pytorch_utils.isin_mps_friendly = self.patched_isin_mps_friendly
                 self.tts = TTS(model_name=self.config.coqui_model,
                                progress_bar=False).to(CPU)
             case _:
@@ -109,6 +113,14 @@ class Speech(object):
                 self.config.nltk = True
             except Exception:  # pylint: disable=broad-except
                 self.log.write("nltk loading failed")
+
+    def patched_isin_mps_friendly(self, elements, test_elements):
+        """workaround for limited MPS support in pytorch"""
+        if test_elements.ndim == 0:
+            test_elements = test_elements.unsqueeze(0)
+        return elements.tile(
+            test_elements.shape[0], 1
+            ).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
     def slugify(self, value):
         """convert an arbitrary string to a valid filename"""

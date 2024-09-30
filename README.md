@@ -32,7 +32,11 @@ cd ttspod
 curl -s https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/main/quickstart.sh -o quickstart.sh
 bash quickstart.sh
 ```
-This application does run on Windows as well with conda or pip but I haven't automated the install workflow yet.
+Windows install from PowerShell, not extensively tested:
+```
+Invoke-WebRequest 'https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/main/quickstart.ps1' -OutFile 'quickstart.ps1'
+& quickstart.ps1
+```
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work. Minimal required settings include configuring your TTS speech and podcast URL.
 
@@ -103,7 +107,9 @@ Create a podcast from the command-line
 ```
 
 ## Platforms
-This should work as-is on Linux and MacOS. I'm working on Windows support. You should be able to install it in a conda/pip environment on Windows but getting rsync to work properly is tricky. Once I've solved that, I'll push a parallel quickstart script for Windows PowerShell. 
+* Linux
+* MacOS
+* Windows
 
 ## procmail
 The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script:

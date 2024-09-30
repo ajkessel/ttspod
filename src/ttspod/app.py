@@ -7,17 +7,17 @@ try:
     from sys import stdin, stdout, exc_info
     from validators import url
     from traceback import format_exc
+    from pathlib import Path
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-# TTSPod modules
-from .main import Main
-from .util import get_lock, release_lock
+# ttspod modules
 from .version import __version__
-from .util import get_character
+from .util import get_character, get_lock, release_lock
+
 
 class App(object):
     """ttspod application"""
@@ -45,23 +45,30 @@ class App(object):
                             help="specify any number of URLs or local documents "
                             "(plain text, HTML, PDF, Word documents, etc) "
                             "to add to your podcast feed")
-        parser.add_argument("-c", "--config", nargs='?', const='.env', default="",
-                            help="specify path for config file (default .env in current directory")
-        parser.add_argument("-g", "--generate", nargs='?', const='.env', default="",
-                            help="generate a new config file (default .env in current directory)")
-        parser.add_argument("-w", "--wallabag", nargs='?', const='audio', default="",
+        parser.add_argument("-c", "--config", nargs='?', const='AUTO', default=None,
+                            help="specify path for config file "
+                            "(default ~/.config/ttspod.ini if it exists, "
+                            "otherwise .env in the current directory)"
+                            )
+        parser.add_argument("-g", "--generate", nargs='?', const='AUTO', default=None,
+                            help="generate a new config file"
+                            "(default ~/.config/ttspod.ini if ~/.config exists, "
+                            "otherwise .env in the current directory)"
+                            )
+        parser.add_argument("-w", "--wallabag", nargs='?', const='audio', default=None,
                             help="add unprocessed items with specified tag (default audio) "
                             "from your wallabag feed to your podcast feed")
-        parser.add_argument("-i", "--insta", nargs='?', const='audio', default="",
+        parser.add_argument("-i", "--insta", nargs='?', const='audio', default=None,
                             help="add unprocessed items with specified tag (default audio) "
                             "from your instapaper feed to your podcast feed, "
                             "or use tag ALL for default inbox")
-        parser.add_argument("-p", "--pocket", nargs='?', const='audio', default="",
+        parser.add_argument("-p", "--pocket", nargs='?', const='audio', default=None,
                             help="add unprocessed items with specified tag (default audio) "
                             "from your pocket feed to your podcast feed")
-        parser.add_argument("-l", "--log", nargs='?',
-                            default="", help="log all output to specified filename")
-        parser.add_argument("-q", "--quiet", nargs='?', default="",
+        parser.add_argument("-l", "--log", nargs='?', const='ttspod.log',
+                            default=None, help="log all output to specified filename "
+                            "(default ttspod.log)")
+        parser.add_argument("-q", "--quiet", nargs='?', default=None,
                             help="no visible output (all output will go to log if specified)")
         parser.add_argument(
             "-d", "--debug", action='store_true', help="include debug output")
@@ -84,10 +91,14 @@ class App(object):
         self.args = parser.parse_args()
         self.generate = self.args.generate
         if self.generate:
-            self.generate_env_file(self.generate)
+            if self.generate == "AUTO":
+                self.generate_env_file(None)
+            else:
+                self.generate_env_file(self.generate)
+            return False
         if self.args.version:
             print(__version__)
-            exit()
+            return False
         self.config_path = self.args.config
         self.debug = self.args.debug
         self.quiet = self.args.quiet
@@ -116,21 +127,25 @@ class App(object):
     def generate_env_file(self, env_file):
         """generate a new .env file"""
         if not env_file:
-            env_file=path.join(getcwd(),'.env')
+            if path.isdir(path.join(Path.home(), '.config')):
+                env_file = path.join(Path.home(), '.config', 'ttspod.ini')
+            else:
+                env_file = path.join(getcwd(), '.env')
         if path.isdir(env_file):
-            env_file=path.join(env_file,'.env')
+            env_file = path.join(env_file, '.env')
         if path.isfile(env_file):
             check = False
             while not check:
-                stdout.write(f'{env_file} already exists. Do you want to overwrite? (y/n) ')
+                stdout.write(
+                    f'{env_file} already exists. Do you want to overwrite? (y/n) ')
                 stdout.flush()
                 check = get_character()
-                if not (check == 'y' or check =='n'):
+                if not (check == 'y' or check == 'n'):
                     check = False
                 elif check == 'n':
                     stdout.write('exiting...\n')
                     exit()
-        with open(env_file,'w',encoding='utf-8') as f:
+        with open(env_file, 'w', encoding='utf-8') as f:
             f.write('''
 # global parameters
 # debug - set to anything for verbose output, otherwise leave blank
@@ -216,6 +231,7 @@ ttspod_whisper_s2a_model="whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model
 ttspod_whisper_voice=""
 ttspod_coqui_model="tts_models/en/ljspeech/tacotron2-DDC"
 # if you select a multi-speaker or multi-language coqui model, you will need to fill in values below
+# tacotron2-DDC does not need further settings
 ttspod_coqui_speaker=""
 ttspod_coqui_language=""
 ttspod_eleven_api_key=""
@@ -228,6 +244,8 @@ ttspod_openai_model="tts-1-hd"
 TORCH_LOGS="-all"
 # specify directory for huggingface cache files
 #HF_HOME=""
+# if Mac GPU (mps) isn't working for TTS, you can try uncommenting this line
+#PYTORCH_ENABLE_MPS_FALLBACK=1
 ''')
         print(f'{env_file} written. Now edit to run ttspod.')
         exit()
@@ -243,6 +261,9 @@ TORCH_LOGS="-all"
                     return False
                 else:
                     release_lock()
+            # this import is slow (loads TTS engines), so only import when needed
+            # there is probably a better way to do this by refactoring
+            from .main import Main  # pylint: disable=import-outside-toplevel
             self.main = Main(
                 debug=self.debug,
                 config_path=self.config_path,
@@ -289,6 +310,7 @@ def main():
     """nominal main loop to read arguments and execute app"""
     app = App()
     if app.parse():   # parse command-line arguments
+        # only import remaining modules if we have something to do
         app.run()     # run the main workflow
 
 

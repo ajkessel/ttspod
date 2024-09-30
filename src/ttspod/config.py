@@ -174,6 +174,10 @@ class Config(object):
             self.config_path = config_path
         elif config_path and path.isdir(config_path) and path.isfile(path.join(config_path,'.env')):
             self.config_path = path.join(config_path,'.env')
+        elif path.isfile(path.join(Path.home(),'.config','ttspod.ini')):
+            self.config_path = path.join(Path.home(),'.config','ttspod.ini')
+        elif path.isfile(path.join(getcwd(),'.config','ttspod.ini')):
+            self.config_path = path.join(getcwd(),'.config','ttspod.ini')
         elif path.isfile(path.join(getcwd(),'.env')):
             self.config_path = path.join(getcwd(),'.env')
         elif path.isfile(path.join(path.dirname(getsourcefile(lambda:0)),'.env')):
