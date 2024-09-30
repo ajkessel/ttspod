@@ -163,4 +163,10 @@ then
   "${EDITOR}" .env
 fi
 footer
-echo get help with ttspod -h
+if command -v ttspod &> /dev/null && [ -d ~/.local/bin ]
+then
+  if yesno "Do you want to create a symlink from ttspod into ~/.local/bin?"
+    ln -s "$(which ttspod)" ~/local/bin
+    echo done.
+  fi
+  echo get help with ttspod -h
