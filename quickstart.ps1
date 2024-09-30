@@ -1,11 +1,24 @@
 #Requires -version 5.0
+function Reload-Profile {
+  @(
+      $Profile.AllUsersAllHosts,
+      $Profile.AllUsersCurrentHost,
+      $Profile.CurrentUserAllHosts,
+      $Profile.CurrentUserCurrentHost
+   ) | % {
+    if(Test-Path $_){
+        . $_
+    }
+  }
+}
 $skipConda = $false
 if ( -not ( get-command conda -ea silentlycontinue ) ) {
   $confirmation = Read-Host "Could not detect conda installation. Install Conda?"
   if ($confirmation -eq 'y') {
     Invoke-WebRequest 'https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe' -OutFile 'Miniforge3-Windows-x86_64.exe'
-    if ( test-path 'Miniforge3-Windows-x86_64' ) {
+    if ( test-path 'Miniforge3-Windows-x86_64.exe' ) {
       Start-Process -Wait 'Miniforge3-Windows-x86_64.exe'
+      Reload-Profile
     }
     else {
       write-host "Download failed, exiting."
