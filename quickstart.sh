@@ -6,13 +6,13 @@ yesno() {
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
-venv() {
+make_venv() {
   echo creating local python venv under current directory
   if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you use only local (rather than system) packages?'
   then
-    pipString='--system-site-packages'
+    pipString=' --system-site-packages'
   fi
-  if ! "${pyexe}" -m venv "${pipString}" .venv
+  if ! "${pyexe}" -m venv"${pipString}" .venv
   then
     echo Creating virtual environment failed. 
     if [ ! -d /usr/lib/python3.11/ensurepip ]
@@ -123,7 +123,8 @@ then
   fi
 fi
 
-[ -z "${skipvenv}" ] && venv
+[ -z "${skipvenv}" ] && make_venv
+
 footer
 
 if [ "${MAC}" ]
