@@ -169,4 +169,5 @@ then
     ln -s "$(which ttspod)" ~/local/bin
     echo done.
   fi
-  echo get help with ttspod -h
+fi
+echo get help with ttspod -h
