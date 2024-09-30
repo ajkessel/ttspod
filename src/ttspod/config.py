@@ -186,7 +186,7 @@ class Config(object):
             self.config_path = path.join(path.dirname(path.realpath(__file__)),'.env')
         if self.config_path:
             load_dotenv(self.config_path)
-        if not any("ttspod" in x for x in list(e.keys())):
+        if not any("ttspod" in x.lower() for x in list(e.keys())):
             raise ValueError(
                 'No settings found. Create a .env file or specify the location with --config.'
                 )
