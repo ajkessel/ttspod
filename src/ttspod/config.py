@@ -169,17 +169,17 @@ class Config(object):
 
     def __init__(self, debug=None, engine=None, config_path=None, log=None):
         self.log = log if log else Logger(debug=True)
-        if config_path:
-            if path.isfile(config_path):
-                self.config_path = config_path
-            elif path.isdir(config_path) and path.isfile(path.join(config_path,'.env')):
-                self.config_path = path.join(config_path,'.env')
-            elif path.isfile(path.join(getcwd(),'.env')):
-                self.config_path = path.join(getcwd(),'.env')
-            elif path.isfile(path.join(path.dirname(getsourcefile(lambda:0)),'.env')):
-                self.config_path = path.join(path.dirname(getsourcefile(lambda:0)),'.env')
-            elif path.isfile(path.join(path.dirname(path.realpath(__file__)),'.env')):
-                self.config_path = path.join(path.dirname(path.realpath(__file__)),'.env')
+        self.config_path = None
+        if config_path and path.isfile(config_path):
+            self.config_path = config_path
+        elif config_path and path.isdir(config_path) and path.isfile(path.join(config_path,'.env')):
+            self.config_path = path.join(config_path,'.env')
+        elif path.isfile(path.join(getcwd(),'.env')):
+            self.config_path = path.join(getcwd(),'.env')
+        elif path.isfile(path.join(path.dirname(getsourcefile(lambda:0)),'.env')):
+            self.config_path = path.join(path.dirname(getsourcefile(lambda:0)),'.env')
+        elif path.isfile(path.join(path.dirname(path.realpath(__file__)),'.env')):
+            self.config_path = path.join(path.dirname(path.realpath(__file__)),'.env')
         if self.config_path:
             load_dotenv(self.config_path)
         if not any("ttspod" in x for x in list(e.keys())):
