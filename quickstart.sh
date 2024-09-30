@@ -109,6 +109,19 @@ fi
 echo "${pyexe} located."
 footer
 
+if [ -f "./.venv/bin/ttspod" ] && [ -f "./.venv/bin/activate" ]
+then
+  if yesno 'It appears ttspod is already installed. Do you want to update it to the latest build?'
+  then
+    source .venv/bin/activate
+    pip install ttspod -U
+    exit 0
+  fi
+elif ! yesno 'Do you want to continue and reinstall?'
+then
+  exit 1
+fi
+
 title 'venv'
 if [ -d "./.venv" ]
 then
