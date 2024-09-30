@@ -1,22 +1,26 @@
-#Requires –Version 5
+#Requires -version 5.0
 $skipConda = $false
 if ( -not ( get-command conda -ea silentlycontinue ) ) {
   $confirmation = Read-Host "Could not detect conda installation. Install Conda?"
-    if ($confirmation -eq 'y') {
-      if ( Invoke-WebRequest 'https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe' -OutFile 'Miniforge3-Windows-x86_64.exe' ) {
-        & 'Miniforge3-Windows-x86_64.exe'
-    } else {
+  if ($confirmation -eq 'y') {
+    Invoke-WebRequest 'https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe' -OutFile 'Miniforge3-Windows-x86_64.exe'
+    if ( test-path 'Miniforge3-Windows-x86_64' ) {
+      & 'Miniforge3-Windows-x86_64.exe'
+    }
+    else {
       write-host "Download failed, exiting."
-        exit 1
+      exit 1
     }
-    } else {
-      $confirmation = Read-Host "Attempt to install in current Python environment instead?"
-        if ($confirm -ne 'y') {
-          exit 1
-        } else {
-          $skipConda = $true
-        }
+  }
+  else {
+    $confirmation = Read-Host "Attempt to install in current Python environment instead?"
+    if ($confirm -ne 'y') {
+      exit 1
     }
+    else {
+      $skipConda = $true
+    }
+  }
 } 
 if ( -not ( $skipConda )) {
   invoke-conda create -n ttspod python=3.11
@@ -24,12 +28,12 @@ if ( -not ( $skipConda )) {
 }
 if ( -not ( get-command pip -ea silentlycontinue ) ) {
   write-host "pip command not found, cannot continue."
-    exit 1
+  exit 1
 }
 
 write-host 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
 write-host 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
-$add_on='['
+$add_on = '['
 $whisper = Read-Host "Install Whisper speech engine?"
 $coqui = Read-Host "Install coqui speech engine?"
 $openai = Read-Host "Install OpenAI speech engine?"
@@ -38,11 +42,12 @@ $truststore = Read-Host "Install Truststore?"
 if ( $whisper -eq 'y' ) { $add_on += 'whisper,' }
 if ( $coqui -eq 'y' ) { $add_on += 'coqui,' }
 if ( $openai -eq 'y' ) { $add_on += 'openai,' }
+if ( $eleven -eq 'y' ) { $add_on += 'eleven,' }
 if ( $truststore -eq 'y' ) { $add_on += 'truststore,' }
-$add_on = $add_on.Substring(0,($add_on.length)-1)
-  if ( ($add_on.length) -gt 0 ) { 
-    $add_on += ']'
-  }
+$add_on = $add_on.Substring(0, ($add_on.length) - 1)
+if ( ($add_on.length) -gt 0 ) { 
+  $add_on += ']'
+}
 
 $installString = ('ttspod' + $add_on)
 & "pip3.exe" install $installString
