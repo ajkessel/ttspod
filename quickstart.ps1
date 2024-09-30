@@ -46,3 +46,8 @@ $add_on = $add_on.Substring(0,($add_on.length)-1)
 
 $installString = ('ttspod' + $add_on)
 & "pip3.exe" install $installString
+
+$cuda = ( python -c "import torch; print(torch.cuda.is_available())" )
+if ( $cuda -ne 'True' ) {
+  write-host 'cuda GPU not detected. You can try installing torch from https://pytorch.org/get-started/locally/ for your processor to obtain cuda support.'
+}

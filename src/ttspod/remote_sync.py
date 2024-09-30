@@ -196,6 +196,7 @@ def sync(
     ssh = None
     sftp = None
     source_user, source_host, source_dir = parse_location(source)
+    source_dir = source_dir.replace('\\','/')
     destination_user, destination_host, destination_dir = parse_location(
         destination)
     if not keyfile and not password:
@@ -246,7 +247,7 @@ def sync(
             print("No hostname provided, local sync only.")
 
     files = []
-
+    source = source.replace('\\','/')
     source_trail = source.endswith('/')
     destination_trail = destination.endswith('/')
     file_only = False
