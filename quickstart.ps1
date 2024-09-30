@@ -63,9 +63,12 @@ if ( ($add_on.length) -gt 0 ) {
 }
 
 $installString = ('ttspod' + $add_on)
-Start-Process -Wait "pip3.exe" -ArgumentList "install",$installString
+Start-Process -NoNewWindow -Wait "pip3.exe" -ArgumentList "install",$installString
 
 $cuda = ( python -c "import torch; print(torch.cuda.is_available())" )
 if ( $cuda -ne 'True' ) {
   write-host 'cuda GPU not detected. You can try installing torch from https://pytorch.org/get-started/locally/ for your processor to obtain cuda support.'
 }
+
+write-host 'You should be good to go. You can use the following command to generate a config file and get started:'
+write-host 'ttspod -g'
