@@ -109,11 +109,17 @@ fi
 echo "${pyexe} located."
 footer
 
-if [ -f "./.venv/bin/ttspod" ] && [ -f "./.venv/bin/activate" ]
+if command -v ttspod &> /dev/null
+then
+  tts_path=$(dirname $(realpath $(command -v ttspod)))
+else
+  tts_path='./.venv/bin'
+fi
+if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]
 then
   if yesno 'It appears ttspod is already installed. Do you want to update it to the latest build?'
   then
-    source .venv/bin/activate
+    source "${tts_path}/activate"
     pip install ttspod -U
     exit 0
   fi
