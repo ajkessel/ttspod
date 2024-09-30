@@ -168,7 +168,7 @@ if command -v ttspod &> /dev/null && [ -d ~/.local/bin ]
 then
   if yesno "Do you want to create a symlink from ttspod into ~/.local/bin?"
   then
-    ln -s "$(which ttspod)" ~/local/bin
+    ln -s "$(which ttspod)" ~/.local/bin
     echo done.
   fi
 fi
