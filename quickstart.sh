@@ -37,7 +37,7 @@ make_venv() {
       echo '/usr/lib/python3.11/ensurepip is missing.'
       if yesno 'Do you want to try to install systemwide python3.11-venv with apt (requires sudo privileges)?'
       then
-        sudo apt install python3.11-venv
+        sudo apt install python3.11 python3.11-venv python3.11-dev
         "${pyexe}" -m venv "${pipString}" .venv
       fi
     fi
@@ -103,12 +103,26 @@ then
       sudo add-apt-repository ppa:deadsnakes/ppa
       sudo apt update
     fi
-    sudo apt install python3.11 python3.11-venv
+    sudo apt install python3.11 python3.11-venv python3.11-dev
   elif yesno 'Do you want to proceed anyway?'
   then
     pyexe=python3
   else
     exit 0
+  fi
+fi
+
+if [ "${MAC}" ]
+then
+  if ! mdfind -name '"Python.h"'|grep -q 3.11
+  then
+    echo Python development files seem to be missing. pip may have trouble.
+  fi
+elif [ ! -e '/usr/include/python3.11/Python.h' ]
+then
+  if yesno 'Python development files seem to be missing. Do you want to install python3.11-dev with app (requires sudo)?'
+  then
+    sudo apt install python3.11-dev
   fi
 fi
 
