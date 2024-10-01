@@ -112,12 +112,12 @@ Create a podcast from the command-line
 * Windows
 
 ## procmail
-The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script:
+The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script, assuming you have a symlink to the script in `~/.local/bin`.
 ```
 :0 Hc
 * ^From:(.*\<(?)(me@example.com|you@domain.com)
 * ^(To|X-Original-To):(.*\<(?)(myttsaddress@mydomain.com)
-| ${HOME}/ttspod/ttspod >> ${HOME}/log/tts.log 2>&1
+| ${HOME}/.local/bin/ttspod &> ${HOME}/log/tts.log 
 ```
 
 ## TODO
@@ -126,6 +126,7 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 * Pocket authentication workflow
 * Instapaper authentication workflow
 * Process links received by email
+* Process directly-emailed mp3s and links to mp3s
 * More TTS engines
 * More customizability of podcast feed
 
