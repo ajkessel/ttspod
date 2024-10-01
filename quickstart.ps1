@@ -27,7 +27,7 @@ if ( -not ( get-command conda -ea silentlycontinue ) ) {
   }
   else {
     $confirmation = Read-Host "Attempt to install in current Python environment instead?"
-    if ($confirm -ne 'y') {
+    if ($confirmation -ne 'y') {
       exit 1
     }
     else {
