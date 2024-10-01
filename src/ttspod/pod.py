@@ -6,6 +6,7 @@ try:
     from os.path import getsize, join as j
     from os import chmod
     from datetime import datetime
+    import pytz
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -72,6 +73,6 @@ class Pod(object):
                 summary=url,
                 long_summary=f'Text to speech from {url}',
                 media=pod2gen.Media(f'{self.config.url}{filename}', size),
-                publication_date=datetime.now("UTC")
+                publication_date=datetime.now(tz=pytz.utc)
             )
         )
