@@ -52,8 +52,7 @@ make_venv() {
   echo 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
   echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
   check_optional add_on
-  echo "install string: ttspod${add_on}"
-  echo installing ttspod and dependencies
+  echo "installing ttspod${add_on} and dependencies"
   pip3 install "ttspod${add_on}"
 }
 title() {
@@ -125,7 +124,7 @@ then
   then
     source "${tts_path}/activate"
     check_optional add_on
-    echo "installing ttspod${add_on}" -U"
+    echo "installing ttspod${add_on} -U"
     pip install "ttspod${add_on}" -U
     exit 0
   fi
