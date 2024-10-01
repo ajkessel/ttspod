@@ -72,6 +72,6 @@ class Pod(object):
                 summary=url,
                 long_summary=f'Text to speech from {url}',
                 media=pod2gen.Media(f'{self.config.url}{filename}', size),
-                publication_date=datetime.now()
+                publication_date=datetime.now("UTC")
             )
         )
