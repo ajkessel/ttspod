@@ -3,13 +3,16 @@
 try:
     from anyascii import anyascii
     from concurrent.futures import ThreadPoolExecutor
+    from nltk.tokenize import sent_tokenize, BlanklineTokenizer
     from pathlib import Path
     from platform import processor
     from pydub import AudioSegment
     from sys import maxsize
     from traceback import format_exc
+    import nltk
     import os
     import re
+    import spacy
     import textwrap
     import unicodedata
     import uuid
@@ -24,11 +27,7 @@ except ImportError as e:
 from .logger import Logger
 
 # optional modules
-try:
-    import nltk
-    from nltk.tokenize import sent_tokenize, BlanklineTokenizer
-except ImportError:
-    pass
+
 CPU = 'cpu'
 try:
     from torch import cuda
@@ -104,12 +103,18 @@ class Speech(object):
             case _:
                 raise ValueError('TTS engine not configured')
         try:
+            if not spacy.util.is_package("en_core_web_lg"):
+                self.log.write('downloading spacy language model')
+                spacy.cli.download("en_core_web_lg")
+            self.nlp = spacy.load("en_core_web_lg")
+            self.nlp.add_pipe('sentencizer')
             nltk.data.find('tokenizers/punkt_tab')
-            self.config.nltk = True
             self.log.write("nltk found and activated")
+            self.config.nltk = True
         except LookupError:
             try:
                 nltk.download('punkt_tab')
+                self.log.write("nltk punkt_tab downloaded")
                 self.config.nltk = True
             except Exception:  # pylint: disable=broad-except
                 self.log.write("nltk loading failed")
@@ -169,9 +174,13 @@ class Speech(object):
             if len(para) > max_length:  # break overlong paras into sentences
                 self.log.write(
                     f"further splitting paragraph of length {len(para)}")
-                if self.config.nltk:
-                    sentences = sent_tokenize(para)
-                else:
+                sentences = []
+                try:
+                    doc = self.nlp(para)
+                    sentences = [sent.text.strip() for sent in doc.sents]
+                except Exception:  # pylint: disable=broad-except
+                    pass
+                if not sentences: # fallback method, simple line wrap
                     sentences = textwrap.wrap(text=para, width=max_length)
                 for sentence in sentences:
                     # break sentences greater than 4096 characters into smaller pieces
@@ -193,6 +202,7 @@ class Speech(object):
                 for (i, segment) in enumerate(segments):
                     segment_audio = os.path.join(
                         self.config.temp_path, f'{clean_title}-{i}.wav')
+                    self.log.write(f'coqui segment: {segment}')
                     # pylint: disable=no-member
                     self.tts.tts_to_file(
                         text=segment,
