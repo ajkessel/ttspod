@@ -95,6 +95,15 @@ then
     then
       brew install python@3.11
     fi
+  elif yesno 'Do you want to install python3.11 with apt (requires sudo)?'
+  then
+    if ! apt-cache search --names-only '^python3.11' | grep -q python
+    then
+      echo 'python3.11 does not appear to be in apt sources, adding deadsnake repository'
+      sudo add-apt-repository ppa:deadsnakes/ppa
+      sudo apt update
+    fi
+    sudo apt install python3.11 python3.11-venv
   elif yesno 'Do you want to proceed anyway?'
   then
     pyexe=python3
