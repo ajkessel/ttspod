@@ -95,7 +95,7 @@ then
     then
       brew install python@3.11
     fi
-  elif yeson 'Do you want to proceed anyway?'
+  elif yesno 'Do you want to proceed anyway?'
   then
     pyexe=python3
   else
