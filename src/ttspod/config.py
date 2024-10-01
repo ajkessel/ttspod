@@ -152,6 +152,15 @@ class Config(object):
                 'ttspod_whisper_s2a_model',
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.whisper_voice = e.get('ttspod_whisper_voice')
+            if self.whisper_voice:
+                self.whisper_voice = re.sub(
+                r'~/', str(Path.home()).replace('\\', '/') + '/', self.whisper_voice)
+                if not path.isfile(self.whisper_voice):
+                    self.log.write(
+                        'whisper voice cloning file '
+                        f'{self.whisper_voice} not found, reverting to default'
+                        )
+                    self.whisper_voice = None
             self.coqui_model = e.get(
                 'ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
             self.coqui_speaker = e.get('ttspod_coqui_speaker')
