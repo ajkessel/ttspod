@@ -7,7 +7,6 @@ yesno() {
   [ "$f" == "y" ] && return 0
 }
 check_optional() {
-  local -n VAR=$1
   VAR=''
   yesno 'install Whisper speech engine?' && VAR+=',whisper,'
   yesno 'install Coqui speech engine?' && VAR+=',coqui,'
@@ -22,6 +21,7 @@ check_optional() {
   fi
   yesno 'install truststore?' && VAR+=',truststore,'
   VAR="$(echo ${VAR}|sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
+  eval "$1='"${VAR}"'"
 }
 make_venv() {
   echo creating local python venv under current directory
