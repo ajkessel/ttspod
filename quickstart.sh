@@ -6,6 +6,23 @@ yesno() {
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
+check_optional() {
+  local -n VAR=$1
+  VAR=''
+  yesno 'install Whisper speech engine?' && VAR+=',whisper,'
+  yesno 'install Coqui speech engine?' && VAR+=',coqui,'
+  yesno 'install OpenAI speech engine?' && VAR+=',openai,'
+  yesno 'install Eleven speech engine?' && VAR+=',eleven,'
+  if [ -z "${VAR}" ]
+  then
+    if ! yesno 'warning: you did not select any TTS engine. Are you sure you want to continue?'
+    then
+      exit 1
+    fi
+  fi
+  yesno 'install truststore?' && VAR+=',truststore,'
+  VAR="$(echo ${VAR}|sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
+}
 make_venv() {
   echo creating local python venv under current directory
   if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you use only local (rather than system) packages?'
@@ -34,21 +51,8 @@ make_venv() {
   source .venv/bin/activate
   echo 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
   echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
-  add_on=''
-  yesno 'install Whisper speech engine?' && add_on+=',whisper,'
-  yesno 'install Coqui speech engine?' && add_on+=',coqui,'
-  yesno 'install OpenAI speech engine?' && add_on+=',openai,'
-  yesno 'install Eleven speech engine?' && add_on+=',eleven,'
-  if [ -z "${add_on}" ]
-  then
-    if ! yesno 'warning: you did not select any TTS engine. Are you sure you want to continue?'
-    then
-      exit 1
-    fi
-  fi
-  yesno 'install truststore?' && add_on+=',truststore,'
-  add_on="$(echo ${add_on}|sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
-  echo "ttspod${add_on}"
+  check_optional add_on
+  echo "install string: ttspod${add_on}"
   echo installing ttspod and dependencies
   pip3 install "ttspod${add_on}"
 }
@@ -120,7 +124,9 @@ then
   if yesno 'It appears ttspod is already installed. Do you want to update it to the latest build?'
   then
     source "${tts_path}/activate"
-    pip install ttspod -U
+    check_optional add_on
+    echo "installing ttspod${add_on}" -U"
+    pip install "ttspod${add_on}" -U
     exit 0
   fi
 elif ! yesno 'Do you want to continue and reinstall?'
