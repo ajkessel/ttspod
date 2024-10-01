@@ -127,10 +127,10 @@ then
     echo "installing ttspod${add_on} -U"
     pip install "ttspod${add_on}" -U
     exit 0
+  elif ! yesno 'Do you want to continue and reinstall?'
+  then
+    exit 1
   fi
-elif ! yesno 'Do you want to continue and reinstall?'
-then
-  exit 1
 fi
 
 title 'venv'
