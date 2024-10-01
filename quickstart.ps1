@@ -1,13 +1,13 @@
 #Requires -version 5.0
-function Reload-Profile {
+function Update-Profile {
   @(
-      $Profile.AllUsersAllHosts,
-      $Profile.AllUsersCurrentHost,
-      $Profile.CurrentUserAllHosts,
-      $Profile.CurrentUserCurrentHost
-   ) | % {
-    if(Test-Path $_){
-        . $_
+    $Profile.AllUsersAllHosts,
+    $Profile.AllUsersCurrentHost,
+    $Profile.CurrentUserAllHosts,
+    $Profile.CurrentUserCurrentHost
+  ) | ForEach-Object {
+    if (Test-Path $_) {
+      . $_
     }
   }
 }
@@ -18,7 +18,7 @@ if ( -not ( get-command conda -ea silentlycontinue ) ) {
     Invoke-WebRequest 'https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe' -OutFile 'Miniforge3-Windows-x86_64.exe'
     if ( test-path 'Miniforge3-Windows-x86_64.exe' ) {
       Start-Process -Wait 'Miniforge3-Windows-x86_64.exe'
-      Reload-Profile
+      Upload-Profile
     }
     else {
       write-host "Download failed, exiting."
@@ -63,7 +63,7 @@ if ( ($add_on.length) -gt 0 ) {
 }
 
 $installString = ('ttspod' + $add_on)
-Start-Process -NoNewWindow -Wait "pip3.exe" -ArgumentList "install",$installString
+Start-Process -NoNewWindow -Wait "pip3.exe" -ArgumentList "install", $installString
 
 $cuda = ( python -c "import torch; print(torch.cuda.is_available())" )
 if ( $cuda -ne 'True' ) {
