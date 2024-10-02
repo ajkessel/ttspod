@@ -107,7 +107,7 @@ class Speech(object):
                                progress_bar=False).to(CPU)
             case "tortoise":
                 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-                self.tts = Tortoise()
+                self.tts = Tortoise(config=self.config, log=self.log)
             case _:
                 raise ValueError('TTS engine not configured')
         try:
