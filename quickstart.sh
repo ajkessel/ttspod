@@ -8,10 +8,24 @@ yesno() {
 }
 check_optional() {
   VAR=''
-  yesno 'install Whisper speech engine?' && VAR+=',whisper,'
+  title 'optional requirements'
+  echo 'optional requirements - you should install at least one TTS engine:'
+  echo ' * Coqui (run locally, requirse GPU, conflicts with Tortoise)'
+  echo ' * Eleven (requires API key, limited free processing available)'
+  echo ' * OpenAI (requires paid API key)'
+  echo ' * Tortoise (run locally, requires GPU, slow, high quality, conflicts with Coqui)'
+  echo ' * Whisper (run locally, requires GPU)'
+  echo 'You can alsoinstall  truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN).'
   yesno 'install Coqui speech engine?' && VAR+=',coqui,'
-  yesno 'install OpenAI speech engine?' && VAR+=',openai,'
   yesno 'install Eleven speech engine?' && VAR+=',eleven,'
+  yesno 'install OpenAI speech engine?' && VAR+=',openai,'
+  if [ "${VAR} "== *"coqui"* ]
+  then
+    echo skipping Tortoise because Coqui selected
+  else
+    yesno 'install Tortoise speech engine?' && VAR+=',tortoise,'
+  fi 
+  yesno 'install Whisper speech engine?' && VAR+=',whisper,'
   if [ -z "${VAR}" ]; then
     if ! yesno 'warning: you did not select any TTS engine. Are you sure you want to continue?'; then
       exit 1
@@ -21,6 +35,7 @@ check_optional() {
   yesno 'install development modules?' && VAR+=',dev,'
   VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
   eval "$1='${VAR}'"
+  footer
 }
 make_venv() {
   echo creating local python venv under current directory
@@ -43,8 +58,6 @@ make_venv() {
   fi
   # shellcheck source=/dev/null
   source .venv/bin/activate
-  echo 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
-  echo 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
   check_optional add_on
   # shellcheck disable=SC2154
   echo "installing ttspod${add_on} and dependencies"  

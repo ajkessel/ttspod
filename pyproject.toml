@@ -55,7 +55,7 @@ dependencies = [
   'posix_ipc; platform_system != "Windows"',
   'python-magic-bin; platform_system == "Windows"',
   'semaphore_win_ctypes; platform_system == "Windows"',
-  'spacy==3.8.2',
+  'spacy==3.7.5',
   'pydub',
   'pymupdf',
   'pypandoc',
@@ -66,8 +66,8 @@ dependencies = [
   'validators'
   ]
 [project.optional-dependencies]
-whisper = ['torch','torchaudio','WhisperSpeech']
-coqui = ['torch','torchaudio','TTS']
+whisper = ['torch>=2.2.2','torchaudio>=2.2.2','WhisperSpeech']
+coqui = ['torch>=2.2.2','torchaudio>=2.2.2','TTS==0.22.0']
 openai = ['openai']
 eleven = ['elevenlabs']
 truststore = ['truststore']

@@ -1,4 +1,10 @@
 """main application module, typically invoked from ttspod"""
+# this is only needed to trust locally-installed certificates
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
 
 # standard modules
 try:

@@ -1,4 +1,11 @@
 """main module for triggering input and output modules"""
+# this is only needed to trust locally-installed certificates
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 # standard modules
 try:
     from os import path

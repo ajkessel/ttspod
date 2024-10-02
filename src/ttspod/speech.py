@@ -1,6 +1,12 @@
 """main TTS processor"""
 # standard modules
 try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
+try:
     from anyascii import anyascii
     from concurrent.futures import ThreadPoolExecutor
     from nltk.tokenize import sent_tokenize, BlanklineTokenizer
