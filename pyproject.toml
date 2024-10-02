@@ -29,10 +29,7 @@ classifiers=[
   'Environment :: Win32 (MS Windows)'
 ] 
 requires-python = '==3.11.*'
-# cython and fastapi locks allow spacy to build on MacOS
-# cython < 3
-# fastapi 0.110
-# spacy lock on 3.8.2
+# spacy lock on 3.7.5 to avoid conflicts
 dependencies = [ 
   'anyascii',
   'cython',
