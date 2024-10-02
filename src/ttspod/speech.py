@@ -88,6 +88,7 @@ except ImportError:
 
 class Speech(object):
     """main TTS processor"""
+
     def __init__(self, config, dry=False, log=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
@@ -139,7 +140,7 @@ class Speech(object):
             test_elements = test_elements.unsqueeze(0)
         return elements.tile(
             test_elements.shape[0], 1
-            ).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
+        ).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
     def slugify(self, value):
         """convert an arbitrary string to a valid filename"""
@@ -197,7 +198,7 @@ class Speech(object):
                     sentences = [sent.text.strip() for sent in doc.sents]
                 except Exception:  # pylint: disable=broad-except
                     pass
-                if not sentences: # fallback method, simple line wrap
+                if not sentences:  # fallback method, simple line wrap
                     sentences = textwrap.wrap(text=para, width=max_length)
                 for sentence in sentences:
                     # break sentences greater than 4096 characters into smaller pieces

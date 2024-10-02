@@ -143,11 +143,13 @@ class Config(object):
     class Speech(object):
         """tts processor settings"""
 
-        def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None):
+        def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None, debug=False):
             self.log = log if log else Logger(debug=True)
+            self.debug = debug
             self.engine = engine if engine else e.get('ttspod_engine', '')
-            self.tortoise_preset = e.get('ttspod_tortoise_preset','ultra_fast')
-            self.tortoise_voice = e.get('ttspod_tortoise_voice','daniel')
+            self.tortoise_preset = e.get(
+                'ttspod_tortoise_preset', 'ultra_fast')
+            self.tortoise_voice = e.get('ttspod_tortoise_voice', 'daniel')
             self.tortoise_voice = fix_path(self.tortoise_voice)
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
@@ -169,7 +171,7 @@ class Config(object):
                     self.log.write(
                         'whisper voice cloning file '
                         f'{self.whisper_voice} not found, reverting to default'
-                        )
+                    )
                     self.whisper_voice = None
             self.coqui_model = e.get(
                 'ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
@@ -182,7 +184,10 @@ class Config(object):
                 self.engine = 'whisper'
             # FIXME: some more TTS engine validation
             if not self.engine in ENGINES:
-                raise ValueError("no valid TTS engine/API key found")
+                self.log.write(f'TTS engine {self.engine} selected but not available.\n'
+                               f'Available engines are: {ENGINES}\n'
+                               'reinstall with quickstart.sh to add engines', True)
+                self.engine = None
             self.device = CPU
             self.log.write(f'using {self.device} for local TTS processing')
 
@@ -191,24 +196,26 @@ class Config(object):
         self.config_path = None
         if config_path and path.isfile(config_path):
             self.config_path = config_path
-        elif config_path and path.isdir(config_path) and path.isfile(path.join(config_path,'.env')):
-            self.config_path = path.join(config_path,'.env')
-        elif path.isfile(path.join(Path.home(),'.config','ttspod.ini')):
-            self.config_path = path.join(Path.home(),'.config','ttspod.ini')
-        elif path.isfile(path.join(getcwd(),'.config','ttspod.ini')):
-            self.config_path = path.join(getcwd(),'.config','ttspod.ini')
-        elif path.isfile(path.join(getcwd(),'.env')):
-            self.config_path = path.join(getcwd(),'.env')
-        elif path.isfile(path.join(path.dirname(getsourcefile(lambda:0)),'.env')):
-            self.config_path = path.join(path.dirname(getsourcefile(lambda:0)),'.env')
-        elif path.isfile(path.join(path.dirname(path.realpath(__file__)),'.env')):
-            self.config_path = path.join(path.dirname(path.realpath(__file__)),'.env')
+        elif config_path and path.isdir(config_path) and path.isfile(path.join(config_path, '.env')):
+            self.config_path = path.join(config_path, '.env')
+        elif path.isfile(path.join(Path.home(), '.config', 'ttspod.ini')):
+            self.config_path = path.join(Path.home(), '.config', 'ttspod.ini')
+        elif path.isfile(path.join(getcwd(), '.config', 'ttspod.ini')):
+            self.config_path = path.join(getcwd(), '.config', 'ttspod.ini')
+        elif path.isfile(path.join(getcwd(), '.env')):
+            self.config_path = path.join(getcwd(), '.env')
+        elif path.isfile(path.join(path.dirname(getsourcefile(lambda: 0)), '.env')):
+            self.config_path = path.join(
+                path.dirname(getsourcefile(lambda: 0)), '.env')
+        elif path.isfile(path.join(path.dirname(path.realpath(__file__)), '.env')):
+            self.config_path = path.join(
+                path.dirname(path.realpath(__file__)), '.env')
         if self.config_path:
             load_dotenv(self.config_path)
         if not any("ttspod" in x.lower() for x in list(e.keys())):
             raise ValueError(
                 'No settings found. Create a .env file or specify the location with --config.'
-                )
+            )
         if debug is None:
             self.debug = e.get('ttspod_debug', debug)
         else:
@@ -245,7 +252,8 @@ class Config(object):
             self.cache_path = re.sub(
                 r'~/', str(Path.home()).replace('\\', '/') + '/', self.cache_path)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
-                                  engine=engine, max_workers=self.max_workers, log=self.log)
+                                  engine=engine, max_workers=self.max_workers, log=self.log,
+                                  debug=self.debug)
         self.content = self.Content(
             working_path=self.working_path, log=self.log)
         self.links = self.Links(log=self.log)
@@ -301,8 +309,8 @@ class Config(object):
         Path(self.temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.final_path).mkdir(parents=True, exist_ok=True)
         chmod(self.final_path, 0o755)
-        if not path.isfile(path.join(self.working_path,'no_image.lua')):
-            with open(path.join(self.working_path,'no_image.lua'), 'w', encoding='ascii') as f:
+        if not path.isfile(path.join(self.working_path, 'no_image.lua')):
+            with open(path.join(self.working_path, 'no_image.lua'), 'w', encoding='ascii') as f:
                 f.write('function Image(el)\nreturn {}\n end')
         return True
 
