@@ -16,10 +16,10 @@ check_optional() {
   echo ' * Tortoise (run locally, requires GPU, slow, high quality, conflicts with Coqui)'
   echo ' * Whisper (run locally, requires GPU)'
   echo 'You can alsoinstall  truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN).'
-  yesno 'install Coqui speech engine?' && VAR+=',coqui,'
+  yesno 'install Coqui speech engine (conflicts with tortoise)?' && VAR+=',coqui,'
   yesno 'install Eleven speech engine?' && VAR+=',eleven,'
   yesno 'install OpenAI speech engine?' && VAR+=',openai,'
-  if [ "${VAR}" == *"coqui"* ]
+  if [[ "${VAR}" == *"coqui"* ]]
   then
     echo skipping Tortoise because Coqui selected
   else
