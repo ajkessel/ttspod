@@ -5,6 +5,7 @@ try:
     from html2text import html2text
     from unidecode import unidecode
     from platform import platform
+    from pathlib import Path
     import re
 except ImportError as e:
     print(
@@ -132,6 +133,17 @@ def clean_html(raw_html):
         return ""
 
 
+def fix_path(text):
+    """standardize a directory path and expand ~"""
+    try:
+        fixed_text = re.sub(
+            r'~/', str(Path.home()).replace('\\', '/') + '/', text)
+    except Exception:  # pylint: disable=broad-except
+        fixed_text = text
+
+    return fixed_text
+
+
 def clean_text(text):
     """remove as much non-speakable text as possible"""
     text = unescape(text)
@@ -146,13 +158,17 @@ def clean_text(text):
     text = unidecode(text.strip())
     return text
 
+
 # If Windows getch() available, use that.  If not, use a
 # Unix version.
 try:
     import msvcrt
     get_character = msvcrt.getch
 except ImportError:
-    import sys, tty, termios
+    import sys
+    import tty
+    import termios
+
     def _unix_getch():
         """Get a single character from stdin, Unix version"""
 

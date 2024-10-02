@@ -16,6 +16,7 @@ except ImportError as e:
 
 # TTSPod modules
 from .logger import Logger
+from .util import fix_path
 
 # optional modules - disable linting since we are checking if modules exist
 # pylint: disable=unused-import
@@ -33,6 +34,13 @@ try:
 except ImportError:
     pass
 ENGINES = {}
+try:
+    from tortoise.api import TextToSpeech
+    from tortoise.utils.audio import load_voice
+    ENGINES['tortoise'] = True
+except ImportError:
+    pass
+
 try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import save
@@ -138,6 +146,9 @@ class Config(object):
         def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None):
             self.log = log if log else Logger(debug=True)
             self.engine = engine if engine else e.get('ttspod_engine', '')
+            self.tortoise_preset = e.get('ttspod_tortoise_preset','ultra_fast')
+            self.tortoise_voice = e.get('ttspod_tortoise_voice','daniel')
+            self.tortoise_voice = fix_path(self.tortoise_voice)
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
             self.eleven_model = e.get(
@@ -153,8 +164,7 @@ class Config(object):
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.whisper_voice = e.get('ttspod_whisper_voice')
             if self.whisper_voice:
-                self.whisper_voice = re.sub(
-                r'~/', str(Path.home()).replace('\\', '/') + '/', self.whisper_voice)
+                self.whisper_voice = fix_path(self.whisper_voice)
                 if not path.isfile(self.whisper_voice):
                     self.log.write(
                         'whisper voice cloning file '
@@ -210,8 +220,7 @@ class Config(object):
         self.working_path = path.join(
             e.get('ttspod_working_path', './working'), '')
         if self.working_path:
-            self.working_path = re.sub(
-                r'~/', str(Path.home()).replace('\\', '/') + '/', self.working_path)
+            self.working_path = fix_path(self.working_path)
         if self.working_path.startswith('./'):
             self.working_path = re.sub(r'^./', '', self.working_path)
             self.working_path = path.join(
@@ -220,10 +229,7 @@ class Config(object):
         self.final_path = path.join(self.working_path, 'output', '')
         self.log_path = e.get('ttspod_log')
         if self.log_path:
-            self.log_path = re.sub(
-                r'~/', str(Path.home()).replace('\\', '/') + '/',
-                self.log_path
-                )
+            self.log_path = fix_path(self.log_path)
         if self.log_path and not '/' in self.log_path and not '\\' in self.log_path:
             self.log_path = path.join(self.working_path, self.log_path)
         if self.log_path:

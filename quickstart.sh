@@ -18,8 +18,9 @@ check_optional() {
     fi
   fi
   yesno 'install truststore?' && VAR+=',truststore,'
+  yesno 'install development modules?' && VAR+=',dev,'
   VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
-  eval "$1='"${VAR}"'"
+  eval "$1='${VAR}'"
 }
 make_venv() {
   echo creating local python venv under current directory

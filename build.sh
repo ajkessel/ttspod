@@ -7,6 +7,10 @@ then
   exit 1
 fi
 source .venv/bin/activate
+if [ ! $(python -c 'import pkgutil; print(1 if pkgutil.find_loader("twine") else "")') ]
+then 
+  pip install twine
+fi
 current_version=$(cat version|grep '[0-9\.]*')
 if [ -z "${current_version}" ]
 then

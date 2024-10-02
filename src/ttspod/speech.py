@@ -47,6 +47,11 @@ except ImportError:
     pass
 ENGINES = {}
 try:
+    from .speech_tortoise import Tortoise
+    ENGINES['tortoise'] = True
+except ImportError:
+    pass
+try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import save
     ENGINES['eleven'] = True
@@ -100,6 +105,9 @@ class Speech(object):
                 pytorch_utils.isin_mps_friendly = self.patched_isin_mps_friendly
                 self.tts = TTS(model_name=self.config.coqui_model,
                                progress_bar=False).to(CPU)
+            case "tortoise":
+                os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+                self.tts = Tortoise()
             case _:
                 raise ValueError('TTS engine not configured')
         try:
@@ -150,7 +158,10 @@ class Speech(object):
             self.log.write(f'dry run: not creating {out_file}')
             return
 
-        if self.config.engine == "whisper":
+        if self.config.engine == "tortoise":
+            self.tts.write(text, out_file)
+            return out_file
+        elif self.config.engine == "whisper":
             chunks = self.split_and_prepare_text(text)
             self.whisper_long(chunks=chunks, output=out_file,
                               speaker=self.config.whisper_voice)
