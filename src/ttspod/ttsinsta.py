@@ -1,12 +1,12 @@
 """instapaper input module"""
-# optional modules
-# truststore to trust local certificates
+# optional system certificate trust
 try:
     import truststore
     truststore.inject_into_ssl()
 except ImportError:
     pass
 
+# only works if instapaper was installed
 try:
     import instapaper
     AVAILABLE_INSTAPAPER = True

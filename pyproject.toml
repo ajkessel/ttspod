@@ -51,7 +51,7 @@ dependencies = [
   'pod2gen',
   'posix_ipc; platform_system != "Windows"',
   'psutil',
-  'python-magic-bin; platform_system == "Windows"',
+  'python-magic-bin; platform_system == "Windows" or platform_system == "Darwin"',
   'semaphore_win_ctypes; platform_system == "Windows"',
   'spacy==3.7.5',
   'pydub',
@@ -70,7 +70,7 @@ openai = ['openai']
 eleven = ['elevenlabs']
 truststore = ['truststore']
 tortoise = ['torch','torchaudio','tortoise-tts','ninja']
-dev = ['posix_ipc','python-magic-bin','semaphore_win_ctypes']
+dev = ['posix_ipc','semaphore_win_ctypes']
 
 [project.urls]
 Homepage = "https://github.com/ajkessel/ttspod"

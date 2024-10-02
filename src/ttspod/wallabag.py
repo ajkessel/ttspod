@@ -1,4 +1,11 @@
 """wallabag input processor"""
+# optional system certificate trust
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 try:
     from html2text import HTML2Text
     from urllib.parse import urljoin as j

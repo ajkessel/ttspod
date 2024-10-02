@@ -1,4 +1,11 @@
-"""python-native inefficient implementation of rsync"""
+"""python-native highly inefficient implementation of rsync"""
+# optional system certificate trust
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 try:
     from getpass import getuser
     from pathlib import Path

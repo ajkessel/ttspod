@@ -1,5 +1,5 @@
 """main application module, typically invoked from ttspod"""
-# this is only needed to trust locally-installed certificates
+# optional system certificate trust
 try:
     import truststore
     truststore.inject_into_ssl()

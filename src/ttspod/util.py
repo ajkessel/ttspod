@@ -1,4 +1,11 @@
 """general purpose utility functions"""
+# optional system certificate trust
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 try:
     from pypandoc import convert_text
     from html import unescape
@@ -191,3 +198,12 @@ except ImportError:
 
 
 # pylint: enable=c-extension-no-member
+
+
+def patched_isin_mps_friendly(elements, test_elements):
+    """workaround for limited MPS support in pytorch"""
+    if test_elements.ndim == 0:
+        test_elements = test_elements.unsqueeze(0)
+    return elements.tile(
+        test_elements.shape[0], 1
+    ).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()

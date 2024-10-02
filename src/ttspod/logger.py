@@ -1,4 +1,11 @@
 """general purpose logging"""
+# optional system certificate trust
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 # standard modules
 try:
     from datetime import datetime

@@ -1,5 +1,5 @@
 """process webpages via URL"""
-# optional modules (to trust local certificate store)
+# optional system certificate trust
 try:
     import truststore
     truststore.inject_into_ssl()

@@ -1,5 +1,5 @@
 """generate TTS using tortoise engine"""
-# optionally trust local SSL certificate store
+# optional system certificate trust
 try:
     import truststore
     truststore.inject_into_ssl()
@@ -7,7 +7,7 @@ except ImportError:
     pass
 
 # standard modules
-#from platform import processor
+from platform import processor
 from os.path import isfile
 import re
 import torch
@@ -16,7 +16,7 @@ from tortoise.api import TextToSpeech
 from tortoise.utils.audio import load_voice
 from transformers import pytorch_utils
 
-# TTSPod modules
+# ttspod modules
 from .logger import Logger
 from .util import patched_isin_mps_friendly
 
@@ -32,10 +32,10 @@ try:
     if mps.is_available():
         CPU = 'mps'
         pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
-        # if processor() == 'arm':
-        #     CPU = 'mps'
-        # else:
-        #     CPU = 'cpu'
+        if processor() == 'arm':
+            CPU = 'mps'
+        else:
+            CPU = 'cpu'
 except ImportError:
     pass
 
@@ -61,8 +61,12 @@ class Tortoise(object):
         self.voice = e.get("tortoise_voice", "daniel")
         self.voice_path = e.get("tortoise_voice_path", None)
         self.debug = e.get("debug", False)
-        if torch.cuda.is_available():
+        if CPU == 'cuda':
             torch.cuda.empty_cache()
+        elif CPU == 'mps':
+            pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
+        self.log.write('starting tortoise-tts with settings'
+                       f'{self.args} {self.preset} {self.voice} {self.debug}')
         self.tts = TextToSpeech(**self.args)
 
     def split_and_recombine_text(self, text, desired_length=200, max_length=300):

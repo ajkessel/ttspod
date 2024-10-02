@@ -1,4 +1,11 @@
 """digest and validate configuration files"""
+# optional system certificate trust
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
 # standard modules
 try:
     from os import chmod, path, environ as e, getcwd
@@ -31,6 +38,7 @@ try:
     from torch.backends import mps
     if mps.is_available():
         CPU = 'mps'
+        e["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 except ImportError:
     pass
 ENGINES = {}
