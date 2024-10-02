@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "ttspod.version.__version__"}  # any module attribute compatible with ast.literal_eval
+
+[project]
+name = "ttspod"
+dynamic = ["version"]
+description = 'Convert any content to a podcast'
+authors = [
+  {name = "Adam Kessel", email = "adam@rosi-kessel.org"}
+]
+maintainers = [
+  {name = "Adam Kessel", email = "adam@rosi-kessel.org"}
+]
+keywords = [ 'podcast', 'text-to-speech' ]
+readme = 'README.md'
+license = {text = "MIT License"}
+classifiers=[
+  'Development Status :: 3 - Alpha',
+  'Intended Audience :: End Users/Desktop',
+  'License :: OSI Approved :: MIT License',
+  'Programming Language :: Python :: 3.11',
+  'Operating System :: POSIX :: Linux',
+  'Operating System :: MacOS :: MacOS X',
+  'Environment :: MacOS X',
+  'Environment :: Win32 (MS Windows)'
+] 
+requires-python = '==3.11.*'
+# cython and fastapi locks allow spacy to build on MacOS
+# cython < 3
+# fastapi 0.110
+# spacy lock on 3.8.2
+dependencies = [ 
+  'anyascii',
+  'cython',
+  'fastapi',
+  'Requests',
+  'Unidecode',
+  'ffmpeg',
+  'html2text',
+  'instapaper',
+  'ipython',
+  'lxml',
+  'lxml_html_clean',
+  'nltk',
+  'numpy<2',
+  'pandoc',
+  'paramiko',
+  'pocket',
+  'pocket_api',
+  'pod2gen',
+  'posix_ipc; platform_system != "Windows"',
+  'python-magic-bin; platform_system == "Windows"',
+  'semaphore_win_ctypes; platform_system == "Windows"',
+  'spacy==3.8.2',
+  'pydub',
+  'pymupdf',
+  'pypandoc',
+  'pypandoc-binary',
+  'python-dotenv',
+  'python_magic',
+  'trafilatura',
+  'validators'
+  ]
+[project.optional-dependencies]
+whisper = ['torch','torchaudio','WhisperSpeech']
+coqui = ['torch','torchaudio','TTS']
+openai = ['openai']
+eleven = ['elevenlabs']
+truststore = ['truststore']
+tortoise = ['torch','torchaudio','tortoise-tts','ninja']
+dev = ['posix_ipc','python-magic-bin','semaphore_win_ctypes']
+
+[project.urls]
+Homepage = "https://github.com/ajkessel/ttspod"
+Documentation = "https://github.com/ajkessel/ttspod/blob/main/README.md"
+Repository = "https://github.com/ajkessel/ttspod"
+Issues = "https://github.com/ajkessel/ttspod/issues"
+Changelog = "https://github.com/ajkessel/ttspod/commits/main/"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [ "src", "examples" ]
+
+[tool.setuptools.package-data]
+src = [ "*.py" ]
+examples = ["dotenv.env"]
+
+[project.scripts]
+"ttspod" = "ttspod.cli:main"
