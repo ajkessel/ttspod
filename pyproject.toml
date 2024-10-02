@@ -70,7 +70,7 @@ openai = ['openai']
 eleven = ['elevenlabs']
 truststore = ['truststore']
 tortoise = ['torch','torchaudio','tortoise-tts','ninja']
-dev = ['posix_ipc','semaphore_win_ctypes']
+dev = ['posix_ipc','semaphore_win_ctypes','build']
 
 [project.urls]
 Homepage = "https://github.com/ajkessel/ttspod"
