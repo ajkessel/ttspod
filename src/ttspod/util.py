@@ -183,4 +183,11 @@ except ImportError:
 
     get_character = _unix_getch
 
+    def patched_isin_mps_friendly(elements, test_elements):
+        """hack to enable mps GPU support for Mac TTS"""
+        if test_elements.ndim == 0:
+            test_elements = test_elements.unsqueeze(0)
+        return elements.tile(test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
+
+
 # pylint: enable=c-extension-no-member

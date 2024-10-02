@@ -7,16 +7,18 @@ except ImportError:
     pass
 
 # standard modules
-from platform import processor
+#from platform import processor
 from os.path import isfile
 import re
 import torch
 import torchaudio
 from tortoise.api import TextToSpeech
 from tortoise.utils.audio import load_voice
+from transformers import pytorch_utils
 
 # TTSPod modules
 from .logger import Logger
+from .util import patched_isin_mps_friendly
 
 CPU = 'cpu'
 try:
@@ -28,10 +30,12 @@ except ImportError:
 try:
     from torch.backends import mps
     if mps.is_available():
-        if processor() == 'arm':
-            CPU = 'mps'
-        else:
-            CPU = 'cpu'
+        CPU = 'mps'
+        pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
+        # if processor() == 'arm':
+        #     CPU = 'mps'
+        # else:
+        #     CPU = 'cpu'
 except ImportError:
     pass
 
