@@ -1,11 +1,12 @@
 """main TTS processor"""
-# standard modules
+# optionally trust local SSL certificate store
 try:
     import truststore
     truststore.inject_into_ssl()
 except ImportError:
     pass
 
+# standard modules
 try:
     from anyascii import anyascii
     from concurrent.futures import ThreadPoolExecutor
@@ -166,8 +167,7 @@ class Speech(object):
             return
 
         if self.config.engine == "tortoise":
-            self.tts.write(text, out_file)
-            return out_file
+            return self.tts.write(text, out_file)
         elif self.config.engine == "whisper":
             chunks = self.split_and_prepare_text(text)
             self.whisper_long(chunks=chunks, output=out_file,

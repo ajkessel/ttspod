@@ -143,7 +143,8 @@ class Config(object):
     class Speech(object):
         """tts processor settings"""
 
-        def __init__(self, temp_path='', final_path='', engine=None, max_workers=10, log=None, debug=False):
+        def __init__(self, temp_path='', final_path='', engine=None,
+                     max_workers=10, log=None, debug=False):
             self.log = log if log else Logger(debug=True)
             self.debug = debug
             self.engine = engine if engine else e.get('ttspod_engine', '')
@@ -151,6 +152,9 @@ class Config(object):
                 'ttspod_tortoise_preset', 'ultra_fast')
             self.tortoise_voice = e.get('ttspod_tortoise_voice', 'daniel')
             self.tortoise_voice = fix_path(self.tortoise_voice)
+            self.tortoise_voice_path = None
+            if '/' in self.tortoise_voice:
+                self.tortoise_voice_path, self.tortoise_voice = path.split(self.tortoise_voice)
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
             self.eleven_model = e.get(
@@ -196,7 +200,8 @@ class Config(object):
         self.config_path = None
         if config_path and path.isfile(config_path):
             self.config_path = config_path
-        elif config_path and path.isdir(config_path) and path.isfile(path.join(config_path, '.env')):
+        elif (config_path and path.isdir(config_path) and
+              path.isfile(path.join(config_path, '.env'))):
             self.config_path = path.join(config_path, '.env')
         elif path.isfile(path.join(Path.home(), '.config', 'ttspod.ini')):
             self.config_path = path.join(Path.home(), '.config', 'ttspod.ini')

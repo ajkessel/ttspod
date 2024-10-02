@@ -1,11 +1,21 @@
 """generate TTS using tortoise engine"""
+# optionally trust local SSL certificate store
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass
+
+# standard modules
 from platform import processor
+from os.path import isfile
 import re
 import torch
 import torchaudio
 from tortoise.api import TextToSpeech
 from tortoise.utils.audio import load_voice
 
+# TTSPod modules
 from .logger import Logger
 
 CPU = 'cpu'
@@ -45,6 +55,7 @@ class Tortoise(object):
             })
         self.preset = e.get("tortoise_preset", "ultra_fast")
         self.voice = e.get("tortoise_voice", "daniel")
+        self.voice_path = e.get("tortoise_voice_path", None)
         self.debug = e.get("debug", False)
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -125,15 +136,29 @@ class Tortoise(object):
 
         return rv
 
-    def write(self, text, output):
+    def write(self, text=None, output=None, preset=None,
+              voice=None, voice_path=None):
         """convert input text to output mp3 file"""
 
+        preset = preset if preset else self.preset
+        voice = voice if voice else self.voice
+        voice_path = voice_path if voice_path else self.voice_path
         chunks = self.split_and_recombine_text(text)
 
-        preset = self.preset
-        voice = self.voice
-
-        voice_samples, conditioning_latents = load_voice(voice)
+        try:
+            voice_samples, conditioning_latents = load_voice(
+                voice=voice, extra_voice_dirs=voice_path)
+        except Exception:  # pylint: disable=broad-except
+            self.log.write(
+                f'could not load voice {voice} from {voice_path}, '
+                'trying daniel as default')
+            try:
+                voice_samples, conditioning_latents = load_voice(
+                    voice='daniel')
+            except Exception:  # pylint: disable=broad-except
+                self.log.write(
+                    'could not load any voice files, please reconfigure')
+                return None
         audios = []
         for i, chunk in enumerate(chunks):
             print(f'processing chunk {i+1} of {len(chunks)}: {chunk}')
@@ -144,3 +169,9 @@ class Tortoise(object):
 
         audio = torch.cat(audios, dim=-1)
         torchaudio.save(output, audio, 24000)
+        if isfile(output):
+            return output
+        else:
+            self.log.write('something went wrong, no audio generated')
+            return None
+        

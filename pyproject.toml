@@ -50,6 +50,7 @@ dependencies = [
   'pocket_api',
   'pod2gen',
   'posix_ipc; platform_system != "Windows"',
+  'psutil',
   'python-magic-bin; platform_system == "Windows"',
   'semaphore_win_ctypes; platform_system == "Windows"',
   'spacy==3.7.5',
