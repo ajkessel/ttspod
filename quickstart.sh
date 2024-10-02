@@ -10,7 +10,7 @@ check_optional() {
   VAR=''
   title 'optional requirements'
   echo 'optional requirements - you should install at least one TTS engine:'
-  echo ' * Coqui (run locally, requirse GPU, conflicts with Tortoise)'
+  echo ' * Coqui (run locally, requires GPU, conflicts with Tortoise)'
   echo ' * Eleven (requires API key, limited free processing available)'
   echo ' * OpenAI (requires paid API key)'
   echo ' * Tortoise (run locally, requires GPU, slow, high quality, conflicts with Coqui)'
@@ -19,7 +19,7 @@ check_optional() {
   yesno 'install Coqui speech engine?' && VAR+=',coqui,'
   yesno 'install Eleven speech engine?' && VAR+=',eleven,'
   yesno 'install OpenAI speech engine?' && VAR+=',openai,'
-  if [ "${VAR} "== *"coqui"* ]
+  if [ "${VAR}" == *"coqui"* ]
   then
     echo skipping Tortoise because Coqui selected
   else
