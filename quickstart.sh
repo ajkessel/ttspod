@@ -9,10 +9,10 @@ yesno() {
 check_optional() {
   VAR=',openai,eleven,'
   title 'optional requirements'
-  if yesno 'Do you want to be able to generate speech locally, rather than with a paid API?'
+  if yesno 'Do you want to be able to generate speech locally on your GPU with coqui or whisper, rather than with a paid API?'
     VAR+=',coqui,whisper,'
     yesno 'Do you need to trust locally installed CA certificates?' && VAR+=',truststore,'
-    yesno 'Install development modules?' && VAR+=',dev,'
+    yesno 'Install developer modules?' && VAR+=',dev,'
     VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
     eval "$1='${VAR}'"
     footer
