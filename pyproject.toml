@@ -46,6 +46,7 @@ dependencies = [
   'numpy<2',
   'pandoc',
   'paramiko',
+  'pip',
   'pocket',
   'pocket_api',
   'pod2gen',
@@ -64,12 +65,9 @@ dependencies = [
   'validators'
   ]
 [project.optional-dependencies]
-whisper = ['torch>=2.2.2','torchaudio>=2.2.2','WhisperSpeech']
-coqui = ['torch>=2.2.2','torchaudio>=2.2.2','TTS==0.22.0']
-openai = ['openai']
-eleven = ['elevenlabs']
+local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4']
+remote = ['openai','elevenlabs']
 truststore = ['truststore']
-tortoise = ['torch','torchaudio','tortoise-tts','ninja']
 dev = ['posix_ipc','semaphore_win_ctypes','build','twine']
 
 [project.urls]

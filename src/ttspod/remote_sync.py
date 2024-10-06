@@ -23,9 +23,9 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-# TODO: rework the debug/dbg and output logic
+# TODO: rework the debug/DBG and output logic
 # probably want to just generate a string with output and return it
-dbg = False
+DBG = False
 
 
 def md5(file_path):
@@ -82,21 +82,21 @@ def parse_location(fullpath):
 
 def remote_isdir(sftp, remote_dir):
     """check if remote path is a directory"""
-    if dbg:
+    if DBG:
         print(f'Checking {remote_dir} for directory status')
     try:
         file_attribute = sftp.stat(remote_dir)
         isdir = stat.S_ISDIR(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
-        if dbg:
+        if DBG:
             print(f'Could not check {remote_dir}')
         return None
     if isdir:
-        if dbg:
+        if DBG:
             print(f"{remote_dir} is a directory")
         return True
     else:
-        if dbg:
+        if DBG:
             print(f"{remote_dir} is not a directory")
         return False
 
@@ -115,7 +115,7 @@ def remote_mkdir(sftp, remote_dir):
                 sftp.mkdir(path)
         return True
     except Exception:  # pylint: disable=broad-except
-        if dbg:
+        if DBG:
             print(f'Could not mkdir {remote_dir}')
         return None
 
@@ -126,15 +126,15 @@ def remote_isfile(sftp, remote_file):
         file_attribute = sftp.stat(remote_file)
         isfile = stat.S_ISREG(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
-        if dbg:
+        if DBG:
             print(f'Could not check file {remote_file}')
         return None
     if isfile:
-        if dbg:
+        if DBG:
             print(f"{remote_file} is a file")
         return True
     else:
-        if dbg:
+        if DBG:
             print(f"{remote_file} is not a file")
         return False
 
@@ -146,18 +146,18 @@ def remote_get_filelist(sftp=None, remote_dir='', recursive=False):
     for file in initial_list:
         if remote_isdir(sftp, posix_join(remote_dir, file)):
             if recursive:
-                if dbg:
+                if DBG:
                     print(f'adding remote {file} directory recursively')
                 new_list = remote_get_filelist(sftp=sftp, remote_dir=posix_join(
                     remote_dir, file), recursive=recursive)
                 new_list = [posix_join(file, i) for i in new_list]
                 file_list.extend(new_list)
-            elif dbg:
+            elif DBG:
                 print(
                     f'remote {file} is a directory and recursion is disabled, skipping')
         elif remote_isfile(sftp, posix_join(remote_dir, file)):
             file_list.extend([file])
-        elif dbg:
+        elif DBG:
             print(f'remote {file} not directory or file, skipping')
     return file_list
 
@@ -169,18 +169,18 @@ def local_get_filelist(local_dir='', recursive=False):
     for file in initial_list:
         if os.path.isdir(os.path.join(local_dir, file)):
             if recursive:
-                if dbg:
+                if DBG:
                     print(f'adding local {file} directory recursively')
                 new_list = local_get_filelist(local_dir=os.path.join(
                     local_dir, file), recursive=recursive)
                 new_list = [os.path.join(file, i) for i in new_list]
                 file_list.extend(new_list)
-            elif dbg:
+            elif DBG:
                 print(
                     f'local {file} is a directory and recursion is disabled, skipping')
         elif os.path.isfile(os.path.join(local_dir, file)):
             file_list.extend([file])
-        elif dbg:
+        elif DBG:
             print(f'local {file} not directory or file, skipping')
     return file_list
 
@@ -198,8 +198,8 @@ def sync(
     recursive=False
 ):
     """Sync source folder or file to destination folder."""
-    global dbg  # pylint: disable=global-statement
-    dbg = debug
+    global DBG  # pylint: disable=global-statement
+    DBG = debug
     ssh = None
     sftp = None
     source_user, source_host, source_dir = parse_location(source)
@@ -215,7 +215,7 @@ def sync(
                 break
         if not os.path.isfile(keyfile):
             keyfile = None
-        elif dbg:
+        elif DBG:
             print(f'Found local ssh keyfile {keyfile}')
     # Establish SSH connection
     if source_host and destination_host:
@@ -245,12 +245,12 @@ def sync(
                     "Either password or ssh key required to make connection")
         except Exception as err:
             raise ValueError(f'SSH connection failed {err}') from err
-        if dbg:
+        if DBG:
             print("connection successful")
         # Open SFTP session
         sftp = ssh.open_sftp()
     else:
-        if dbg:
+        if DBG:
             print("No hostname provided, local sync only.")
 
     files = []
@@ -361,7 +361,7 @@ def sync(
                         'Could not create destination directory '
                         f'{destination_dir}: {err}') from err
 
-    if dbg:
+    if DBG:
         print(
             f'source host: {source_host}\n'
             f'source: {source_dir}\n'
@@ -387,14 +387,14 @@ def sync(
             if os.path.isfile(local_file):
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
-                if dbg:
+                if DBG:
                     print(f'local {local_check}')
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
-                if dbg:
+                if DBG:
                     print(f'remote {remote_check}')
                 if remote_check is None:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} does not exist on the remote server. Uploading...")
                     if not dry_run:
@@ -403,7 +403,7 @@ def sync(
                         sftp.put(local_file, remote_file)
                         sftp.utime(remote_file, times)
                 elif local_check != remote_check:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is different. Uploading updated version...")
                     if not dry_run:
@@ -412,10 +412,10 @@ def sync(
                         sftp.put(local_file, remote_file)
                         sftp.utime(remote_file, times)
                 else:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is identical. No need to upload.")
-            elif dbg:
+            elif DBG:
                 print(f"Could not find source file {filename}.")
     elif source_host:  # remote source to local destination
         for filename in files:
@@ -434,14 +434,14 @@ def sync(
             if os.path.isfile(local_file):
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
-                if dbg:
+                if DBG:
                     print(f'remote {remote_check}')
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
-                if dbg:
+                if DBG:
                     print(f'local {local_check}')
                 if local_check != remote_check:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is different. Downloading updated version...")
                     if not dry_run:
@@ -450,11 +450,11 @@ def sync(
                         sftp.get(remote_file, local_file)
                         os.utime(local_file, times)
                 else:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is identical. No need to download.")
             else:
-                if dbg:
+                if DBG:
                     print(
                         f"File {filename} does not exist on the local server. Downloading...")
                 if not dry_run:
@@ -470,14 +470,14 @@ def sync(
             if os.path.isfile(local_file) and os.path.isfile(remote_file):
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
-                if dbg:
+                if DBG:
                     print(f'local {local_check}')
                 remote_check = os.path.getsize(
                     remote_file) if size_only else md5(remote_file)
-                if dbg:
+                if DBG:
                     print(f'remote {remote_check}')
                 if local_check != remote_check:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is different. Copying updated version...")
                     try:
@@ -486,11 +486,11 @@ def sync(
                     except Exception as err:  # pylint: disable=broad-except
                         print(f'Copy failed with error {err}')
                 else:
-                    if dbg:
+                    if DBG:
                         print(
                             f"File {filename} is identical. No need to copy.")
             else:
-                if dbg:
+                if DBG:
                     print(
                         f"File {filename} does not exist on the destination. Copying...")
                 try:

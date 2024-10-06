@@ -8,3 +8,4 @@ working/
 *.egg-info
 build/
 dist/
+sandbox/

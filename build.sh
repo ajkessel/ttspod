@@ -9,7 +9,7 @@ fi
 source .venv/bin/activate
 if [ ! $(python -c 'import pkgutil; print(1 if pkgutil.find_loader("twine") else "")') ]
 then 
-  pip install twine
+  uv pip install twine
 fi
 current_version=$(cat version|grep '[0-9\.]*')
 if [ -z "${current_version}" ]
@@ -27,7 +27,7 @@ then
   echo Build error. Exiting.
   exit 1
 fi
-pip install .
+uv pip install .
 echo 'Not uploading. Specify -u to upload to pypi.'
 if [ "$1" == "-u" ]
 then

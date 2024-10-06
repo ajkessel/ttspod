@@ -27,28 +27,7 @@ from .util import fix_path
 
 # optional modules - disable linting since we are checking if modules exist
 # pylint: disable=unused-import
-CPU = 'cpu'
-try:
-    from torch import cuda
-    if cuda.is_available():
-        CPU = 'cuda'
-except ImportError:
-    pass
-try:
-    from torch.backends import mps
-    if mps.is_available():
-        CPU = 'mps'
-        e["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-except ImportError:
-    pass
 ENGINES = {}
-try:
-    from tortoise.api import TextToSpeech
-    from tortoise.utils.audio import load_voice
-    ENGINES['tortoise'] = True
-except ImportError:
-    pass
-
 try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import save
@@ -57,9 +36,6 @@ except ImportError:
     pass
 try:
     from whisperspeech.pipeline import Pipeline
-    import torch
-    import torchaudio
-    filterwarnings("ignore")  # to suppress TTS output
     ENGINES['whisper'] = True
 except ImportError:
     pass
@@ -156,13 +132,6 @@ class Config(object):
             self.log = log if log else Logger(debug=True)
             self.debug = debug
             self.engine = engine if engine else e.get('ttspod_engine', '')
-            self.tortoise_preset = e.get(
-                'ttspod_tortoise_preset', 'ultra_fast')
-            self.tortoise_voice = e.get('ttspod_tortoise_voice', 'daniel')
-            self.tortoise_voice = fix_path(self.tortoise_voice)
-            self.tortoise_voice_path = None
-            if '/' in self.tortoise_voice:
-                self.tortoise_voice_path, self.tortoise_voice = path.split(self.tortoise_voice)
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
             self.eleven_model = e.get(
@@ -176,32 +145,21 @@ class Config(object):
             self.whisper_s2a_model = e.get(
                 'ttspod_whisper_s2a_model',
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
-            self.whisper_voice = e.get('ttspod_whisper_voice')
-            if self.whisper_voice:
-                self.whisper_voice = fix_path(self.whisper_voice)
-                if not path.isfile(self.whisper_voice):
-                    self.log.write(
-                        'whisper voice cloning file '
-                        f'{self.whisper_voice} not found, reverting to default'
-                    )
-                    self.whisper_voice = None
+            self.voice = e.get('ttspod_voice')
             self.coqui_model = e.get(
-                'ttspod_coqui_model', 'tts_models/en/ljspeech/tacotron2-DDC')
-            self.coqui_speaker = e.get('ttspod_coqui_speaker')
-            self.coqui_language = e.get('ttspod_coqui_language')
+                'ttspod_coqui_model', 'xtts')
+            self.language = e.get('ttspod_language')
             self.max_workers = max_workers
             self.temp_path = temp_path
             self.final_path = final_path
             if not self.engine:
-                self.engine = 'whisper'
+                self.engine = 'coqui'
             # FIXME: some more TTS engine validation
             if not self.engine in ENGINES:
                 self.log.write(f'TTS engine {self.engine} selected but not available.\n'
                                f'Available engines are: {ENGINES}\n'
                                'reinstall with quickstart.sh to add engines', True)
                 self.engine = None
-            self.device = CPU
-            self.log.write(f'using {self.device} for local TTS processing')
 
     def __init__(self, debug=None, engine=None, config_path=None, log=None):
         self.log = log if log else Logger(debug=True)
