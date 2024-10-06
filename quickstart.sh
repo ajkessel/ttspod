@@ -7,9 +7,9 @@ yesno() {
   [ "$f" == "y" ] && return 0
 }
 check_optional() {
-  VAR=',openai,eleven,'
+  VAR=',remote,'
   title 'optional requirements'
-  yesno 'Do you want to be able to generate speech locally on your GPU with coqui or whisper, rather than with a paid API?' && VAR+=',coqui,whisper,'
+  yesno 'Do you want to be able to generate speech locally on your GPU with coqui or whisper, rather than with a paid API?' && VAR+=',local,'
   yesno 'Do you need to trust locally installed CA certificates?' && VAR+=',truststore,'
   yesno 'Install developer modules?' && VAR+=',dev,'
   VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
