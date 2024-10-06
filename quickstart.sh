@@ -1,6 +1,6 @@
 #!/bin/bash
 yesno() {
-  echo -n "${1} (y/n) "
+  printf "${1} (y/n) "
   read -n1 -r answer
   echo ""
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
@@ -8,17 +8,17 @@ yesno() {
 }
 check_optional() {
   VAR=',remote,'
-  title 'optional requirements'
-  yesno 'Do you want to be able to generate speech locally on your GPU with coqui or whisper, rather than with a paid API?' && VAR+=',local,'
-  yesno 'Do you need to trust locally installed CA certificates?' && VAR+=',truststore,'
-  yesno 'Install developer modules?' && VAR+=',dev,'
+  title 'Optional Requirements'
+  yesno 'Generate speech locally on your GPU?' && VAR+=',local,'
+  yesno 'Trust locally installed CA certificates?' && VAR+=',truststore,'
+  yesno 'Developer modules?' && VAR+=',dev,'
   VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
   eval "$1='${VAR}'"
   footer
 }
 make_venv() {
-  echo creating local python venv under current directory
-  if ! yesno 'Usually this works best with all packages installed locally. If you encounter an issue installing packages from PyPI, you can try starting with system-installed packages and only add local packages as needed. Do you use only local (rather than system) packages?'; then
+  echo Creating local python venv under current directory.
+  if ! yesno 'Usually a local venv install works best. If you encounter problems, you can try relying on system-installed packages and add local packages as needed.\nDo you use only local packages?'; then
     pipString=' --system-site-packages'
   fi
   if ! "${pyexe}" -m venv"${pipString}" .venv; then
