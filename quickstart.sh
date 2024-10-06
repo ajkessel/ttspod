@@ -2,7 +2,7 @@
 yesno() {
   printf "${1} (y/n) "
   read -n1 -r answer
-  echo ""
+  printf "\n"
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
   [ "$f" == "y" ] && return 0
 }
