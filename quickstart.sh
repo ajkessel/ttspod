@@ -18,14 +18,14 @@ check_optional() {
 }
 make_venv() {
   echo Creating local python venv under current directory.
-  if ! yesno 'Usually a local venv install works best. If you encounter problems, you can try relying on system-installed packages and add local packages as needed.\nDo you use only local packages?'; then
+  if ! yesno 'Usually a local venv install works best. If you encounter problems, you can try relying on system-installed packages and add local packages as needed.\nUse local packages?'; then
     pipString=' --system-site-packages'
   fi
   if ! "${pyexe}" -m venv"${pipString}" .venv; then
     echo Creating virtual environment failed.
     if [ ! -d /usr/lib/python3.11/ensurepip ]; then
       echo '/usr/lib/python3.11/ensurepip is missing.'
-      if yesno 'Do you want to try to install systemwide python3.11-venv with apt (requires sudo privileges)?'; then
+      if yesno 'Install system-wide python3.11-venv with apt (requires sudo privileges)?'; then
         sudo apt install python3.11 python3.11-venv python3.11-dev
         "${pyexe}" -m venv "${pipString}" .venv
       fi
@@ -97,7 +97,7 @@ if [ "${MAC}" ]; then
     echo Python development files seem to be missing. pip may have trouble.
   fi
 elif [ ! -e '/usr/include/python3.11/Python.h' ]; then
-  if yesno 'Python development files seem to be missing. Do you want to install python3.11-dev with app (requires sudo)?'; then
+  if yesno 'Python development files seem to be missing.\nInstall python3.11-dev with app (requires sudo)?'; then
     sudo apt install python3.11-dev
   fi
 fi
@@ -116,25 +116,25 @@ else
   tts_path="./.venv/bin"
 fi
 if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
-  if yesno 'It appears ttspod is already installed. Do you want to update it to the latest build?'; then
+  if yesno 'ttspod is already installed.\nUpdate to latest build?'; then
     # shellcheck source=/dev/null
     source "${tts_path}/activate"
     check_optional add_on
     echo "installing ttspod${add_on} -U"
     pip install "ttspod${add_on}" -U
     exit 0
-  elif ! yesno 'Do you want to continue and reinstall?'; then
+  elif ! yesno 'Continue and reinstall?'; then
     exit 1
   fi
 fi
 
 title 'venv'
 if [ -d "./.venv" ]; then
-  if yesno "A .venv folder already exists under $(pwd). Do you want to move it out of the way and generate fresh?"; then
+  if yesno ".venv already exists under $(pwd).\nMove it out of the way and generate fresh?"; then
     timestamp=$(date +%s)
     mv ".venv" ".venv-${timestamp}"
     echo ".venv moved to .venv-${timestamp}"
-  elif ! yesno 'Do you want to install into the existing .venv?'; then
+  elif ! yesno 'Install into existing .venv?'; then
     skipvenv=1
   fi
 fi
@@ -155,12 +155,12 @@ if [ "${MAC}" ]; then
       echo libmagic already installed
     fi
   else
-    echo 'tts requires libmagic, but I did not find a brew installation.'
+    echo 'tts requires libmagic, but could not find brew.\nbrew is available at https://brew.sh/'
   fi
   footer
 fi
 
-title 'customize'
+title 'Customize'
 if [ ! -e .env ]; then
   ttspod -g
 fi
@@ -175,7 +175,7 @@ fi
 footer
 
 if command -v ttspod &>/dev/null && [ -d ~/.local/bin ]; then
-  if yesno "Do you want to create a symlink from ttspod into ~/.local/bin?"; then
+  if yesno "Create symlink from ttspod into ~/.local/bin?"; then
     if [ -e ~/.local/bin/ttspod ]; then
       if yesno "Overwrite existing symlink?"; then
         rm ~/.local/bin/ttspod
