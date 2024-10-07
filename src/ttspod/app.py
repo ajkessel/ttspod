@@ -115,7 +115,7 @@ class App(object):
             self.debug = False
         self.log = self.args.log
         self.dry = self.args.dry_run
-        self.gpu = 0 if hasattr(self.args, "nogpu") else None
+        self.gpu = 0 if self.args.nogpu else None
         self.force = self.args.force
         self.clean = self.args.restart
         self.title = self.args.title if hasattr(self.args, 'title') else None

@@ -193,7 +193,7 @@ class Config(object):
         else:
             self.debug = debug
         self.log.update(debug=self.debug)
-        self.gpu = gpu if gpu is not None else e.get('ttspod_gpu', 1)
+        self.gpu = int(gpu if gpu is not None else e.get('ttspod_gpu', 1))
         self.max_length = int(e.get('ttspod_max_length', 20000))
         self.max_workers = int(e.get('ttspod_max_workers', 10))
         self.max_articles = int(e.get('ttspod_max_articles', 5))

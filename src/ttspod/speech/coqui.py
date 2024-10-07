@@ -38,7 +38,7 @@ TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True}
 class Coqui:
     """coqui text to speech generator"""
 
-    def __init__(self, config=None, log=None, model=None, voice=None, gpu=None):
+    def __init__(self, config=None, log=None, model=None, voice=None, gpu=1):
         self.log = log if log else Logger(debug=True)
         self.config = config
         if cuda.is_available():
@@ -51,7 +51,8 @@ class Coqui:
                 self.cpu = 'cpu'
         else:
             self.cpu = 'cpu'
-        if gpu == 0 or config.gpu == 0:  # override GPU detection with ttspod_gpu=0
+        if config.gpu == 0 or gpu == 0:
+            self.log.write('overriding GPU detection, processing on CPU')
             self.cpu = 'cpu'
         if not config:
             c = {}
@@ -110,8 +111,10 @@ class Coqui:
             **generate_parameters_base,
             **generate_parameters_extra
         }
-        self.log.write('TTS generation started with settings: '
-                       f'{model_parameters} {self.generate_parameters}')
+        self.log.write('TTS generation started with settings:\n'
+                       f'model parameters: {model_parameters}\n'
+                       f'generate parameters: {self.generate_parameters}\n'
+                       f'target processor: {self.cpu}\n')
         self.tts = TTS(**model_parameters).to(self.cpu)
 
     def convert(self, text, output_file):
