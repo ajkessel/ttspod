@@ -36,10 +36,10 @@ class Main(object):
 
     def __init__(self, debug=False, config_path=None, engine=None,
                  force=False, dry=False, clean=False, logfile=None,
-                 quiet=False):
+                 quiet=False, gpu=None):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
         self.config = Config(
-            engine=engine, config_path=config_path, log=self.log
+            engine=engine, config_path=config_path, log=self.log, gpu=gpu
         )
         self.p = None
         self.force = force

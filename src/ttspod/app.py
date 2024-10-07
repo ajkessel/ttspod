@@ -42,6 +42,7 @@ class App(object):
         self.main = None
         self.quiet = None
         self.title = None
+        self.gpu = None
 
     def parse(self):
         """parse command-line arguments"""
@@ -91,7 +92,9 @@ class App(object):
         parser.add_argument("-s", "--sync", action='store_true',
                             help="sync podcast episodes and cache file")
         parser.add_argument("-n", "--dry-run", action='store_true',
-                            help="dry run: do not actually create or sync audio files")
+                            help="do not actually create or sync audio files")
+        parser.add_argument("--nogpu", action='store_true',
+                            help="disable GPU support (may be necessary for Mac)")
         parser.add_argument("-v", "--version", action='store_true',
                             help="print version number")
         self.args = parser.parse_args()
@@ -112,6 +115,7 @@ class App(object):
             self.debug = False
         self.log = self.args.log
         self.dry = self.args.dry_run
+        self.gpu = 0 if hasattr(self.args, "nogpu") else None
         self.force = self.args.force
         self.clean = self.args.restart
         self.title = self.args.title if hasattr(self.args, 'title') else None
@@ -152,7 +156,7 @@ class App(object):
                     stdout.write('exiting...\n')
                     exit()
         with open(env_file, 'w', encoding='utf-8') as f:
-# cspell: disable
+            # cspell: disable
             f.write('''
 # global parameters
 # debug - set to anything for verbose output, otherwise leave blank
@@ -296,6 +300,7 @@ ttspod_openai_model="tts-1-hd"
                 dry=self.dry,
                 clean=self.clean,
                 logfile=self.log,
+                gpu=self.gpu,
                 quiet=self.quiet
             )
             if self.got_pipe:

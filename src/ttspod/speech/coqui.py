@@ -51,7 +51,7 @@ class Coqui:
                 self.cpu = 'cpu'
         else:
             self.cpu = 'cpu'
-        if gpu==0 or config.gpu==0: # override GPU detection with ttspod_gpu=0
+        if gpu == 0 or config.gpu == 0:  # override GPU detection with ttspod_gpu=0
             self.cpu = 'cpu'
         if not config:
             c = {}
@@ -127,9 +127,15 @@ class Coqui:
                 wav_buffer.seek(0)
             recording = AudioSegment.from_file(wav_buffer, format="wav")
             recording.export(output_file, format='mp3')
-            return stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
+            result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
+            if path.isfile(output_file):
+                return result
+            else:
+                raise ValueError(result)
         except Exception as err:  # pylint: disable=broad-except
-            self.log.write(f'TTS conversion failed: {err}', True)
+            self.log.write(f'TTS conversion failed: {err}\n'
+                           'You can try disabling gpu with --nogpu or gpu=0 in configuration.',
+                           True)
 
 
 if __name__ == "__main__":

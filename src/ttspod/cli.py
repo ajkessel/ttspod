@@ -6,8 +6,8 @@ try:
 except ImportError:
     pass
 
-from . import app
+import ttspod.app
 
 def main():
     """main python entrypoint"""
-    app.main()
+    ttspod.app.main()
