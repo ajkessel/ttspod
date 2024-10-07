@@ -38,7 +38,7 @@ class Logger(object):
     def write(self, text='', error=False):
         """write a message to screen and/or file"""
         if not text or not str(text):
-            text = "empty log message"
+            return
         if self.debug or (error and not self.quiet):
             print(text)
         text = str(text).replace('\n','\n   ') # indent multiline entries
