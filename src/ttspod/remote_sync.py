@@ -402,6 +402,7 @@ def sync(
                         times = (local_stat.st_atime, local_stat.st_mtime)
                         sftp.put(local_file, remote_file)
                         sftp.utime(remote_file, times)
+                        sftp.chmod(remote_file, local_stat.st_mode)
                 elif local_check != remote_check:
                     if DBG:
                         print(
@@ -411,6 +412,7 @@ def sync(
                         times = (local_stat.st_atime, local_stat.st_mtime)
                         sftp.put(local_file, remote_file)
                         sftp.utime(remote_file, times)
+                        sftp.chmod(remote_file, local_stat.st_mode)
                 else:
                     if DBG:
                         print(
