@@ -45,4 +45,4 @@ then
 else
   echo 'Not pushing to github. Specify -g to push.'
 fi
-echo "Finished building version {new_version}."
+echo "Finished building version ${new_version}."
