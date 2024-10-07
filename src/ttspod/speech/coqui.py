@@ -6,19 +6,20 @@ try:
 except ImportError:
     pass
 try:
-    from warnings import simplefilter  # disable coqui future warnings
-    simplefilter(action='ignore', category=FutureWarning)
     from contextlib import redirect_stdout, redirect_stderr
     from glob import glob
     from io import BytesIO
     from os import path, environ as env
     from pathlib import Path
+    from platform import processor
     from pydub import AudioSegment
     from torch import cuda
     from torch.backends import mps
     from transformers import pytorch_utils
     from TTS.api import TTS
+    from warnings import simplefilter  # disable coqui future warnings
     import io
+    simplefilter(action='ignore', category=FutureWarning)
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -29,14 +30,15 @@ except ImportError as e:
 from ttspod.logger import Logger
 from ttspod.util import patched_isin_mps_friendly
 
-MODEL='xtts'
-VOICE='Aaron Dreschner'
-TORTOISE_ARGS={'kv_cache': True, 'high_vram': True}
+MODEL = 'xtts'
+VOICE = 'Aaron Dreschner'
+TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True}
+
 
 class Coqui:
     """coqui text to speech generator"""
 
-    def __init__(self, config=None, log=None,model=None,voice=None):
+    def __init__(self, config=None, log=None, model=None, voice=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
         if cuda.is_available():
@@ -45,6 +47,8 @@ class Coqui:
             self.cpu = 'mps'
             env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
             pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
+            if processor() == 'i386':  # hack for older Macs; mps does not appear to work
+                self.cpu = 'cpu'
         else:
             self.cpu = 'cpu'
         if not config:
@@ -124,6 +128,7 @@ class Coqui:
             return stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
         except Exception as err:  # pylint: disable=broad-except
             self.log.write(f'TTS conversion failed: {err}', True)
+
 
 if __name__ == "__main__":
     coqui = Coqui()

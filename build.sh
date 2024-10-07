@@ -1,6 +1,7 @@
 #!/bin/bash
 # builds new version of ttspod
 # include -u option to upload to pypi
+# include -g option to push to git
 if [ ! -f .venv/bin/activate ] || [ ! -e version ]
 then
   echo "This does not seem to be right directory for building. Exiting."
@@ -29,7 +30,11 @@ then
 fi
 uv pip install .
 echo 'Not uploading. Specify -u to upload to pypi.'
-if [ "$1" == "-u" ]
+if [[ "$@" == *"-u"* ]]
 then
   python3 -m twine upload --verbose dist/ttspod-"${new_version}".tar.gz
+fi
+if [[ "$@" == *"-g"* ]]
+then
+  git commit -a; git push
 fi

@@ -37,6 +37,8 @@ class Logger(object):
 
     def write(self, text='', error=False):
         """write a message to screen and/or file"""
+        if not text:
+            text = "empty log message"
         if self.debug or (error and not self.quiet):
             print(text)
         if self.log_handle:
