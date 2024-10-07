@@ -106,7 +106,7 @@ class Speech(object):
         elapsed = round(time() - start_time)
         self.log.write(f'TTS conversion of {out_file} complete, elapsed time: {elapsed} seconds')
 
-        if os.path.exists(out_file):
+        if os.path.isfile(out_file):
             os.chmod(out_file, 0o644)
             return out_file
         else:

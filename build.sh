@@ -41,7 +41,9 @@ else
 fi
 if [[ "$@" == *"-g"* ]]
 then
-  git commit -a; git push
+  echo -n 'Commit description: '
+  read msg
+  git commit -a -m "${msg}"; git push
 else
   echo 'Not pushing to github. Specify -g to push.'
 fi
