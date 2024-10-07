@@ -127,7 +127,7 @@ class Config(object):
     class Speech(object):
         """tts processor settings"""
 
-        def __init__(self, temp_path='', final_path='', engine=None,
+        def __init__(self, temp_path='./', final_path='./', engine=None,
                      max_workers=10, log=None, debug=False, gpu=1):
             self.log = log if log else Logger(debug=True)
             self.debug = debug
@@ -151,8 +151,9 @@ class Config(object):
                 'ttspod_coqui_model', 'xtts')
             self.language = e.get('ttspod_language')
             self.max_workers = max_workers
-            self.temp_path = temp_path
-            self.final_path = final_path
+            self.temp_path = fix_path(temp_path,True)
+            self.final_path = fix_path(final_path,True)
+            print(f'ZZZZ {self.temp_path} {self.final_path}')
             if not self.engine:
                 self.engine = 'coqui'
             # FIXME: some more TTS engine validation
@@ -200,7 +201,7 @@ class Config(object):
         self.working_path = path.join(
             e.get('ttspod_working_path', './working'), '')
         if self.working_path:
-            self.working_path = fix_path(self.working_path)
+            self.working_path = fix_path(self.working_path, True)
         if self.working_path.startswith('./'):
             self.working_path = re.sub(r'^./', '', self.working_path)
             self.working_path = path.join(
@@ -209,7 +210,7 @@ class Config(object):
         self.final_path = path.join(self.working_path, 'output', '')
         self.log_path = e.get('ttspod_log')
         if self.log_path:
-            self.log_path = fix_path(self.log_path)
+            self.log_path = fix_path(self.log_path, False)
         if self.log_path and not '/' in self.log_path and not '\\' in self.log_path:
             self.log_path = path.join(self.working_path, self.log_path)
         if self.log_path:
@@ -222,8 +223,7 @@ class Config(object):
         else:
             self.cache_path = None
         if self.cache_path:
-            self.cache_path = re.sub(
-                r'~/', str(Path.home()).replace('\\', '/') + '/', self.cache_path)
+            self.cache_path = fix_path(self.cache_path, False)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log,
                                   debug=self.debug, gpu=self.gpu)

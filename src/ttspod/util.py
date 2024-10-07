@@ -12,7 +12,7 @@ try:
     from html2text import html2text
     from unidecode import unidecode
     from platform import platform
-    from pathlib import Path
+    from os import path
     import re
 except ImportError as e:
     print(
@@ -140,11 +140,12 @@ def clean_html(raw_html):
         return ""
 
 
-def fix_path(text):
+def fix_path(text, trail=False):
     """standardize a directory path and expand ~"""
     try:
-        fixed_text = re.sub(
-            r'~/', str(Path.home()).replace('\\', '/') + '/', text)
+        fixed_text = path.expanduser(text).replace('\\', '/')
+        if trail:
+            fixed_text = os.path.join(fixed_text, '')
     except Exception:  # pylint: disable=broad-except
         fixed_text = text
 
