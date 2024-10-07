@@ -11,6 +11,7 @@ try:
     from anyascii import anyascii
     import os
     import re
+    from time import time
     import unicodedata
     import uuid
     import warnings
@@ -92,7 +93,7 @@ class Speech(object):
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         text = anyascii(raw_text)
         temp = str(uuid.uuid4())
-
+        start_time = time()
         if os.path.exists(out_file):  # don't overwrite existing files
             out_file = os.path.join(
                 self.config.final_path, f'{clean_title}-{temp}.mp3')
@@ -100,9 +101,14 @@ class Speech(object):
         if self.dry:  # quit if dry run
             self.log.write(f'dry run: not creating {out_file}')
             return
-
+        self.log.write(f'starting TTS conversion to {out_file}')
         self.log.write(self.tts.convert(text=text, output_file=out_file))
+        elapsed = round(start_time - time())
+        self.log.write(f'TTS conversion of {out_file} complete, elapsed time: {elapsed}')
 
         if os.path.exists(out_file):
             os.chmod(out_file, 0o644)
             return out_file
+        else:
+            self.log.write(f'TTS conversion of {out_file} failed.')
+            return None
