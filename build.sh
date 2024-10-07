@@ -33,13 +33,16 @@ then
   echo "Local install failed. Exiting."
   exit 1
 fi
-echo 'Not uploading. Specify -u to upload to pypi.'
 if [[ "$@" == *"-u"* ]]
 then
   python3 -m twine upload --verbose dist/ttspod-"${new_version}".tar.gz
+else
+  echo 'Not uploading. Specify -u to upload.'
 fi
 if [[ "$@" == *"-g"* ]]
 then
   git commit -a; git push
+else
+  echo 'Not pushing to github. Specify -g to push.'
 fi
 echo "Finished building version {new_version}."
