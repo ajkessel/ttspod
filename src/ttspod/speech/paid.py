@@ -169,13 +169,14 @@ class Paid:
             hashes = [str(hash(segment) % ((maxsize + 1) * 2))
                       for segment in segments]
             combined = AudioSegment.empty()
+            temp_base = os.path.splitext(os.path.basename(output_file))[0]
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 for future in executor.map(tts_function, segments):
                     futures.append(future)
                 for i, future in enumerate(futures):
                     segment_audio = os.path.join(
                         self.temp_path,
-                        f'{output_file}-{hashes[i]}.mp3'
+                        f'{temp_base}-{hashes[i]}.mp3'
                     )
                     if self.engine == "openai":
                         future.stream_to_file(segment_audio)

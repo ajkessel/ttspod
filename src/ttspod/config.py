@@ -153,7 +153,6 @@ class Config(object):
             self.max_workers = max_workers
             self.temp_path = fix_path(temp_path,True)
             self.final_path = fix_path(final_path,True)
-            print(f'ZZZZ {self.temp_path} {self.final_path}')
             if not self.engine:
                 self.engine = 'coqui'
             # FIXME: some more TTS engine validation
