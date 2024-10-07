@@ -11,14 +11,13 @@ check_optional() {
   title 'Optional Requirements'
   yesno 'Generate speech locally on your GPU?' && VAR+=',local,'
   yesno 'Trust locally installed CA certificates?' && VAR+=',truststore,'
-  yesno 'Developer modules?' && VAR+=',dev,'
   VAR="$(echo ${VAR} | sed -e 's/^,/[/' -e 's/,$/]/' -e 's/,,/,/g')"
   eval "$1='${VAR}'"
   footer
 }
 make_venv() {
   echo Creating local python venv under current directory.
-  if ! yesno 'Usually a local venv install works best. If you encounter problems, you can try relying on system-installed packages and add local packages as needed.\nUse local packages?'; then
+  if ! yesno 'Usually a local venv install works best, so you should answer yes to the next question.\nIf you encounter installation problems, you can try relying on system-installed packages and only install packages in your user account as needed.\nUse local packages?'; then
     pipString=' --system-site-packages'
   fi
   if ! "${pyexe}" -m venv"${pipString}" .venv; then
