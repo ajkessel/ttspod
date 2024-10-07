@@ -42,3 +42,4 @@ if [[ "$@" == *"-g"* ]]
 then
   git commit -a; git push
 fi
+echo "Finished building version {new_version}."

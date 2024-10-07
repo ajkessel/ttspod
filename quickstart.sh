@@ -185,4 +185,4 @@ if command -v ttspod &>/dev/null && [ -d ~/.local/bin ]; then
     echo done.
   fi
 fi
-echo get help with ttspod -h
+echo "Get help with ttspod -h. Before first use, run ttspod -s to sync settings and confirm valid configuration."
