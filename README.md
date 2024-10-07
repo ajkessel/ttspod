@@ -80,7 +80,7 @@ options:
                         no visible output (all output will go to log if
                         specified)
   -d, --debug           include debug output
-  -r, --restart         wipe cache clean and start new podcast feed
+  -r, --restart         wipe state file clean and start new podcast feed
   -f, --force           force addition of podcast even if cache indicates it
                         has already been added
   -t TITLE, --title TITLE

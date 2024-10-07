@@ -80,7 +80,7 @@ class App(object):
         parser.add_argument(
             "-d", "--debug", action='store_true', help="include debug output")
         parser.add_argument("-r", "--restart", action='store_true',
-                            help="wipe cache clean and start new podcast feed")
+                            help="wipe state file clean and start new podcast feed")
         parser.add_argument("-f", "--force", action='store_true',
                             help="force addition of podcast even if "
                             "cache indicates it has already been added")
