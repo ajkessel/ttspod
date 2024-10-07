@@ -1,6 +1,6 @@
 #!/bin/bash
 yesno() {
-  printf "%s (y/n) " "${1}"
+  printf "%b (y/n) " "${1}"
   read -n1 -r answer
   printf "\n"
   f=$(echo "${answer}" | tr "[:upper:]" "[:lower:]" | grep -o '^.')
