@@ -146,7 +146,7 @@ def fix_path(text, trail=False):
         fixed_text = path.expanduser(text).replace('\\', '/')
         if trail:
             fixed_text = path.join(fixed_text, '')
-    except Exception as err:  # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         fixed_text = text
     return fixed_text
 

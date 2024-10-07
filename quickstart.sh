@@ -155,7 +155,7 @@ if [ "${MAC}" ]; then
       echo libmagic already installed
     fi
   else
-    echo 'tts requires libmagic, but could not find brew.\nbrew is available at https://brew.sh/'
+    printf "tts requires libmagic, but could not find brew.\nbrew is available at https://brew.sh/\n"
   fi
   footer
 fi
