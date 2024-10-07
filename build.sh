@@ -7,6 +7,12 @@ then
   echo "This does not seem to be right directory for building. Exiting."
   exit 1
 fi
+if [[ "$@" == *"-g"* ]]
+then
+  echo -n 'Commit description: '
+  read msg
+fi
+[ "${msg}" ] || msg="minor fixes"
 source .venv/bin/activate
 if [ ! $(python -c 'import pkgutil; print(1 if pkgutil.find_loader("twine") else "")') ]
 then 
@@ -41,8 +47,6 @@ else
 fi
 if [[ "$@" == *"-g"* ]]
 then
-  echo -n 'Commit description: '
-  read msg
   git commit -a -m "${msg}"; git push
 else
   echo 'Not pushing to github. Specify -g to push.'
