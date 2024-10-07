@@ -38,7 +38,7 @@ TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True}
 class Coqui:
     """coqui text to speech generator"""
 
-    def __init__(self, config=None, log=None, model=None, voice=None):
+    def __init__(self, config=None, log=None, model=None, voice=None, gpu=None):
         self.log = log if log else Logger(debug=True)
         self.config = config
         if cuda.is_available():
@@ -50,6 +50,8 @@ class Coqui:
             if processor() == 'i386':  # hack for older Macs; mps does not appear to work
                 self.cpu = 'cpu'
         else:
+            self.cpu = 'cpu'
+        if gpu==0 or config.gpu==0: # override GPU detection with ttspod_gpu=0
             self.cpu = 'cpu'
         if not config:
             c = {}

@@ -128,9 +128,10 @@ class Config(object):
         """tts processor settings"""
 
         def __init__(self, temp_path='', final_path='', engine=None,
-                     max_workers=10, log=None, debug=False):
+                     max_workers=10, log=None, debug=False, gpu=1):
             self.log = log if log else Logger(debug=True)
             self.debug = debug
+            self.gpu = gpu
             self.engine = engine if engine else e.get('ttspod_engine', '')
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
@@ -161,7 +162,7 @@ class Config(object):
                                'reinstall with quickstart.sh to add engines', True)
                 self.engine = None
 
-    def __init__(self, debug=None, engine=None, config_path=None, log=None):
+    def __init__(self, debug=None, engine=None, config_path=None, log=None, gpu=None):
         self.log = log if log else Logger(debug=True)
         self.config_path = None
         if config_path and path.isfile(config_path):
@@ -192,6 +193,7 @@ class Config(object):
         else:
             self.debug = debug
         self.log.update(debug=self.debug)
+        self.gpu = gpu if gpu is not None else e.get('ttspod_gpu', 1)
         self.max_length = int(e.get('ttspod_max_length', 20000))
         self.max_workers = int(e.get('ttspod_max_workers', 10))
         self.max_articles = int(e.get('ttspod_max_articles', 5))
@@ -224,7 +226,7 @@ class Config(object):
                 r'~/', str(Path.home()).replace('\\', '/') + '/', self.cache_path)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log,
-                                  debug=self.debug)
+                                  debug=self.debug, gpu=self.gpu)
         self.content = self.Content(
             working_path=self.working_path, log=self.log)
         self.links = self.Links(log=self.log)
