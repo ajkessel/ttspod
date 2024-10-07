@@ -90,7 +90,7 @@ class App(object):
                             help="specify TTS engine for this session "
                             "(whisper, coqui, openai, eleven)")
         parser.add_argument("-s", "--sync", action='store_true',
-                            help="sync podcast episodes and cache file")
+                            help="sync podcast episodes and state file")
         parser.add_argument("-n", "--dry-run", action='store_true',
                             help="do not actually create or sync audio files")
         parser.add_argument("--nogpu", action='store_true',
@@ -182,11 +182,11 @@ ttspod_max_articles=5
 # you may need this to avoid being blocked as a "python requests" requestor
 #ttspod_user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
 ttspod_user_agent=""
-# cache_path: optional remote location to store cache file
+# state_file_path: optional remote location to store state file
 # if the path includes a domain name the file will be synced to and from that location on each run
 # this allows you to have multiple instances of this script running on different boxes without duplicate blog entries
-# ttspod_cache_path="adam@example.com:ttspod/working"
-ttspod_cache_path=""
+# ttspod_state_file_path="adam@example.com:ttspod/working"
+ttspod_state_file_path=""
 
 # ssh settings - you"ll need to configure this to sync your podcast to a server
 # specify either a password or an ssh keyfile (e.g. ~/.ssh/id_rsa)

@@ -40,7 +40,7 @@ Invoke-WebRequest 'https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/
 
 You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work. Minimal required settings include configuring your TTS speech and podcast URL.
 
-You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcatcher. The application is set up to sync the podcast feed to a webserver over ssh.
+You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcast client. The application is set up to sync the podcast feed to a web server over ssh.
 
 ## Usage
 ```
@@ -88,7 +88,7 @@ options:
   -e ENGINE, --engine ENGINE
                         specify TTS engine for this session (whisper, coqui,
                         openai, eleven)
-  -s, --sync            sync podcast episodes and cache file
+  -s, --sync            sync podcast episodes and state file
   -n, --dry-run         dry run: do not actually create or sync audio files
   -v, --version         print version number
 ```
@@ -112,7 +112,7 @@ Create a podcast from the command-line
 * Windows
 
 ## procmail
-The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script, assuming you have a symlink to the script in `~/.local/bin`.
+The easiest way to feed emails to TTSPod is with a procmail recipe in `.procmailrc`. For example, this recipe will send emails from me@example.com or you@domain.com to myttsaddress@mydomain.com to this script, assuming you have a symlink to the script in `~/.local/bin`.
 ```
 :0 Hc
 * ^From:(.*\<(?)(me@example.com|you@domain.com)
@@ -128,7 +128,7 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 * Process links received by email
 * Process directly-emailed mp3s and links to mp3s
 * More TTS engines
-* More customizability of podcast feed
+* More customizations for podcast feed
 * Option add audio files via filesystem path or URL
 * Unit tests!
 

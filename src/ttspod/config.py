@@ -183,7 +183,8 @@ class Config(object):
             self.config_path = path.join(
                 path.dirname(path.realpath(__file__)), '.env')
         if self.config_path:
-            if not quiet: self.log.write(f'using stored configuration {self.config_path}', True)
+            if not quiet:
+                self.log.write(f'using stored configuration {self.config_path}', True)
             load_dotenv(self.config_path)
         if not any("ttspod" in x.lower() for x in list(e.keys())):
             raise ValueError(
@@ -217,13 +218,13 @@ class Config(object):
             self.log.update(logfile=self.log_path)
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = path.join(self.working_path, self.pickle_filename)
-        if e.get('ttspod_cache_path'):
-            self.cache_path = posix_join(
-                e.get('ttspod_cache_path'), '')+self.pickle_filename
+        if e.get('ttspod_state_file_path'):
+            self.state_file_path = posix_join(
+                e.get('ttspod_state_file_path'), '')+self.pickle_filename
         else:
-            self.cache_path = None
-        if self.cache_path:
-            self.cache_path = fix_path(self.cache_path, False)
+            self.state_file_path = None
+        if self.state_file_path:
+            self.state_file_path = fix_path(self.state_file_path, False)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
                                   engine=engine, max_workers=self.max_workers, log=self.log,
                                   debug=self.debug, gpu=self.gpu)
@@ -258,7 +259,7 @@ class Config(object):
 
     def validate(self):
         """validate settings and throw error if necessary"""
-        if ':' in str(self.cache_path) or ':' in str(self.pod.ssh_server_path):
+        if ':' in str(self.state_file_path) or ':' in str(self.pod.ssh_server_path):
             if not self.ssh_keyfile or self.ssh_password:
                 raise ValueError(
                     "Remote paths configured for syncing but no SSH keyfile or password provided."

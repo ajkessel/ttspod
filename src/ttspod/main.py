@@ -55,20 +55,20 @@ class Main(object):
 
     def load_cache(self, clean=False):
         """load podcast and cache from pickle if available"""
-        if self.config.cache_path:
+        if self.config.state_file_path:
             try:
                 rsync(
-                    source=self.config.cache_path,
+                    source=self.config.state_file_path,
                     destination=self.config.pickle,
                     debug=self.config.debug,
                     keyfile=self.config.ssh_keyfile,
                     password=self.config.ssh_password,
                     recursive=False
                 )
-                self.log.write('cache file synced successfully from server')
+                self.log.write('state file synced successfully from server')
             except Exception as err:  # pylint: disable=broad-except
                 self.log.write(
-                    f'something went wrong syncing the cache file {err}', True)
+                    f'something went wrong syncing the state file {err}', True)
                 if "code 23" in str(err):
                     self.log.write(
                         'if this is your first time running TTSPod, '
@@ -76,7 +76,7 @@ class Main(object):
                         True)
         if clean:
             self.log.write(
-                f'moving {self.config.pickle} cache file and starting fresh')
+                f'moving {self.config.pickle} state file and starting fresh')
             move(self.config.pickle, self.config.pickle +
                  str(int(datetime.datetime.now().timestamp())))
         if path.exists(self.config.pickle):
@@ -118,21 +118,21 @@ class Main(object):
             if self.pod:  # only save/sync cache if podcast data exists
                 with open(self.config.pickle, 'wb') as f:
                     pickle.dump([self.cache, self.pod.p], f)
-                if self.config.cache_path:
+                if self.config.state_file_path:
                     try:
                         rsync(
                             source=self.config.pickle,
-                            destination=self.config.cache_path,
+                            destination=self.config.state_file_path,
                             keyfile=self.config.ssh_keyfile,
                             debug=self.config.debug,
                             recursive=False,
                             size_only=False
                         )
                         self.log.write(
-                            'cache file synced successfully to server')
+                            'state file synced successfully to server')
                     except Exception as err:  # pylint: disable=broad-except
                         self.log.write(
-                            f'something went wrong syncing the cache file {err}', True)
+                            f'something went wrong syncing the state file {err}', True)
             else:
                 self.log.write('cache save failed, no podcast data exists')
         except Exception as err:  # pylint: disable=broad-except
