@@ -43,7 +43,7 @@ class Logger(object):
             print(text)
         if self.log_handle:
             self.log_handle.write(datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S: ")+text+"\n")
+                "%Y-%m-%d %H:%M:%S: ")+str(text)+"\n")
 
     def update(self, debug=None, quiet=None, logfile=None):
         """update logging with new settings"""
