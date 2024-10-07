@@ -83,21 +83,21 @@ def parse_location(fullpath):
 def remote_isdir(sftp, remote_dir):
     """check if remote path is a directory"""
     if DBG:
-        print(f'Checking {remote_dir} for directory status')
+        print(f'Checking {remote_dir} for directory status... ',end='')
     try:
         file_attribute = sftp.stat(remote_dir)
         isdir = stat.S_ISDIR(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
         if DBG:
-            print(f'Could not check {remote_dir}')
+            print(f'Could not check {remote_dir}.')
         return None
     if isdir:
         if DBG:
-            print(f"{remote_dir} is a directory")
+            print(f"{remote_dir} is a directory.")
         return True
     else:
         if DBG:
-            print(f"{remote_dir} is not a directory")
+            print(f"{remote_dir} is not a directory.")
         return False
 
 
@@ -388,11 +388,11 @@ def sync(
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
                 if DBG:
-                    print(f'local {local_check}')
+                    print(f'local {local_check}... ',end='')
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
                 if DBG:
-                    print(f'remote {remote_check}')
+                    print(f'remote {remote_check}... ',end='')
                 if remote_check is None:
                     if DBG:
                         print(
@@ -435,11 +435,11 @@ def sync(
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
                 if DBG:
-                    print(f'remote {remote_check}')
+                    print(f'remote {remote_check}... ',end='')
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
                 if DBG:
-                    print(f'local {local_check}')
+                    print(f'local {local_check}... ',end='')
                 if local_check != remote_check:
                     if DBG:
                         print(
