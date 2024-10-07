@@ -39,7 +39,7 @@ class Main(object):
                  quiet=False, gpu=None):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
         self.config = Config(
-            engine=engine, config_path=config_path, log=self.log, gpu=gpu
+            engine=engine, config_path=config_path, log=self.log, gpu=gpu, quiet=quiet
         )
         self.p = None
         self.force = force

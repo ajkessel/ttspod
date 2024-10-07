@@ -162,7 +162,7 @@ class Config(object):
                                'reinstall with quickstart.sh to add engines', True)
                 self.engine = None
 
-    def __init__(self, debug=None, engine=None, config_path=None, log=None, gpu=None):
+    def __init__(self, debug=None, engine=None, config_path=None, log=None, gpu=None, quiet=False):
         self.log = log if log else Logger(debug=True)
         self.config_path = None
         if config_path and path.isfile(config_path):
@@ -183,6 +183,7 @@ class Config(object):
             self.config_path = path.join(
                 path.dirname(path.realpath(__file__)), '.env')
         if self.config_path:
+            if not quiet: self.log.write(f'using stored configuration {self.config_path}', True)
             load_dotenv(self.config_path)
         if not any("ttspod" in x.lower() for x in list(e.keys())):
             raise ValueError(

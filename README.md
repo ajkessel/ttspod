@@ -129,6 +129,8 @@ The easiest way to feed emails to TTSPod is with a procmail receipe in `.procmai
 * Process directly-emailed mp3s and links to mp3s
 * More TTS engines
 * More customizability of podcast feed
+* Option add audio files via filesystem path or URL
+* Unit tests!
 
 ## License
 [MIT](LICENSE)

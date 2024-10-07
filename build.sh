@@ -28,7 +28,11 @@ then
   echo Build error. Exiting.
   exit 1
 fi
-uv pip install .
+if ! uv pip install .[local,remote,truststore,dev] --force-reinstall
+then
+  echo "Local install failed. Exiting."
+  exit 1
+fi
 echo 'Not uploading. Specify -u to upload to pypi.'
 if [[ "$@" == *"-u"* ]]
 then
