@@ -103,8 +103,8 @@ class Speech(object):
             return
         self.log.write(f'starting TTS conversion to {out_file}')
         self.log.write(self.tts.convert(text=text, output_file=out_file))
-        elapsed = round(start_time - time())
-        self.log.write(f'TTS conversion of {out_file} complete, elapsed time: {elapsed}')
+        elapsed = round(time() - start_time)
+        self.log.write(f'TTS conversion of {out_file} complete, elapsed time: {elapsed} seconds')
 
         if os.path.exists(out_file):
             os.chmod(out_file, 0o644)
