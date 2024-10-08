@@ -216,7 +216,7 @@ except ImportError:
             option_string = ""
         subprocess.check_call(
             [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
-        if OS == "mac" and local in options:
+        if OS == "mac" and 'local' in options:
             subprocess.check_call([executable, "-m", "pip", "install",
                                   "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"])
 
