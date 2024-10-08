@@ -156,7 +156,7 @@ if [ "${MAC}" ]; then
   else
     printf "tts requires libmagic, but could not find brew.\nbrew is available at https://brew.sh/\n"
   fi
-  echo 'Installing modified transformers for Mac MPS support."
+  echo 'Installing modified transformers for Mac MPS support.'
   pip install git+https://github.com/ajkessel/transformers@v4.42.4a
   footer
 fi

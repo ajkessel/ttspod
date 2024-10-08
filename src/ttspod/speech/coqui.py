@@ -65,7 +65,7 @@ class Coqui:
         generate_parameters_base = {'split_sentences': True}
         model = model if model else c.get('model', MODEL)
         voice = voice if voice else c.get('voice','')
-        if voice: 
+        if voice:
             voice = path.expanduser(str(voice))
         speaker_id = None
         if path.isfile(str(voice)):
