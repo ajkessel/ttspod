@@ -123,15 +123,16 @@ The easiest way to feed emails to TTSPod is with a procmail recipe in `.procmail
 ## TODO
 * Command-line options for all configuration settings
 * Interactive configuration
-* Pocket authentication workflow
-* Instapaper authentication workflow
+* Pocket interactive authentication workflow
+* Instapaper interactive authentication workflow
 * Process links received by email
 * Process directly-emailed mp3s and links to mp3s
-* More TTS engines
+* Allow configuration of TTS models/voices/speeds/etc
 * More customizations for podcast feed
-* Option add audio files via filesystem path or URL
-* Unit tests!
+* Add audio files from CLI via filesystem path or URL
 * Use rsync where available, only remote_sync as fallback
+* Language support - right now everything assumes English
+* Unit tests!
 
 ## License
 [MIT](LICENSE)

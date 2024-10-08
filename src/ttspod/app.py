@@ -11,7 +11,6 @@ try:
     from argparse import ArgumentParser
     from os import isatty, path, getcwd
     from sys import stdin, stdout, exc_info, executable
-    import subprocess
     from validators import url
     from traceback import format_exc
     from pathlib import Path
@@ -23,7 +22,7 @@ except ImportError as e:
 
 # ttspod modules
 from ttspod.version import __version__
-from ttspod.util import get_character, get_lock, release_lock
+from ttspod.util import get_character, get_lock, release_lock, upgrade
 
 
 class App(object):
@@ -134,7 +133,7 @@ class App(object):
         self.insta = args.insta
         self.url = args.url
         if args.upgrade:
-            subprocess.check_call([executable, "-m", "pip", "install", "ttspod", "-U"])
+            upgrade()
             return False
         if not (
             args.url or

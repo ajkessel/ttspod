@@ -7,13 +7,16 @@ except ImportError:
     pass
 
 try:
-    from pypandoc import convert_text
     from html import unescape
     from html2text import html2text
-    from unidecode import unidecode
-    from platform import platform
+    from importlib import find_loader
     from os import path
+    from platform import platform
+    from pypandoc import convert_text
+    from sys import executable
+    from unidecode import unidecode
     import re
+    import subprocess
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -196,6 +199,26 @@ except ImportError:
             test_elements = test_elements.unsqueeze(0)
         return elements.tile(
             test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
+
+    def upgrade():
+        options = []
+        if find_loader('openai'):
+            options += 'remote'
+        if find_loader('coqui'):
+            options += 'local'
+        if find_loader('truststore'):
+            options += 'truststore'
+        if find_loader('twine'):
+            options += 'dev'
+        if options:
+            option_string = re.sub(r"[' ]", '', str(options))
+        else:
+            option_string = ""
+        subprocess.check_call(
+            [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
+        if OS == "mac" and local in options:
+            subprocess.check_call([executable, "-m", "pip", "install",
+                                  "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"])
 
 
 # pylint: enable=c-extension-no-member
