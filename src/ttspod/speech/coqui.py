@@ -64,14 +64,17 @@ class Coqui:
         model_parameters_base = {'progress_bar': False}
         generate_parameters_base = {'split_sentences': True}
         model = model if model else c.get('model', MODEL)
-        voice = path.expanduser(voice if voice else c.get('voice', ''))
+        if voice:
+            voice = path.expanduser(str(voice))
+        else:
+            voice = c.get('voice','')
         speaker_id = None
-        if path.isfile(voice):
+        if path.isfile(str(voice)):
             voice_subdir, _ = path.split(voice)
             voice_dir = str(Path(voice_subdir).parent.absolute())
             voice_name = path.basename(path.normpath(voice_subdir))
             voices = [voice]
-        elif path.isdir(voice):
+        elif path.isdir(str(voice)):
             voice_dir = str(Path(voice).parent.absolute())
             voice_name = path.basename(path.normpath(Path(voice).absolute()))
             voices = glob(path.join(voice, "*wav"))
