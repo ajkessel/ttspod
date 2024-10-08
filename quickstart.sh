@@ -46,7 +46,7 @@ title() {
   len="${#1}"
   pad=$((30 - (len / 2)))
   padding=$(printf -- '-%.0s' $(seq 1 $pad))
-  printf "%s %s %s" "${padding}" "${1}" "${padding}\n"
+  printf "\n%s %s %s\n" "${padding}" "${1}" "${padding}"
 }
 footer() {
   printf -- '--------------------------------------------------------------\n\n'
