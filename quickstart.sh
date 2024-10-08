@@ -162,16 +162,27 @@ if [ "${MAC}" ]; then
 fi
 
 title 'Customize'
-if [ ! -e .env ]; then
-  ttspod -g
+if [ -e "${HOME}/.config" ]
+then
+  conf="${HOME}/.config/ttspod.ini"
+else
+  conf=".env"
 fi
-echo Just edit .env to configure your local settings and you will be good to go.
-echo You can also move this file to ~/.config/ttspod.ini.
+if [ ! -e "${conf}" ]; then
+  ttspod -g "${conf}"
+else
+  echo "Existing ${conf} found, not regenerating. But you may need to check your settings for any updates with the current version."
+fi
+echo "Just edit ${conf} to configure your local settings and you will be good to go."
+if [ "${conf}" == ".env" ]
+then
+  echo "You can also move this file to ~/.config/ttspod.ini."
+fi
 if yesno "Do you want to edit .env now?"; then
   if [ -z "${EDITOR}" ]; then
     echo no editor found
   fi
-  "${EDITOR}" .env
+  "${EDITOR}" "${conf}"
 fi
 footer
 
