@@ -9,7 +9,7 @@ except ImportError:
 try:
     from html import unescape
     from html2text import html2text
-    from importlib import find_spec
+    from importlib.util import find_spec
     from os import path
     from platform import platform
     from pypandoc import convert_text
