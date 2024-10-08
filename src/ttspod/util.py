@@ -9,7 +9,7 @@ except ImportError:
 try:
     from html import unescape
     from html2text import html2text
-    from importlib import find_loader
+    from importlib import find_spec
     from os import path
     from platform import platform
     from pypandoc import convert_text
@@ -201,19 +201,21 @@ except ImportError:
             test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
     def upgrade():
+        """upgrade ttspod in place"""
         options = []
-        if find_loader('openai'):
-            options += 'remote'
-        if find_loader('coqui'):
-            options += 'local'
-        if find_loader('truststore'):
-            options += 'truststore'
-        if find_loader('twine'):
-            options += 'dev'
+        if find_spec('openai'):
+            options.append('remote')
+        if find_spec('coqui'):
+            options.append('local')
+        if find_spec('truststore'):
+            options.append('truststore')
+        if find_spec('twine'):
+            options.append('dev')
         if options:
             option_string = re.sub(r"[' ]", '', str(options))
         else:
             option_string = ""
+        print(f'upgrading in place with options {option_string}')
         subprocess.check_call(
             [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
         if OS == "mac" and 'local' in options:

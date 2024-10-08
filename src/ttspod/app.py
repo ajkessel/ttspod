@@ -10,7 +10,7 @@ except ImportError:
 try:
     from argparse import ArgumentParser
     from os import isatty, path, getcwd
-    from sys import stdin, stdout, exc_info, executable
+    from sys import stdin, stdout, exc_info
     from validators import url
     from traceback import format_exc
     from pathlib import Path
