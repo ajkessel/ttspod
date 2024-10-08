@@ -41,6 +41,7 @@ make_venv() {
   printf "Installing ttspod%s and dependencies.\n" "${add_on}"
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
+  return 0
 }
 mac_install() {
   title 'Mac Install'
@@ -61,6 +62,7 @@ mac_install() {
     pip install git+https://github.com/ajkessel/transformers@v4.42.4a
   fi
   footer
+  return 0
 }
 title() {
   len="${#1}"
@@ -140,8 +142,16 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
     source "${tts_path}/activate"
     check_optional add_on
     echo "installing ttspod${add_on} -U"
-    pip install "ttspod${add_on}" -U
-    mac_install
+    if ! pip install "ttspod${add_on}" -U
+    then
+      printf "Something went wrong.\n"
+      exit 1
+    fi
+    if ! mac_install
+    then
+      printf "Something went wrong.\n"
+    fi
+    printf "Update complete.\n"
     exit 0
   elif ! yesno 'Continue and reinstall?'; then
     exit 1
