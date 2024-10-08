@@ -177,8 +177,9 @@ class App(object):
 ttspod_debug=""
 # gpu - set to 0 to disable GPU, otherwise will attempt to use GPU
 # ttspod_gpu="0"
-# log - filename for logging output, leave blank for no logging
-# if not path is specified, logfile would be put under working path
+# log - filename (and optional path) for logging output
+# Leave empty for no logging
+# If no path is specified, logfile is put under ttspod_working_path
 ttspod_log=""
 # path for temporary files (defaults to ./working)
 ttspod_working_path="./working"

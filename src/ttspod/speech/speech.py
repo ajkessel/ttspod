@@ -87,11 +87,14 @@ class Speech(object):
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
 
-    def speechify(self, title="missing", raw_text=""):
+    def speechify(self, title="No Title Available", raw_text=""):
         """workhorse TTS function"""
         clean_title = self.slugify(title)
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         text = anyascii(raw_text)
+        text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
+        text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
+        text = re.sub('\n\n+', '\n\n', text, flags=re.MULTILINE)
         temp = str(uuid.uuid4())
         start_time = time()
         if os.path.exists(out_file):  # don't overwrite existing files
@@ -102,9 +105,12 @@ class Speech(object):
             self.log.write(f'dry run: not creating {out_file}')
             return
         self.log.write(f'starting TTS conversion to {out_file}')
+        if title != "No Title Available":
+            text = title + "\n\n" + text
         self.log.write(self.tts.convert(text=text, output_file=out_file))
         elapsed = round(time() - start_time)
-        self.log.write(f'TTS conversion of {out_file} complete, elapsed time: {elapsed} seconds')
+        self.log.write(
+            f'TTS conversion of {out_file} complete, elapsed time: {elapsed} seconds')
 
         if os.path.isfile(out_file):
             os.chmod(out_file, 0o644)

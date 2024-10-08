@@ -163,7 +163,7 @@ class Content(object):
         if title_search and not title:
             title = clean_text(unescape(title_search[1]))
         elif not title:
-            title = "Untitled Content"
+            title = "No Title Available"
         self.log.write(f'found item with title {title}')
         # do our best with Trafilatura; if that fails, try pandoc
         # pylint: disable=broad-exception-caught
@@ -201,7 +201,7 @@ class Content(object):
         url = self.hash_text(text)
         text = clean_text(text)
         if not title:
-            title = "Untitled Content"
+            title = "No Title Available"
         entry = (title, text, url)
         return entry
 
