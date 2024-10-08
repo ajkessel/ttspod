@@ -10,7 +10,8 @@ except ImportError:
 try:
     from argparse import ArgumentParser
     from os import isatty, path, getcwd
-    from sys import stdin, stdout, exc_info
+    from sys import stdin, stdout, exc_info, executable
+    import subprocess
     from validators import url
     from traceback import format_exc
     from pathlib import Path
@@ -29,7 +30,6 @@ class App(object):
     """ttspod application"""
 
     def __init__(self):
-        self.args = None
         self.clean = None
         self.config_path = None
         self.debug = None
@@ -43,6 +43,11 @@ class App(object):
         self.quiet = None
         self.title = None
         self.gpu = None
+        self.upgrade = False
+        self.wallabag = None
+        self.pocket = None
+        self.insta = None
+        self.url = None
 
     def parse(self):
         """parse command-line arguments"""
@@ -95,40 +100,49 @@ class App(object):
                             help="do not actually create or sync audio files")
         parser.add_argument("--nogpu", action='store_true',
                             help="disable GPU support (may be necessary for Mac)")
+        parser.add_argument("-u", "--upgrade", action='store_true',
+                            help="upgrade to latest version")
         parser.add_argument("-v", "--version", action='store_true',
                             help="print version number")
-        self.args = parser.parse_args()
-        self.generate = self.args.generate
+        args = parser.parse_args()
+        self.generate = args.generate
         if self.generate:
             if self.generate == "AUTO":
                 self.generate_env_file(None)
             else:
                 self.generate_env_file(self.generate)
             return False
-        if self.args.version:
+        if args.version:
             print(__version__)
             return False
-        self.config_path = self.args.config
-        self.debug = self.args.debug
-        self.quiet = self.args.quiet
+        self.config_path = args.config
+        self.debug = args.debug
+        self.quiet = args.quiet
         if self.quiet:
             self.debug = False
-        self.log = self.args.log
-        self.dry = self.args.dry_run
-        self.gpu = 0 if self.args.nogpu else None
-        self.force = self.args.force
-        self.clean = self.args.restart
-        self.title = self.args.title if hasattr(self.args, 'title') else None
-        self.engine = self.args.engine if hasattr(
-            self.args, 'engine') else None
+        self.log = args.log
+        self.dry = args.dry_run
+        self.gpu = 0 if args.nogpu else None
+        self.force = args.force
+        self.clean = args.restart
+        self.title = args.title if hasattr(args, 'title') else None
+        self.engine = args.engine if hasattr(
+            args, 'engine') else None
         self.got_pipe = not isatty(stdin.fileno())
+        self.wallabag = args.wallabag
+        self.pocket = args.pocket
+        self.insta = args.insta
+        self.url = args.url
+        if args.upgrade:
+            subprocess.check_call([executable, "-m", "pip", "install", "ttspod", "-U"])
+            return False
         if not (
-            self.args.url or
-            self.args.wallabag or
-            self.args.pocket or
-            self.args.sync or
+            args.url or
+            args.wallabag or
+            args.pocket or
+            args.sync or
             self.got_pipe or
-            self.args.insta
+            args.insta
         ):
             parser.print_help()
             return False
@@ -307,13 +321,13 @@ ttspod_openai_model="tts-1-hd"
                 pipe_input = str(stdin.read())
                 if pipe_input:
                     self.main.process_content(pipe_input, self.title)
-            if self.args.wallabag:
-                self.main.process_wallabag(self.args.wallabag)
-            if self.args.pocket:
-                self.main.process_pocket(self.args.pocket)
-            if self.args.insta:
-                self.main.process_insta(self.args.insta)
-            for i in self.args.url:
+            if self.wallabag:
+                self.main.process_wallabag(self.wallabag)
+            if self.pocket:
+                self.main.process_pocket(self.pocket)
+            if self.insta:
+                self.main.process_insta(self.insta)
+            for i in self.url:
                 if url(i):
                     self.main.process_link(i, self.title)
                 elif path.isfile(i):
