@@ -131,6 +131,7 @@ The easiest way to feed emails to TTSPod is with a procmail recipe in `.procmail
 * More customizations for podcast feed
 * Option add audio files via filesystem path or URL
 * Unit tests!
+* Use rsync where available, only remote_sync as fallback
 
 ## License
 [MIT](LICENSE)

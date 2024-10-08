@@ -52,7 +52,7 @@ dependencies = [
   'pod2gen',
   'posix_ipc; platform_system != "Windows"',
   'psutil',
-  'python-magic-bin; platform_system == "Windows" or platform_system == "Darwin"',
+  'python-magic-bin; platform_system == "Windows"',
   'semaphore_win_ctypes; platform_system == "Windows"',
   'spacy==3.7.5',
   'pydub',
