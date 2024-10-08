@@ -68,7 +68,7 @@ class Logger(object):
             except Exception as err:  # pylint: disable=broad-except
                 print(f"error opening logfile {self.log_path}: {err}")
         if new_debug and debug:
-            self.write('debug mode is on')
+            self.write('debug mode is now on')
 
     def close(self):
         """close and release log"""
