@@ -38,7 +38,7 @@ make_venv() {
   source .venv/bin/activate
   check_optional add_on
   # shellcheck disable=SC2154
-  echo "installing ttspod${add_on} and dependencies"  
+  echo "installing ttspod${add_on} and dependencies"
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
 }
@@ -143,18 +143,18 @@ fi
 footer
 
 if [ "${MAC}" ]; then
-  title 'mac install'
+  title 'Mac Install'
   echo 'MacOS environment detected.'
   if [ "${BREW}" ]; then
     if ! brew list libmagic >/dev/null 2>&1; then
-      if yesno 'ttspod requires libmagic. install with brew?'; then
+      if yesno 'ttspod requires libmagic. Install with brew?'; then
         brew install libmagic
       fi
     else
       echo libmagic already installed
     fi
   else
-    printf "tts requires libmagic, but could not find brew.\nbrew is available at https://brew.sh/\n"
+    printf "ttspod requires libmagic, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
   fi
   echo 'Installing modified transformers for Mac MPS support.'
   pip install git+https://github.com/ajkessel/transformers@v4.42.4a
@@ -162,8 +162,7 @@ if [ "${MAC}" ]; then
 fi
 
 title 'Customize'
-if [ -e "${HOME}/.config" ]
-then
+if [ -e "${HOME}/.config" ]; then
   conf="${HOME}/.config/ttspod.ini"
 else
   conf=".env"
@@ -171,16 +170,15 @@ fi
 if [ ! -e "${conf}" ]; then
   ttspod -g "${conf}"
 else
-  echo "Existing ${conf} found, not regenerating. But you may need to check your settings for any updates with the current version."
+  printf "Existing ${conf} found, not regenerating.\nYou may need to check your settings for any updates with the current version.\n"
 fi
-echo "Just edit ${conf} to configure your local settings and you will be good to go."
-if [ "${conf}" == ".env" ]
-then
-  echo "You can also move this file to ~/.config/ttspod.ini."
+printf "Just edit ${conf} to configure your local settings and you will be good to go.\n"
+if [ "${conf}" == ".env" ]; then
+  printf "You can also move this file to ~/.config/ttspod.ini.\n"
 fi
 if yesno "Do you want to edit ${conf} now?"; then
   if [ -z "${EDITOR}" ]; then
-    echo no editor found
+    printf "No editor found.\n"
   fi
   "${EDITOR}" "${conf}"
 fi
@@ -197,4 +195,4 @@ if command -v ttspod &>/dev/null && [ -d ~/.local/bin ]; then
     echo done.
   fi
 fi
-echo "Get help with ttspod -h. Before first use, run ttspod -s to sync settings and confirm valid configuration."
+printf "Get help with ttspod -h.\n\nBefore first use, run ttspod -s to sync settings and confirm valid configuration.\n"
