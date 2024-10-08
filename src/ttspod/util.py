@@ -205,7 +205,7 @@ except ImportError:
         options = []
         if find_spec('openai'):
             options.append('remote')
-        if find_spec('coqui'):
+        if find_spec('TTS.api'):
             options.append('local')
         if find_spec('truststore'):
             options.append('truststore')
