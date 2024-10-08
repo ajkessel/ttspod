@@ -156,8 +156,10 @@ if [ "${MAC}" ]; then
   else
     printf "ttspod requires libmagic, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
   fi
-  echo 'Installing modified transformers for Mac MPS support.'
-  pip install git+https://github.com/ajkessel/transformers@v4.42.4a
+  if pip freeze | grep -q transformers; then
+    echo 'Installing modified transformers for Mac MPS support.'
+    pip install git+https://github.com/ajkessel/transformers@v4.42.4a
+  fi
   footer
 fi
 
