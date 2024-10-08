@@ -219,7 +219,7 @@ except ImportError:
         subprocess.check_call(
             [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
         if OS == "mac" and 'local' in options:
-            print(f'installing customized transformers module for mac')
+            print('installing customized transformers module for mac')
             subprocess.check_call([executable, "-m", "pip", "install",
                                   "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"])
 

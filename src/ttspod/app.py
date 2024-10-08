@@ -117,6 +117,8 @@ class App(object):
         self.config_path = args.config
         self.debug = args.debug
         self.quiet = args.quiet
+        if not self.quiet:
+            print(f'TTSPod v{__version__}')
         if self.quiet:
             self.debug = False
         self.log = args.log
