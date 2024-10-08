@@ -42,6 +42,26 @@ make_venv() {
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
 }
+mac_install() {
+  title 'Mac Install'
+  echo 'MacOS environment detected.'
+  if [ "${BREW}" ]; then
+    if ! brew list libmagic >/dev/null 2>&1; then
+      if yesno 'ttspod requires libmagic. Install with brew?'; then
+        brew install libmagic
+      fi
+    else
+      echo libmagic already installed
+    fi
+  else
+    printf "ttspod requires libmagic, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
+  fi
+  if pip freeze | grep -q transformers; then
+    echo 'Installing modified transformers for Mac MPS support.'
+    pip install git+https://github.com/ajkessel/transformers@v4.42.4a
+  fi
+  footer
+}
 title() {
   len="${#1}"
   pad=$((30 - (len / 2)))
@@ -121,6 +141,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
     check_optional add_on
     echo "installing ttspod${add_on} -U"
     pip install "ttspod${add_on}" -U
+    mac_install
     exit 0
   elif ! yesno 'Continue and reinstall?'; then
     exit 1
@@ -142,26 +163,7 @@ fi
 
 footer
 
-if [ "${MAC}" ]; then
-  title 'Mac Install'
-  echo 'MacOS environment detected.'
-  if [ "${BREW}" ]; then
-    if ! brew list libmagic >/dev/null 2>&1; then
-      if yesno 'ttspod requires libmagic. Install with brew?'; then
-        brew install libmagic
-      fi
-    else
-      echo libmagic already installed
-    fi
-  else
-    printf "ttspod requires libmagic, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
-  fi
-  if pip freeze | grep -q transformers; then
-    echo 'Installing modified transformers for Mac MPS support.'
-    pip install git+https://github.com/ajkessel/transformers@v4.42.4a
-  fi
-  footer
-fi
+[ "${MAC}" ] && mac_install
 
 title 'Customize'
 if [ -e "${HOME}/.config" ]; then
