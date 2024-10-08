@@ -178,7 +178,7 @@ if [ "${conf}" == ".env" ]
 then
   echo "You can also move this file to ~/.config/ttspod.ini."
 fi
-if yesno "Do you want to edit .env now?"; then
+if yesno "Do you want to edit ${conf} now?"; then
   if [ -z "${EDITOR}" ]; then
     echo no editor found
   fi
