@@ -65,7 +65,7 @@ dependencies = [
   'validators'
   ]
 [project.optional-dependencies]
-local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts@git+https://github.com/ajkessel/coqui-ai-TTS#egg=ttspod']
+local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4']
 remote = ['openai','elevenlabs']
 truststore = ['truststore']
 dev = ['posix_ipc','semaphore_win_ctypes','build','twine']
