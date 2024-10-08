@@ -16,14 +16,14 @@ check_optional() {
   footer
 }
 make_venv() {
-  echo Creating local python venv under current directory.
+  printf "Creating local python venv under current directory.\n"
   if ! yesno 'Usually a local venv install works best, so you should answer yes to the next question.\nIf you encounter installation problems, you can try relying on system-installed packages and only install packages in your user account as needed.\nUse local packages?'; then
     pipString=' --system-site-packages'
   fi
   if ! "${pyexe}" -m venv"${pipString}" .venv; then
-    echo Creating virtual environment failed.
+    printf "Creating virtual environment failed.\n"
     if [ ! -d /usr/lib/python3.11/ensurepip ]; then
-      echo '/usr/lib/python3.11/ensurepip is missing.'
+      printf "/usr/lib/python3.11/ensurepip is missing.\n"
       if yesno 'Install system-wide python3.11-venv with apt (requires sudo privileges)?'; then
         sudo apt install python3.11 python3.11-venv python3.11-dev
         "${pyexe}" -m venv "${pipString}" .venv
@@ -31,14 +31,14 @@ make_venv() {
     fi
   fi
   if [ ! -e .venv/bin/activate ]; then
-    echo Virtual environment creation failed. Exiting.
+    printf "Virtual environment creation failed. Exiting.\n"
     exit 1
   fi
   # shellcheck source=/dev/null
   source .venv/bin/activate
   check_optional add_on
   # shellcheck disable=SC2154
-  echo "installing ttspod${add_on} and dependencies"
+  printf "Installing ttspod%s and dependencies.\n" "${add_on}"
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
 }
@@ -46,7 +46,7 @@ title() {
   len="${#1}"
   pad=$((30 - (len / 2)))
   padding=$(printf -- '-%.0s' $(seq 1 $pad))
-  echo "${padding} ${1} ${padding}"
+  printf "%s %s %s" "${padding}" "${1}" "${padding}\n"
 }
 footer() {
   printf -- '--------------------------------------------------------------\n\n'
@@ -57,7 +57,7 @@ command -v brew &>/dev/null && BREW=1
 [ "$EDITOR" ] || command -v nano &>/dev/null && EDITOR="nano" || command -v vim &>/dev/null && EDITOR="vim" || command -v vi &>/dev/null && EDITOR="vi"
 
 title TTSPod Installer
-echo "This will set things up under your current directory $(pwd)"
+printf "This will set things up under your current directory %s.\n" "$(pwd)"
 if ! yesno 'Proceed?'; then
   echo OK, exiting.
   exit 0
@@ -170,9 +170,9 @@ fi
 if [ ! -e "${conf}" ]; then
   ttspod -g "${conf}"
 else
-  printf "Existing ${conf} found, not regenerating.\nYou may need to check your settings for any updates with the current version.\n"
+  printf "Existing %s found, not regenerating.\nYou may need to check your settings for any updates with the current version.\n" "${conf}"
 fi
-printf "Just edit ${conf} to configure your local settings and you will be good to go.\n"
+printf "Just edit %s to configure your local settings and you will be good to go.\n" "${conf}"
 if [ "${conf}" == ".env" ]; then
   printf "You can also move this file to ~/.config/ttspod.ini.\n"
 fi
