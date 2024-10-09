@@ -217,6 +217,8 @@ except ImportError:
             option_string = ""
         print(f'upgrading in place with options {option_string}')
         subprocess.check_call(
+            [executable, "-m", "pip", "cache", "remove", "ttspod"])
+        subprocess.check_call(
             [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
         if OS == "mac" and 'local' in options:
             print('installing customized transformers module for mac')
