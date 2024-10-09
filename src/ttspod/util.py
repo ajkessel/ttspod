@@ -216,12 +216,14 @@ except ImportError:
         else:
             option_string = ""
         print(f'upgrading in place with options {option_string}')
+        results = ''
         result = subprocess.run(
             [executable, "-m", "pip", "cache", "remove", "ttspod"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False
         )
+        results += result.stdout + result.stderr
         result = subprocess.run(
             [executable, "-m", "pip", "install",
                 f"ttspod{option_string}", "-U"],
@@ -229,6 +231,7 @@ except ImportError:
             stderr=subprocess.PIPE,
             check=False
         )
+        results += result.stdout + result.stderr
         if OS == "mac" and 'local' in options:
             print('installing customized transformers module for mac')
             result = subprocess.run(
@@ -238,6 +241,10 @@ except ImportError:
                 stderr=subprocess.PIPE,
                 check=False
             )
+            results += result.stdout + result.stderr
+        if "error" in results.lower():
+            print(
+                f'results of upgrade below, error may have occurred:\n{results}\n')
 
 
 # pylint: enable=c-extension-no-member
