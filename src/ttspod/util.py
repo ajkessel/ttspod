@@ -216,14 +216,28 @@ except ImportError:
         else:
             option_string = ""
         print(f'upgrading in place with options {option_string}')
-        subprocess.check_call(
-            [executable, "-m", "pip", "cache", "remove", "ttspod"])
-        subprocess.check_call(
-            [executable, "-m", "pip", "install", f"ttspod{option_string}", "-U"])
+        result = subprocess.run(
+            [executable, "-m", "pip", "cache", "remove", "ttspod"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False
+        )
+        result = subprocess.run(
+            [executable, "-m", "pip", "install",
+                f"ttspod{option_string}", "-U"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False
+        )
         if OS == "mac" and 'local' in options:
             print('installing customized transformers module for mac')
-            subprocess.check_call([executable, "-m", "pip", "install",
-                                  "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"])
+            result = subprocess.run(
+                [executable, "-m", "pip", "install",
+                 "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False
+            )
 
 
 # pylint: enable=c-extension-no-member
