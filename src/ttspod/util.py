@@ -242,6 +242,9 @@ except ImportError:
                 check=False
             )
             results += result.stdout + result.stderr
+        new_version = re.search(r'Downloading ttspod-([0-9\.]*)', results)
+        if new_version:
+            print(f'Upgraded to {new_version[0]}.')
         if "error" in results.lower():
             print(
                 f'results of upgrade below, error may have occurred:\n{results}\n')
