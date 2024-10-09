@@ -223,7 +223,7 @@ except ImportError:
             stderr=subprocess.PIPE,
             check=False
         )
-        results += result.stdout + result.stderr
+        results += str(result.stdout) + str(result.stderr)
         result = subprocess.run(
             [executable, "-m", "pip", "install",
                 f"ttspod{option_string}", "-U"],
@@ -231,7 +231,7 @@ except ImportError:
             stderr=subprocess.PIPE,
             check=False
         )
-        results += result.stdout + result.stderr
+        results += str(result.stdout) + str(result.stderr)
         if OS == "mac" and 'local' in options:
             print('Installing customized transformers module for Mac...')
             result = subprocess.run(
@@ -241,7 +241,7 @@ except ImportError:
                 stderr=subprocess.PIPE,
                 check=False
             )
-            results += result.stdout + result.stderr
+            results += str(result.stdout) + str(result.stderr)
         new_version = re.search(r'Downloading ttspod-([0-9\.]*)', results)
         if new_version:
             print(f'Upgraded to {new_version[0]}.')
