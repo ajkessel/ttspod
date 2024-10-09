@@ -226,7 +226,7 @@ except ImportError:
         results += str(result.stdout) + str(result.stderr)
         result = subprocess.run(
             [executable, "-m", "pip", "install",
-                f"ttspod{option_string}", "-U"],
+                f"ttspod{option_string}", "-U", "--force-reinstall"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False
