@@ -215,7 +215,7 @@ except ImportError:
             option_string = re.sub(r"[' ]", '', str(options))
         else:
             option_string = ""
-        print(f'upgrading in place with options {option_string}')
+        print(f'Upgrading in place with options {option_string}...')
         results = ''
         result = subprocess.run(
             [executable, "-m", "pip", "cache", "remove", "ttspod"],
@@ -233,7 +233,7 @@ except ImportError:
         )
         results += result.stdout + result.stderr
         if OS == "mac" and 'local' in options:
-            print('installing customized transformers module for mac')
+            print('Installing customized transformers module for Mac...')
             result = subprocess.run(
                 [executable, "-m", "pip", "install",
                  "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
