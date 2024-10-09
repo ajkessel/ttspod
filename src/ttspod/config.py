@@ -162,8 +162,8 @@ class Config(object):
                                'reinstall with quickstart.sh to add engines', True)
                 self.engine = None
 
-    def __init__(self, debug=None, engine=None, config_path=None, log=None, gpu=None, quiet=False):
-        self.log = log if log else Logger(debug=True)
+    def __init__(self, debug=True, engine=None, config_path=None, log=None, gpu=None, quiet=False):
+        self.log = log if log else Logger(debug=debug)
         self.config_path = None
         if config_path and path.isfile(config_path):
             self.config_path = config_path
@@ -252,7 +252,7 @@ class Config(object):
             final_path=self.final_path,
             ssh_keyfile=self.ssh_keyfile,
             ssh_password=self.ssh_password,
-            log=self.log
+            log = self.log
         )
         self.make_files()
         self.validate()

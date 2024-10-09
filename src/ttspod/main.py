@@ -39,7 +39,7 @@ class Main(object):
                  quiet=False, gpu=None):
         self.log = Logger(debug=debug, logfile=logfile, quiet=quiet)
         self.config = Config(
-            engine=engine, config_path=config_path, log=self.log, gpu=gpu, quiet=quiet
+            engine=engine, config_path=config_path, log=self.log, gpu=gpu, quiet=quiet, debug=debug
         )
         self.p = None
         self.force = force
@@ -48,7 +48,7 @@ class Main(object):
         self.speech = Speech(config=self.config.speech,
                              dry=self.dry, log=self.log)
         self.load_cache(clean=clean)
-        self.pod = Pod(self.config.pod, self.p)
+        self.pod = Pod(config=self.config.pod, p=self.p, log=self.log)
         self.pod.config.debug = self.config.debug
         if self.dry:
             self.log.write("dry-run mode")
