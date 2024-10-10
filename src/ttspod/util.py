@@ -251,16 +251,13 @@ except ImportError:
             )
             results += result.stdout + result.stderr
         results = results.decode('utf-8')
+        lines = [ x for x in results.splitlines() if x.strip() and not "cache is disabled" in x.lower() and ("warning" in x.lower() or "error" in x.lower()) ]
         if debug:
             print(results)
-        elif "error" in results.lower():
+        elif lines:
             print('Errors/warnings in upgrade:\n')
-            lines = results.splitlines()
             for line in lines:
-                if not line.strip() or "cache is disabled" in line.lower():
-                    continue
-                if debug or "error" in line.lower() or "warning" in line.lower():
-                    print(f'{line}\n')
+                print(f'{line}\n')
         reload(ttspod.version)
         new_version = ttspod.version.__version__
         if current_version != new_version:
