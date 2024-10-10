@@ -24,7 +24,7 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-import ttspod.version 
+import ttspod.version
 
 OS = None
 my_platform = platform().lower()
@@ -203,8 +203,9 @@ except ImportError:
         return elements.tile(
             test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
-    def upgrade():
+    def upgrade(force=False):
         """upgrade ttspod in place"""
+        current_version = ttspod.version.__version__
         options = []
         if find_spec('openai'):
             options.append('remote')
@@ -219,6 +220,8 @@ except ImportError:
         else:
             option_string = ""
         print(f'Upgrading in place with options {option_string}...')
+        if not force:
+            print(' (include -f to force re-installation) ')
         results = ''
         result = subprocess.run(
             [executable, "-m", "pip", "cache", "remove", "ttspod"],
@@ -229,7 +232,8 @@ except ImportError:
         results += str(result.stdout) + str(result.stderr)
         result = subprocess.run(
             [executable, "-m", "pip", "install",
-                f"ttspod{option_string}", "-U", "--force-reinstall"],
+                f"ttspod{option_string}", "-U",
+                "--force-reinstall" if force else ""],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False
@@ -245,13 +249,17 @@ except ImportError:
                 check=False
             )
             results += str(result.stdout) + str(result.stderr)
-        reload(ttspod.version)
-        print(f'Upgraded to {ttspod.version.__version__}.')
         if "error" in results.lower():
-            print('results of upgrade below, error may have occurred:\n')
+            print('Errors/warnings in upgrade:\n')
             lines = str(results).splitlines()
             for line in lines:
                 if "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
+        reload(ttspod.version)
+        new_version = ttspod.version.__version__
+        if current_version != new_version:
+            print(f'Upgraded from {current_version} to {new_version}.')
+        else:
+            print(f'Version unchanged ({current_version}).')
 
 # pylint: enable=c-extension-no-member

@@ -135,7 +135,7 @@ class App(object):
         self.insta = args.insta
         self.url = args.url
         if args.upgrade:
-            upgrade()
+            upgrade(force = self.force)
             return False
         if not (
             args.url or
