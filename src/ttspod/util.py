@@ -257,6 +257,8 @@ except ImportError:
             print('Errors/warnings in upgrade:\n')
             lines = results.splitlines()
             for line in lines:
+                if not line.strip() or "cache is disabled" in line.lower():
+                    continue
                 if debug or "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
         reload(ttspod.version)
