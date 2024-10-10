@@ -229,7 +229,7 @@ except ImportError:
             stderr=subprocess.PIPE,
             check=False
         )
-        results += str(result.stdout) + str(result.stderr)
+        results += result.stdout + result.stderr
         result = subprocess.run(
             [executable, "-m", "pip", "install",
                 f"ttspod{option_string}", "-U",
@@ -238,7 +238,7 @@ except ImportError:
             stderr=subprocess.PIPE,
             check=False
         )
-        results += str(result.stdout) + str(result.stderr)
+        results += result.stdout + result.stderr
         if OS == "mac" and 'local' in options:
             print('Installing customized transformers module for Mac...')
             result = subprocess.run(
@@ -251,7 +251,7 @@ except ImportError:
             results += str(result.stdout) + str(result.stderr)
         if "error" in results.lower():
             print('Errors/warnings in upgrade:\n')
-            lines = str(results).splitlines()
+            lines = results.decode('utf-8').splitlines()
             for line in lines:
                 if "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
