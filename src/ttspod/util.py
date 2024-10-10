@@ -249,9 +249,10 @@ except ImportError:
                 check=False
             )
             results += result.stdout + result.stderr
+        results = results.decode('utf-8')
         if "error" in results.lower():
             print('Errors/warnings in upgrade:\n')
-            lines = results.decode('utf-8').splitlines()
+            lines = results.splitlines()
             for line in lines:
                 if "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
