@@ -230,6 +230,7 @@ except ImportError:
             check=False
         )
         results += result.stdout + result.stderr
+        print(f'zzz {results}')
         result = subprocess.run(
             [executable, "-m", "pip", "install",
                 f"ttspod{option_string}", "-U",
@@ -239,6 +240,7 @@ except ImportError:
             check=False
         )
         results += result.stdout + result.stderr
+        print(f'zzz {results}')
         if OS == "mac" and 'local' in options:
             print('Installing customized transformers module for Mac...')
             result = subprocess.run(
@@ -250,6 +252,7 @@ except ImportError:
             )
             results += result.stdout + result.stderr
         results = results.decode('utf-8')
+        print(f'zzz {results}')
         if debug:
             print(results)
         elif "error" in results.lower():
