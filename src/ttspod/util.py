@@ -9,6 +9,7 @@ except ImportError:
 try:
     from html import unescape
     from html2text import html2text
+    from importlib import reload
     from importlib.util import find_spec
     from os import path
     from platform import platform
@@ -22,6 +23,8 @@ except ImportError as e:
         f'Failed to import required module: {e}\n'
         'Do you need to run pip install -r requirements.txt?')
     exit()
+
+import ttspod.version 
 
 OS = None
 my_platform = platform().lower()
@@ -242,9 +245,8 @@ except ImportError:
                 check=False
             )
             results += str(result.stdout) + str(result.stderr)
-        new_version = re.search(r'Downloading ttspod-([0-9\.]*)', results)
-        if new_version: # TODO not working
-            print(f'Upgraded to {new_version[1]}.')
+        reload(ttspod.version)
+        print(f'Upgraded to {ttspod.version.__version__}.')
         if "error" in results.lower():
             print(
                 f'results of upgrade below, error may have occurred:\n{results}\n')
