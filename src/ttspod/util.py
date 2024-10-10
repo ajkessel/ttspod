@@ -230,10 +230,11 @@ except ImportError:
             check=False
         )
         results += result.stdout + result.stderr
+        installer = [ executable, "-m", "pip", "install", f"ttspod{option_string}", "-U" ]
+        if force:
+            installer.append("--force-reinstall")
         result = subprocess.run(
-            [executable, "-m", "pip", "install",
-                f"ttspod{option_string}", "-U" ],
-#                "--force-reinstall" if force else ""],
+            installer,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False
