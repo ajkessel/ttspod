@@ -250,14 +250,14 @@ except ImportError:
             )
             results += result.stdout + result.stderr
         results = results.decode('utf-8')
-        if "error" in results.lower():
+        if debug:
+            print(results)
+        elif "error" in results.lower():
             print('Errors/warnings in upgrade:\n')
             lines = results.splitlines()
             for line in lines:
                 if debug or "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
-        elif debug:
-            print(results)
         reload(ttspod.version)
         new_version = ttspod.version.__version__
         if current_version != new_version:
