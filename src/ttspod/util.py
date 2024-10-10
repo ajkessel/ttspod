@@ -222,7 +222,7 @@ except ImportError:
         print(f'Upgrading in place with options {option_string}...')
         if not force:
             print(' (include -f to force re-installation) ')
-        results = ''
+        results = b''
         result = subprocess.run(
             [executable, "-m", "pip", "cache", "remove", "ttspod"],
             stdout=subprocess.PIPE,
@@ -248,7 +248,7 @@ except ImportError:
                 stderr=subprocess.PIPE,
                 check=False
             )
-            results += str(result.stdout) + str(result.stderr)
+            results += result.stdout + result.stderr
         if "error" in results.lower():
             print('Errors/warnings in upgrade:\n')
             lines = results.decode('utf-8').splitlines()
