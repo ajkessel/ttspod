@@ -121,6 +121,8 @@ The easiest way to feed emails to TTSPod is with a procmail recipe in `.procmail
 ```
 
 ## TODO
+* Sanity checking on config settings
+* Smooth migration of config settings with updates
 * Command-line options for all configuration settings
 * Interactive configuration
 * Pocket interactive authentication workflow
@@ -132,6 +134,7 @@ The easiest way to feed emails to TTSPod is with a procmail recipe in `.procmail
 * Add audio files from CLI via filesystem path or URL
 * Use rsync where available, only remote_sync as fallback
 * Language support - right now everything assumes English
+* Graphical interface
 * Unit tests!
 
 ## License
