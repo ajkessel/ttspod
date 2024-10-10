@@ -248,8 +248,10 @@ except ImportError:
         reload(ttspod.version)
         print(f'Upgraded to {ttspod.version.__version__}.')
         if "error" in results.lower():
-            print(
-                f'results of upgrade below, error may have occurred:\n{results}\n')
-
+            print('results of upgrade below, error may have occurred:\n')
+            lines = str(results).splitlines()
+            for line in lines:
+                if "error" in line.lower() or "warning" in line.lower():
+                    print(f'{line}\n')
 
 # pylint: enable=c-extension-no-member
