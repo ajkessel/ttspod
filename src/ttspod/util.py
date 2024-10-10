@@ -203,7 +203,7 @@ except ImportError:
         return elements.tile(
             test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
-    def upgrade(force=False):
+    def upgrade(force=False, debug=False):
         """upgrade ttspod in place"""
         current_version = ttspod.version.__version__
         options = []
@@ -254,7 +254,7 @@ except ImportError:
             print('Errors/warnings in upgrade:\n')
             lines = results.splitlines()
             for line in lines:
-                if "error" in line.lower() or "warning" in line.lower():
+                if debug or "error" in line.lower() or "warning" in line.lower():
                     print(f'{line}\n')
         reload(ttspod.version)
         new_version = ttspod.version.__version__
