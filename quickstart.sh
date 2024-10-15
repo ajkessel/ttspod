@@ -49,13 +49,13 @@ download_tortoise_voices() {
     return 0
   fi
   printf "Directory for downloaded tortoise voices (default ./working/voices): "
-  read line
+  read -r line
   [ "${line}" ] || line="./working/voices"
   mkdir -p "${line}"
   if [ "$MAC" ]; then
-    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - '*/tortoise/voices/'
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - '*/tortoise/voices/' -C "${line}"
   else
-    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - --wildcards '*/tortoise/voices/'
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - --wildcards '*/tortoise/voices/' -C "${line}"
   fi
   footer
 }
@@ -65,7 +65,7 @@ download_voice_examples() {
     return 0
   fi
   printf "Directory for downloaded generated voices (default ./working/examples): "
-  read line
+  read -r line
   [ "${line}" ] || line="./working/examples"
   mkdir -p "${line}"
   curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2 -C "${line}"
