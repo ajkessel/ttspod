@@ -68,7 +68,7 @@ download_voice_examples() {
   read -r line
   [ "${line}" ] || line="./working/examples"
   mkdir -p "${line}"
-  curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2 -C "${line}"
+  curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar --strip-components=2 -C "${line}" -x -z -f - 
   footer
 }
 extras() {
