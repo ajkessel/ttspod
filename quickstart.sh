@@ -52,10 +52,7 @@ download_tortoise_voices() {
   read line
   [ "${line}" ] || line="./working/voices"
   mkdir -p "${line}"
-  cd "${line}"
-  pushd "${line}"
-  curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar xfz - --wildcards '*/tortoise/voices/*' --strip-components=3
-  popd
+  curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar xfz - --wildcards '*/tortoise/voices/*' --strip-components=3 -C "${line}"
   footer
 }
 download_voice_examples() {
@@ -67,9 +64,8 @@ download_voice_examples() {
   read line
   [ "${line}" ] || line="./working/examples"
   mkdir -p "${line}"
-  pushd "${line}"
-  curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2
-  popd
+  curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2 -C "${line}"
+  footer
 }
 mac_install() {
   title 'Mac Install'
