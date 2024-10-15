@@ -1,4 +1,4 @@
-"""generate audio using coqui model"""
+"""generate audio using whisperspeech model"""
 # optional system certificate trust
 try:
     import truststore
