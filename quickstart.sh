@@ -53,9 +53,9 @@ download_tortoise_voices() {
   [ "${line}" ] || line="./working/voices"
   mkdir -p "${line}"
   if [ "$MAC" ]; then
-    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - '*/tortoise/voices/' -C "${line}"
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -C "${line}" -x -z -f - '*/tortoise/voices/'
   else
-    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - --wildcards '*/tortoise/voices/' -C "${line}"
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -C "${line}" -x -z -f - --wildcards '*/tortoise/voices/'
   fi
   footer
 }
