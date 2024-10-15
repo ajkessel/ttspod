@@ -19,7 +19,6 @@ except ImportError as e:
 
 from .logger import Logger
 
-
 class Wallabag(object):
     """wallabag input processor"""
 

@@ -21,8 +21,8 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from ttspod.version import __version__
-from ttspod.util import get_character, get_lock, release_lock, upgrade
+from .version import __version__
+from .util import get_character, get_lock, release_lock, upgrade
 
 
 class App(object):

@@ -24,7 +24,7 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-import ttspod.version
+from . import version
 
 OS = None
 my_platform = platform().lower()
@@ -56,7 +56,7 @@ def get_lock(name='ttspod', timeout=5):
     locked = False
     match OS:
         case 'unix':
-            sem = posix_ipc.Semaphore(
+            sem = posix_ipc.Semaphore(  # pylint: disable=E0606
                 f"/{name}", posix_ipc.O_CREAT, initial_value=1)
             try:
                 sem.acquire(timeout=timeout)
@@ -72,7 +72,7 @@ def get_lock(name='ttspod', timeout=5):
             except:
                 pass
         case 'windows':
-            sem = Semaphore(name)
+            sem = Semaphore(name)  # pylint: disable=E0606
             try:
                 sem.open()
                 result = sem.acquire(timeout_ms=timeout*1000)
@@ -205,7 +205,7 @@ except ImportError:
 
     def upgrade(force=False, debug=False):
         """upgrade ttspod in place"""
-        current_version = ttspod.version.__version__
+        current_version = version.__version__
         options = []
         if find_spec('openai'):
             options.append('remote')
@@ -230,7 +230,8 @@ except ImportError:
             check=False
         )
         results += result.stdout + result.stderr
-        installer = [ executable, "-m", "pip", "install", f"ttspod{option_string}", "-U" ]
+        installer = [executable, "-m", "pip",
+                     "install", f"ttspod{option_string}", "-U"]
         if force:
             installer.append("--force-reinstall")
         result = subprocess.run(
@@ -251,15 +252,17 @@ except ImportError:
             )
             results += result.stdout + result.stderr
         results = results.decode('utf-8')
-        lines = [ x for x in results.splitlines() if x.strip() and not "cache is disabled" in x.lower() and ("warning" in x.lower() or "error" in x.lower()) ]
+        lines = [x for x in results.splitlines() if x.strip() and
+                 not "cache is disabled" in x.lower() and
+                 ("warning" in x.lower() or "error" in x.lower())]
         if debug:
             print(results)
         elif lines:
             print('Errors/warnings in upgrade:\n')
             for line in lines:
                 print(f'{line}\n')
-        reload(ttspod.version)
-        new_version = ttspod.version.__version__
+        reload(version)
+        new_version = version.__version__
         if current_version != new_version:
             print(f'Upgraded from {current_version} to {new_version}.')
         else:

@@ -89,7 +89,7 @@ def remote_isdir(sftp, remote_dir):
         isdir = stat.S_ISDIR(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
         if DBG:
-            print(f'Could not check {remote_dir}.')
+            print(f'Could not check remote dir {remote_dir}.')
         return None
     if isdir:
         if DBG:
@@ -127,7 +127,7 @@ def remote_isfile(sftp, remote_file):
         isfile = stat.S_ISREG(file_attribute.st_mode)
     except Exception:  # pylint: disable=broad-except
         if DBG:
-            print(f'Could not check file {remote_file}')
+            print(f'Could not check remote file {remote_file}')
         return None
     if isfile:
         if DBG:

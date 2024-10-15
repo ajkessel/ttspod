@@ -27,12 +27,14 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from ttspod.logger import Logger
-from ttspod.util import patched_isin_mps_friendly
+from ..logger import Logger
+from ..util import patched_isin_mps_friendly
 
 MODEL = 'xtts'
-VOICE = 'Aaron Dreschner'
-TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True}
+VOICE_XTTS = 'Aaron Dreschner'
+VOICE_TORTOISE = 'daniel'
+#TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True} # TODO: not working currently
+TORTOISE_ARGS = { }
 
 
 class Coqui:
@@ -61,13 +63,12 @@ class Coqui:
                 c = vars(config)
             else:
                 c = config
-        model_parameters_base = {'progress_bar': False}
+        model_parameters_base = {'progress_bar': False }
         generate_parameters_base = {'split_sentences': True}
         model = model if model else c.get('model', MODEL)
-        voice = voice if voice else c.get('voice','')
+        voice = voice if voice else c.get('voice', '')
         if voice:
             voice = path.expanduser(str(voice))
-        speaker_id = None
         if path.isfile(str(voice)):
             voice_subdir, _ = path.split(voice)
             voice_dir = str(Path(voice_subdir).parent.absolute())
@@ -80,9 +81,7 @@ class Coqui:
         else:
             voices = None
             voice_dir = None
-            voice_name = None
-            speaker_id = voice if voice else VOICE
-        self.log.write(f'using voice {voice} {speaker_id}')
+            voice_name = voice
         match model.lower():
             case 'xtts':
                 model_parameters_extra = {
@@ -90,19 +89,25 @@ class Coqui:
                 }
                 generate_parameters_extra = {
                     'speaker_wav': voices,
-                    'speaker': speaker_id,
                     'language': 'en'
                 }
+                if voices:
+                    generate_parameters_extra['speaker_wav'] = voices
+                elif voice_name:
+                    generate_parameters_extra['speaker'] = voice_name
+                else:
+                    generate_parameters_extra['speaker'] = VOICE_XTTS
             case 'tortoise':
                 model_parameters_extra = {
-                    "model_name": "tts_models/en/multi-dataset/tortoise-v2"
+                    "model_name": "tts_models/en/multi-dataset/tortoise-v2",
+                    **TORTOISE_ARGS
                 }
                 generate_parameters_extra = {
-                    'voice_dir': voice_dir,
-                    'speaker': voice_name,
-                    'preset': 'fast',
-                    'kwargs': {**TORTOISE_ARGS, 'device': self.cpu}
+                    'preset': 'fast'
                 }
+                if voice_dir and voice_name:
+                    generate_parameters_extra['voice_dir'] = voice_dir
+                    generate_parameters_extra['speaker'] = voice_name
             case _:
                 raise ValueError(f'model {model} not available')
         model_parameters = {

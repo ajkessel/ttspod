@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = {attr = "ttspod.version.__version__"}  # any module attribute compatible with ast.literal_eval
+version = {attr = "src.ttspod.version.__version__"}  # any module attribute compatible with ast.literal_eval
 
 [project]
 name = "ttspod"
@@ -89,3 +89,4 @@ examples = ["dotenv.env"]
 
 [project.scripts]
 "ttspod" = "ttspod.cli:main"
+"generate_samples" = "ttspod.generate_samples:main"

@@ -28,8 +28,8 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from ttspod.logger import Logger
-from ttspod.util import patched_isin_mps_friendly
+from ..logger import Logger
+from ..util import patched_isin_mps_friendly
 
 
 class Whisper:

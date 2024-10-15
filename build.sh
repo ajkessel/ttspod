@@ -7,6 +7,9 @@ then
   echo "This does not seem to be right directory for building. Exiting."
   exit 1
 fi
+[[ "$@" == *"-i"* ]] && install="1"
+[[ "$@" == *"-r"* ]] && real="1"
+
 if [[ "$@" == *"-g"* ]]
 then
   echo -n 'Commit description: '
@@ -34,14 +37,21 @@ then
   echo Build error. Exiting.
   exit 1
 fi
-if ! uv pip install .[local,remote,truststore,dev] --force-reinstall
+if [ ${install} ] && ! uv pip install .[local,remote,truststore,dev] --force-reinstall
 then
   echo "Local install failed. Exiting."
   exit 1
 fi
 if [[ "$@" == *"-u"* ]]
 then
-  python3 -m twine upload --verbose dist/ttspod-"${new_version}".tar.gz
+  if [ $real ]
+  then
+    echo "Uploading to real repository"
+    python3 -m twine upload dist/ttspod-"${new_version}".tar.gz
+  else
+    echo "Uploading to test repository"
+    python3 -m twine upload --repository pypitest dist/ttspod-"${new_version}".tar.gz
+  fi
 else
   echo 'Not uploading. Specify -u to upload.'
 fi

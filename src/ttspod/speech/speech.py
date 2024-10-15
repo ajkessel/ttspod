@@ -22,8 +22,8 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from ttspod.logger import Logger
-from ttspod.speech.paid import Paid
+from ..logger import Logger
+from .paid import Paid
 
 # optional generator modules
 ENGINES = {}
@@ -43,14 +43,14 @@ try:
 except ImportError:
     pass
 try:
-    from ttspod.speech.whisper import Whisper
+    from .whisper import Whisper
     ENGINES['whisper'] = True
 except ImportError:
     pass
 try:
-    from ttspod.speech.coqui import Coqui
+    from .coqui import Coqui
     ENGINES['coqui'] = True
-except ImportError:
+except ImportError as e:
     pass
 # pylint: enable=unused-import
 # pylint: enable=ungrouped-imports
@@ -87,10 +87,13 @@ class Speech(object):
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
 
-    def speechify(self, title="No Title Available", raw_text=""):
+    def speechify(self, title="No Title Available", raw_text="", overwrite=True):
         """workhorse TTS function"""
         clean_title = self.slugify(title)
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
+        if os.path.isfile(out_file) and not overwrite:
+            self.log.write(f'skipping {out_file} because it already exists')
+            return out_file
         text = anyascii(raw_text)
         text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
         text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
