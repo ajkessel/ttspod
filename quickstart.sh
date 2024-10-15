@@ -43,6 +43,21 @@ make_venv() {
   pip3 install "ttspod${add_on}"
   return 0
 }
+download_tortoise_voices() {
+  printf "Directory for downloaded tortoise voices (default ./working/voices): "
+  read line
+  [ "${line}" ] || line="./working/voices"
+  mkdir -p "${line}"
+  cd "${line}"
+  temp=$(mktemp -d -p ./)
+  pushd "${temp}"
+  git clone --no-checkout --depth=1 https://github.com/neonbjb/tortoise-tts/ 
+  cd "tortoise-tts"
+  git checkout main -- tortoise/voices 
+  popd
+  mv "${temp}/tortoise-tts/tortoise/voices/"* .
+  rm -rf "${temp}"
+}
 mac_install() {
   title 'Mac Install'
   echo 'MacOS environment detected.'
@@ -175,6 +190,12 @@ footer
 
 [ "${MAC}" ] && mac_install
 
+title 'Voices'
+if yesno 'Install sample voices from tortoise-tts?'; then
+  download_tortoise_voices
+fi
+footer
+
 title 'Customize'
 if [ -e "${HOME}/.config" ]; then
   conf="${HOME}/.config/ttspod.ini"
@@ -209,4 +230,5 @@ if command -v ttspod &>/dev/null && [ -d ~/.local/bin ]; then
     echo done.
   fi
 fi
+
 printf "Get help with ttspod -h.\n\nBefore first use, run ttspod -s to sync settings and confirm valid configuration.\n"
