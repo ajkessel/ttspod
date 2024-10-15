@@ -53,15 +53,23 @@ download_tortoise_voices() {
   [ "${line}" ] || line="./working/voices"
   mkdir -p "${line}"
   cd "${line}"
-  temp=$(mktemp -d -p ./)
-  pushd "${temp}"
-  git clone --no-checkout --depth=1 https://github.com/neonbjb/tortoise-tts/ 
-  cd "tortoise-tts"
-  git checkout main -- tortoise/voices 
+  pushd "${line}"
+  curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar xfz - --wildcards '*/tortoise/voices/*' --strip-components=3
   popd
-  mv "${temp}/tortoise-tts/tortoise/voices/"* .
-  rm -rf "${temp}"
   footer
+}
+download_voice_examples() {
+  title 'Voice examples'
+  if ! yesno 'Download sample generated voices?'; then
+    return 0
+  fi
+  printf "Directory for downloaded generated voices (default ./working/examples): "
+  read line
+  [ "${line}" ] || line="./working/examples"
+  mkdir -p "${line}"
+  pushd "${line}"
+  curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2
+  popd
 }
 mac_install() {
   title 'Mac Install'
@@ -197,6 +205,7 @@ footer
 [ "${MAC}" ] && mac_install
 
 download_tortoise_voices
+download_voice_examples
 
 title 'Customize'
 if [ -e "${HOME}/.config" ]; then
