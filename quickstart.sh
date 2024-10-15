@@ -44,6 +44,10 @@ make_venv() {
   return 0
 }
 download_tortoise_voices() {
+  title 'Voices'
+  if ! yesno 'Install sample voices from tortoise-tts?'; then
+    return 0
+  fi
   printf "Directory for downloaded tortoise voices (default ./working/voices): "
   read line
   [ "${line}" ] || line="./working/voices"
@@ -57,6 +61,7 @@ download_tortoise_voices() {
   popd
   mv "${temp}/tortoise-tts/tortoise/voices/"* .
   rm -rf "${temp}"
+  footer
 }
 mac_install() {
   title 'Mac Install'
@@ -167,6 +172,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
       printf "Something went wrong.\n"
     fi
     printf "Update complete.\n"
+    download_tortoise_voices
     exit 0
   elif ! yesno 'Continue and reinstall?'; then
     exit 1
@@ -190,11 +196,7 @@ footer
 
 [ "${MAC}" ] && mac_install
 
-title 'Voices'
-if yesno 'Install sample voices from tortoise-tts?'; then
-  download_tortoise_voices
-fi
-footer
+download_tortoise_voices
 
 title 'Customize'
 if [ -e "${HOME}/.config" ]; then
