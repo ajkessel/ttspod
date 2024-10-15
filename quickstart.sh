@@ -52,7 +52,11 @@ download_tortoise_voices() {
   read line
   [ "${line}" ] || line="./working/voices"
   mkdir -p "${line}"
-  curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar xfz - --wildcards '*/tortoise/voices/*' --strip-components=3 -C "${line}"
+  if [ "$MAC" ]; then
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - '*/tortoise/voices/'
+  else
+    curl -L https://github.com/neonbjb/tortoise-tts/tarball/master | tar --strip-components=3 -x -z -f - --wildcards '*/tortoise/voices/'
+  fi
   footer
 }
 download_voice_examples() {
@@ -66,6 +70,10 @@ download_voice_examples() {
   mkdir -p "${line}"
   curl -L https://github.com/ajkessel/ttspod/tarball/voice-examples | tar xfz - --strip-components=2 -C "${line}"
   footer
+}
+extras() {
+  download_tortoise_voices
+  download_voice_examples
 }
 mac_install() {
   title 'Mac Install'
@@ -98,8 +106,8 @@ footer() {
   printf -- '--------------------------------------------------------------\n\n'
 }
 
-[ "$(uname)" == "Darwin" ] && MAC=1
-command -v brew &>/dev/null && BREW=1
+[ "$(uname)" == "Darwin" ] && export MAC=1
+command -v brew &>/dev/null && export BREW=1
 [ "$EDITOR" ] || command -v nano &>/dev/null && EDITOR="nano" || command -v vim &>/dev/null && EDITOR="vim" || command -v vi &>/dev/null && EDITOR="vi"
 
 title TTSPod Installer
@@ -176,7 +184,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
       printf "Something went wrong.\n"
     fi
     printf "Update complete.\n"
-    download_tortoise_voices
+    extras
     exit 0
   elif ! yesno 'Continue and reinstall?'; then
     exit 1
@@ -200,8 +208,7 @@ footer
 
 [ "${MAC}" ] && mac_install
 
-download_tortoise_voices
-download_voice_examples
+extras
 
 title 'Customize'
 if [ -e "${HOME}/.config" ]; then
