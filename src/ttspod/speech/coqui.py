@@ -9,6 +9,7 @@ try:
     from contextlib import redirect_stdout, redirect_stderr
     from glob import glob
     from io import BytesIO
+    from nltk import sent_tokenize
     from os import path, environ as env
     from pathlib import Path
     from platform import processor
@@ -33,8 +34,8 @@ from ..util import patched_isin_mps_friendly
 MODEL = 'xtts'
 VOICE_XTTS = 'Aaron Dreschner'
 VOICE_TORTOISE = 'daniel'
-#TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True} # TODO: not working currently
-TORTOISE_ARGS = { }
+# TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True} # TODO: not working currently
+TORTOISE_ARGS = {}
 
 
 class Coqui:
@@ -63,8 +64,9 @@ class Coqui:
                 c = vars(config)
             else:
                 c = config
-        model_parameters_base = {'progress_bar': False }
-        generate_parameters_base = {'split_sentences': True}
+        model_parameters_base = {'progress_bar': False}
+        # generate_parameters_base = {'split_sentences': True}
+        generate_parameters_base = {}
         model = model if model else c.get('model', MODEL)
         voice = voice if voice else c.get('voice', '')
         if voice:
@@ -129,12 +131,27 @@ class Coqui:
         stdout_buffer = io.StringIO()
         stderr_buffer = io.StringIO()
         wav_buffer = BytesIO()
-        self.generate_parameters['text'] = text
-        try:
-            with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-                output_wav = self.tts.tts(**self.generate_parameters)
-                self.tts.synthesizer.save_wav(wav=output_wav, path=wav_buffer)
-                wav_buffer.seek(0)
+        sentences = sent_tokenize(text)
+        seed = None
+        for sentence in sentences:
+            self.generate_parameters['text'] = sentence
+            try:
+                with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
+                    if seed:
+                        sentence_result = self.tts.tts(use_deterministic_seed=seed, return_deterministic_state=True,
+                            **self.generate_parameters)
+                        seed = sentence_result
+                    else:
+                        sentence_result = self.tts.tts(return_deterministic_state=True,
+                            **self.generate_parameters)
+                        seed = sentence_result
+                    self.tts.synthesizer.save_wav(
+                        wav=sentence_result['wav'], path=wav_buffer)
+            except Exception as err:  # pylint: disable=broad-except
+                self.log.write(f'TTS conversion failed: {err}\n'
+                               'You can try disabling gpu with --nogpu or gpu=0 in configuration.',
+                               True)
+            wav_buffer.seek(0)
             recording = AudioSegment.from_file(wav_buffer, format="wav")
             recording.export(output_file, format='mp3')
             result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
@@ -142,10 +159,6 @@ class Coqui:
                 return result
             else:
                 raise ValueError(result)
-        except Exception as err:  # pylint: disable=broad-except
-            self.log.write(f'TTS conversion failed: {err}\n'
-                           'You can try disabling gpu with --nogpu or gpu=0 in configuration.',
-                           True)
 
 
 if __name__ == "__main__":
