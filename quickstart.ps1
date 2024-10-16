@@ -46,8 +46,8 @@ if ( -not ( get-command pip -ea silentlycontinue ) ) {
 
 write-host 'Optional components'
 $add_on = '[remote,'
-$local = Read-Host "Generate speech locally?"
-$truststore = Read-Host "Trust locally installed certificates?"
+$local = Read-Host "Generate speech locally (y/n)"
+$truststore = Read-Host "Trust locally installed certificates (y/n)"
 if ( $local -eq 'y' ) { $add_on += 'local,' }
 if ( $truststore -eq 'y' ) { $add_on += 'truststore,' }
 $add_on = $add_on.Substring(0, ($add_on.length) - 1)

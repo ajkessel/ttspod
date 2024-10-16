@@ -11,6 +11,7 @@ try:
     from datetime import datetime
     from os import path
     from pathlib import Path
+    from pprint import pprint
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -68,7 +69,6 @@ class Logger(object):
     def update(self, debug=None, quiet=None, logfile=None, maximum_level=0):
         """update logging with new settings"""
         new_debug = False
-        old_maximum_level = self.maximum_level
         self.maximum_level = maximum_level
         if debug is not None:
             if self.debug != debug:
@@ -88,7 +88,14 @@ class Logger(object):
             self.write(
                 f'Logging set to level {self.maximum_level} out of 3.', error=False, log_level=1)
 
-    def close(self):
+    def close(self) -> None:
         """close and release log"""
         if self.log_handle:
             self.log_handle.close()
+
+if __name__ == '__main__':
+    print("This is the TTSPod logger module. It is not intended to run separately except for debugging.")
+    logger = Logger()
+    pprint(vars(logger))
+    pprint(dir(logger))
+    
