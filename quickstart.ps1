@@ -44,18 +44,11 @@ if ( -not ( get-command pip -ea silentlycontinue ) ) {
   exit 1
 }
 
-write-host 'optional requirements - you should install at least one TTS engine (Whisper, Coqui "TTS", OpenAI, or Eleven)'
-write-host 'also install truststore if you need to trust locally-installed certificates (e.g. due to a firewall/VPN)'
-$add_on = '['
-$whisper = Read-Host "Install Whisper speech engine?"
-$coqui = Read-Host "Install coqui speech engine?"
-$openai = Read-Host "Install OpenAI speech engine?"
-$eleven = Read-Host "Install Eleven speech engine?"
-$truststore = Read-Host "Install Truststore?"
-if ( $whisper -eq 'y' ) { $add_on += 'whisper,' }
-if ( $coqui -eq 'y' ) { $add_on += 'coqui,' }
-if ( $openai -eq 'y' ) { $add_on += 'openai,' }
-if ( $eleven -eq 'y' ) { $add_on += 'eleven,' }
+write-host 'Optional components'
+$add_on = '[remote,'
+$local = Read-Host "Generate speech locally?"
+$truststore = Read-Host "Trust locally installed certificates?"
+if ( $local -eq 'y' ) { $add_on += 'local,' }
 if ( $truststore -eq 'y' ) { $add_on += 'truststore,' }
 $add_on = $add_on.Substring(0, ($add_on.length) - 1)
 if ( ($add_on.length) -gt 0 ) { 
