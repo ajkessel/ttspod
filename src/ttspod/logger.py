@@ -22,7 +22,7 @@ except ImportError as e:
 class Logger(object):
     """screen and file logger"""
 
-    def __init__(self, debug=False, quiet=False, logfile=None, maximum_level=0):
+    def __init__(self, debug=False, quiet=False, logfile=None, maximum_level=0) -> None:
         self.debug = debug
         self.quiet = quiet
         self.log_path = logfile
@@ -36,7 +36,7 @@ class Logger(object):
         if self.log_path:
             self.start()
 
-    def start(self):
+    def start(self) -> None:
         if self.log_handle:
             self.log_handle.close()
         try:
@@ -53,7 +53,7 @@ class Logger(object):
         except Exception as err:  # pylint: disable=broad-except
             print(f"error opening logfile {self.log_path}: {err}")
 
-    def write(self, text='', error=False, log_level=0):
+    def write(self, text='', error=False, log_level=0) -> None:
         """write a message to screen and/or file"""
         if log_level > self.maximum_level and not self.debug:
             return
@@ -66,7 +66,7 @@ class Logger(object):
             self.log_handle.write(datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S: ")+str(text)+"\n")
 
-    def update(self, debug=None, quiet=None, logfile=None, maximum_level=0):
+    def update(self, debug=None, quiet=None, logfile=None, maximum_level=0) -> None:
         """update logging with new settings"""
         new_debug = False
         self.maximum_level = maximum_level
