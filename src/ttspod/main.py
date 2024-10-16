@@ -45,8 +45,7 @@ class Main(object):
         self.force = force
         self.dry = dry
         self.cache = []
-        self.speech = Speech(config=self.config.speech,
-                             dry=self.dry, log=self.log)
+        self.speech = None  # defer spinning up TTS until necessary
         self.load_cache(clean=clean)
         self.pod = Pod(config=self.config.pod, p=self.p, log=self.log)
         self.pod.config.debug = self.config.debug
@@ -93,6 +92,9 @@ class Main(object):
         if not items:
             self.log.write('no items found to process')
             return False
+        if not self.speech:
+            self.speech = Speech(config=self.config.speech,
+                                 dry=self.dry, log=self.log)
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
             if url in self.cache and not self.force:

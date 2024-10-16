@@ -236,82 +236,82 @@ except ImportError:
 
     get_character = _unix_getch
 
-    def patched_isin_mps_friendly(elements, test_elements):
-        """hack to enable mps GPU support for Mac TTS"""
-        if test_elements.ndim == 0:
-            test_elements = test_elements.unsqueeze(0)
-        return elements.tile(
-            test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
+def patched_isin_mps_friendly(elements, test_elements):
+    """hack to enable mps GPU support for Mac TTS"""
+    if test_elements.ndim == 0:
+        test_elements = test_elements.unsqueeze(0)
+    return elements.tile(
+        test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
 
-    def upgrade(force=False, debug=False) -> bool:
-        """upgrade ttspod in place"""
-        current_version = version.__version__
-        try:
-            options = []
-            if find_spec('openai'):
-                options.append('remote')
-            if find_spec('TTS.api'):
-                options.append('local')
-            if find_spec('truststore'):
-                options.append('truststore')
-            if find_spec('twine'):
-                options.append('dev')
-            if options:
-                option_string = re.sub(r"[' ]", '', str(options))
-            else:
-                option_string = ""
-            print(f'Upgrading in place with options {option_string}...')
-            if not force:
-                print(' (include -f to force re-installation) ')
-            results = b''
-            result = subprocess.run(
-                [executable, "-m", "pip", "cache", "remove", "ttspod"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False
-            )
-            results += result.stdout + result.stderr
-            installer = [executable, "-m", "pip",
-                        "install", f"ttspod{option_string}", "-U"]
-            if force:
-                installer.append("--force-reinstall")
-            result = subprocess.run(
-                installer,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False
-            )
-            results += result.stdout + result.stderr
-            if OS == "mac" and 'local' in options:
-                print('Installing customized transformers module for Mac...')
-                result = subprocess.run(
-                    [executable, "-m", "pip", "install",
-                    "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False
-                )
-                results += result.stdout + result.stderr
-            results = results.decode('utf-8')
-            lines = [x for x in results.splitlines() if x.strip() and
-                    not "cache is disabled" in x.lower() and
-                    ("warning" in x.lower() or "error" in x.lower())]
-            if debug:
-                print(results)
-            elif lines:
-                print('Errors/warnings in upgrade:\n')
-                for line in lines:
-                    print(f'{line}\n')
-            reload(version)
-        except Exception as err:
-            print(f'Error occurred: {err}')
-        new_version = version.__version__
-        if current_version != new_version:
-            print(f'Upgraded from {current_version} to {new_version}.')
-            return True
+def upgrade(force=False, debug=False) -> bool:
+    """upgrade ttspod in place"""
+    current_version = version.__version__
+    try:
+        options = []
+        if find_spec('openai'):
+            options.append('remote')
+        if find_spec('TTS.api'):
+            options.append('local')
+        if find_spec('truststore'):
+            options.append('truststore')
+        if find_spec('twine'):
+            options.append('dev')
+        if options:
+            option_string = re.sub(r"[' ]", '', str(options))
         else:
-            print(f'Version unchanged ({current_version}).')
-            return False
+            option_string = ""
+        print(f'Upgrading in place with options {option_string}...')
+        if not force:
+            print(' (include -f to force re-installation) ')
+        results = b''
+        result = subprocess.run(
+            [executable, "-m", "pip", "cache", "remove", "ttspod"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False
+        )
+        results += result.stdout + result.stderr
+        installer = [executable, "-m", "pip",
+                    "install", f"ttspod{option_string}", "-U"]
+        if force:
+            installer.append("--force-reinstall")
+        result = subprocess.run(
+            installer,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False
+        )
+        results += result.stdout + result.stderr
+        if OS == "mac" and 'local' in options:
+            print('Installing customized transformers module for Mac...')
+            result = subprocess.run(
+                [executable, "-m", "pip", "install",
+                "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False
+            )
+            results += result.stdout + result.stderr
+        results = results.decode('utf-8')
+        lines = [x for x in results.splitlines() if x.strip() and
+                not "cache is disabled" in x.lower() and
+                ("warning" in x.lower() or "error" in x.lower())]
+        if debug:
+            print(results)
+        elif lines:
+            print('Errors/warnings in upgrade:\n')
+            for line in lines:
+                print(f'{line}\n')
+        reload(version)
+    except Exception as err:
+        print(f'Error occurred: {err}')
+    new_version = version.__version__
+    if current_version != new_version:
+        print(f'Upgraded from {current_version} to {new_version}.')
+        return True
+    else:
+        print(f'Version unchanged ({current_version}).')
+        return False
 
 # pylint: enable=c-extension-no-member
 

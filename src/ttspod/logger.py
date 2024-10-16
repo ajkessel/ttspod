@@ -9,6 +9,8 @@ except ImportError:
 # standard modules
 try:
     from datetime import datetime
+    from os import path
+    from pathlib import Path
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -37,6 +39,9 @@ class Logger(object):
         if self.log_handle:
             self.log_handle.close()
         try:
+            if not path.isdir(path.dirname(self.log_path)):
+                Path(path.dirname(self.log_path)).mkdir(
+                    parents=True, exist_ok=True)
             self.log_handle = open(
                 self.log_path, "a", buffering=1, encoding="utf-8")
             start_string = "TTSpod log file started at " + \

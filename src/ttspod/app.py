@@ -21,8 +21,8 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from .version import __version__
-from .util import get_character, get_lock, release_lock, upgrade
+from version import __version__
+from util import get_character, get_lock, release_lock, upgrade
 
 
 class App(object):
@@ -135,7 +135,7 @@ class App(object):
         self.insta = args.insta
         self.url = args.url
         if args.upgrade:
-            upgrade(force = self.force, debug=self.debug)
+            upgrade(force=self.force, debug=self.debug)
             return False
         if not (
             args.url or
@@ -165,6 +165,8 @@ class App(object):
                     f'{env_file} already exists. Do you want to overwrite? (y/n) ')
                 stdout.flush()
                 check = get_character()
+                if isinstance(check,bytes):
+                    check = check.decode()
                 if not (check == 'y' or check == 'n'):
                     check = False
                 elif check == 'n':
