@@ -316,4 +316,4 @@ def upgrade(force=False, debug=False) -> bool:
 # pylint: enable=c-extension-no-member
 
 if __name__ == '__main__':
-    print("This is the TTSPod util module.")
+    print("This is the TTSPod util module. It is not intended to run separately except for debugging.")
