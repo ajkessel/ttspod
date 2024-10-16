@@ -6,19 +6,11 @@ try:
 except ImportError:
     pass
 try:
-    from contextlib import redirect_stdout, redirect_stderr
     from glob import glob
-    from io import BytesIO
-    from os import path, environ as env
+    from os import path
     from pathlib import Path
-    from platform import processor
-    from pydub import AudioSegment
-    from torch import cuda
-    from torch.backends import mps
-    from transformers import pytorch_utils
-    from TTS.api import TTS
+    from pprint import pprint
     from warnings import simplefilter  # disable coqui future warnings
-    import io
     simplefilter(action='ignore', category=FutureWarning)
 except ImportError as e:
     print(
@@ -27,15 +19,12 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from ..logger import Logger
-from ..util import patched_isin_mps_friendly
+from logger import Logger
+from util import chunk
+from xtts import Xtts
+from tortoise import Tortoise
 
-MODEL = 'xtts'
-VOICE_XTTS = 'Aaron Dreschner'
-VOICE_TORTOISE = 'daniel'
-#TORTOISE_ARGS = {'kv_cache': True, 'high_vram': True} # TODO: not working currently
-TORTOISE_ARGS = { }
-
+MODEL='xtts'
 
 class Coqui:
     """coqui text to speech generator"""
@@ -43,19 +32,6 @@ class Coqui:
     def __init__(self, config=None, log=None, model=None, voice=None, gpu=1):
         self.log = log if log else Logger(debug=True)
         self.config = config
-        if cuda.is_available():
-            self.cpu = 'cuda'
-        elif mps.is_available():
-            self.cpu = 'mps'
-            env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-            pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
-            if processor() == 'i386':  # hack for older Macs; mps does not appear to work
-                self.cpu = 'cpu'
-        else:
-            self.cpu = 'cpu'
-        if config.gpu == 0 or gpu == 0:
-            self.log.write('overriding GPU detection, processing on CPU')
-            self.cpu = 'cpu'
         if not config:
             c = {}
         else:
@@ -63,91 +39,44 @@ class Coqui:
                 c = vars(config)
             else:
                 c = config
-        model_parameters_base = {'progress_bar': False }
-        generate_parameters_base = {'split_sentences': True}
+        gpu = 'gpu'
+        if c.get('gpu',1) == 0 or gpu == 0:
+            self.log.write('overriding GPU detection, processing on CPU')
+            gpu = 'cpu'
         model = model if model else c.get('model', MODEL)
-        voice = voice if voice else c.get('voice', '')
+        voice = voice if voice else c.get('voice')
+        voices = voice
         if voice:
             voice = path.expanduser(str(voice))
         if path.isfile(str(voice)):
-            voice_subdir, _ = path.split(voice)
-            voice_dir = str(Path(voice_subdir).parent.absolute())
-            voice_name = path.basename(path.normpath(voice_subdir))
             voices = [voice]
+            voice_path = path.dirname(voice)
+            voice_dir = Path(voice_path).parent
+            voice_name = path.basename(voice_path)
         elif path.isdir(str(voice)):
-            voice_dir = str(Path(voice).parent.absolute())
-            voice_name = path.basename(path.normpath(Path(voice).absolute()))
             voices = glob(path.join(voice, "*wav"))
-        else:
-            voices = None
-            voice_dir = None
-            voice_name = voice
+            voice_dir = Path(voice).parent
+            voice_name = path.basename(voice)
         match model.lower():
             case 'xtts':
-                model_parameters_extra = {
-                    "model_name": "tts_models/multilingual/multi-dataset/xtts_v2"
-                }
-                generate_parameters_extra = {
-                    'speaker_wav': voices,
-                    'language': 'en'
-                }
-                if voices:
-                    generate_parameters_extra['speaker_wav'] = voices
-                elif voice_name:
-                    generate_parameters_extra['speaker'] = voice_name
-                else:
-                    generate_parameters_extra['speaker'] = VOICE_XTTS
+                self.tts = Xtts(config=self.config, log=self.log, voices=voices, gpu=gpu)
             case 'tortoise':
-                model_parameters_extra = {
-                    "model_name": "tts_models/en/multi-dataset/tortoise-v2",
-                    **TORTOISE_ARGS
-                }
-                generate_parameters_extra = {
-                    'preset': 'fast'
-                }
-                if voice_dir and voice_name:
-                    generate_parameters_extra['voice_dir'] = voice_dir
-                    generate_parameters_extra['speaker'] = voice_name
+                self.tts = Tortoise(config=self.config, log=self.log, voice_dir=voice_dir, voice_name=voice_name, gpu=gpu)
             case _:
                 raise ValueError(f'model {model} not available')
-        model_parameters = {
-            **model_parameters_base,
-            **model_parameters_extra
-        }
-        self.generate_parameters = {
-            **generate_parameters_base,
-            **generate_parameters_extra
-        }
-        self.log.write('TTS generation started with settings:\n'
-                       f'model parameters: {model_parameters}\n'
-                       f'generate parameters: {self.generate_parameters}\n'
-                       f'target processor: {self.cpu}\n')
-        self.tts = TTS(**model_parameters).to(self.cpu)
+
 
     def convert(self, text, output_file):
         """convert text input to given output_file"""
-        stdout_buffer = io.StringIO()
-        stderr_buffer = io.StringIO()
-        wav_buffer = BytesIO()
-        self.generate_parameters['text'] = text
-        try:
-            with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-                output_wav = self.tts.tts(**self.generate_parameters)
-                self.tts.synthesizer.save_wav(wav=output_wav, path=wav_buffer)
-                wav_buffer.seek(0)
-            recording = AudioSegment.from_file(wav_buffer, format="wav")
-            recording.export(output_file, format='mp3')
-            result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
-            if path.isfile(output_file):
-                return result
-            else:
-                raise ValueError(result)
-        except Exception as err:  # pylint: disable=broad-except
-            self.log.write(f'TTS conversion failed: {err}\n'
-                           'You can try disabling gpu with --nogpu or gpu=0 in configuration.',
-                           True)
+        chunks = chunk(text,250)
+        self.log.write(f'Starting TTS generation on {len(chunks)} of text.',error=False,log_level=3)
+        self.tts.generate(texts = chunks, output = output_file)
+        self.log.write(f'TTS generation completed.',error=False,log_level=3)
+        return output_file
 
 
 if __name__ == "__main__":
     coqui = Coqui()
-    print(coqui)
+    print("This is the TTSPod Coqui TTS module.")
+    pprint(vars(coqui))
+    pprint(dir(coqui))

@@ -109,7 +109,7 @@ class Speech(object):
             return
         self.log.write(f'starting TTS conversion to {out_file}')
         if title != "No Title Available":
-            text = title + "\n\n" + text
+            text = title.strip() + ".\n\n" + text.strip()
         self.log.write(self.tts.convert(text=text, output_file=out_file))
         elapsed = round(time() - start_time)
         self.log.write(

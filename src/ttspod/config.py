@@ -147,8 +147,8 @@ class Config(object):
                 'ttspod_whisper_s2a_model',
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.voice = e.get('ttspod_voice')
-            self.coqui_model = e.get(
-                'ttspod_coqui_model', 'xtts')
+            self.model = e.get(
+                'ttspod_model', 'xtts')
             self.language = e.get('ttspod_language')
             self.max_workers = max_workers
             self.temp_path = fix_path(temp_path,True)
@@ -194,7 +194,8 @@ class Config(object):
             self.debug = e.get('ttspod_debug', debug)
         else:
             self.debug = debug
-        self.log.update(debug=self.debug)
+        self.log_level = int(e.get('ttspod_log_level',0))
+        self.log.update(debug=self.debug,maximum_level=self.log_level)
         self.gpu = int(gpu if gpu is not None else e.get('ttspod_gpu', 1))
         self.max_length = int(e.get('ttspod_max_length', 20000))
         self.max_workers = int(e.get('ttspod_max_workers', 10))
@@ -215,7 +216,7 @@ class Config(object):
         if self.log_path and not '/' in self.log_path and not '\\' in self.log_path:
             self.log_path = path.join(self.working_path, self.log_path)
         if self.log_path:
-            self.log.update(logfile=self.log_path)
+            self.log.update(debug=self.debug,logfile=self.log_path,maximum_level=self.log_level)
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = path.join(self.working_path, self.pickle_filename)
         if e.get('ttspod_state_file_path'):

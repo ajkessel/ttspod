@@ -19,24 +19,38 @@ except ImportError as e:
 class Logger(object):
     """screen and file logger"""
 
-    def __init__(self, debug=False, quiet=False, logfile=None):
+    def __init__(self, debug=False, quiet=False, logfile=None, maximum_level=0):
         self.debug = debug
         self.quiet = quiet
         self.log_path = logfile
         self.log_handle = None
+        self.maximum_level = maximum_level
         if self.debug:
-            print("debug mode is on")
+            print("Debug mode is on.")
+        if self.maximum_level > 0:
+            self.write(
+                f'Logging set to level {self.maximum_level} out of 3.', error=False, log_level=1)
         if self.log_path:
-            try:
-                self.log_handle = open(
-                    self.log_path, "a", buffering=80, encoding="utf-8")
-                self.log_handle.write(
-                    "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
-            except Exception as err:  # pylint: disable=broad-except
-                print(f"error opening logfile {self.log_path}: {err}")
+            self.start()
 
-    def write(self, text='', error=False):
+    def start(self):
+        if self.log_handle:
+            self.log_handle.close()
+        try:
+            self.log_handle = open(
+                self.log_path, "a", buffering=1, encoding="utf-8")
+            start_string = "TTSpod log file started at " + \
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n"
+            line_block = (len(start_string)-1)*"-" + "\n"
+            start_string = line_block + start_string + line_block
+            self.log_handle.write(start_string)
+        except Exception as err:  # pylint: disable=broad-except
+            print(f"error opening logfile {self.log_path}: {err}")
+
+    def write(self, text='', error=False, log_level=0):
         """write a message to screen and/or file"""
+        if log_level > self.maximum_level and not self.debug:
+            return
         if not text or not str(text):
             return
         if self.debug or (error and not self.quiet):
@@ -46,9 +60,11 @@ class Logger(object):
             self.log_handle.write(datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S: ")+str(text)+"\n")
 
-    def update(self, debug=None, quiet=None, logfile=None):
+    def update(self, debug=None, quiet=None, logfile=None, maximum_level=0):
         """update logging with new settings"""
         new_debug = False
+        old_maximum_level = self.maximum_level
+        self.maximum_level = maximum_level
         if debug is not None:
             if self.debug != debug:
                 self.debug = debug
@@ -60,15 +76,12 @@ class Logger(object):
                 self.log_handle.close()
             self.log_path = logfile
         if self.log_path:
-            try:
-                self.log_handle = open(
-                    self.log_path, "a", buffering=80, encoding="utf-8")
-                self.log_handle.write(
-                    "ttspod logfile started at "+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
-            except Exception as err:  # pylint: disable=broad-except
-                print(f"error opening logfile {self.log_path}: {err}")
+            self.start()
         if new_debug and debug:
-            self.write('debug mode is now on')
+            self.write('Debug mode is now on.')
+        if self.maximum_level > 0:
+            self.write(
+                f'Logging set to level {self.maximum_level} out of 3.', error=False, log_level=1)
 
     def close(self):
         """close and release log"""

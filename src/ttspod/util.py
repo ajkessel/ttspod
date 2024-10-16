@@ -11,10 +11,12 @@ try:
     from html2text import html2text
     from importlib import reload
     from importlib.util import find_spec
+    from nltk import sent_tokenize
     from os import path
     from platform import platform
     from pypandoc import convert_text
     from sys import executable
+    from textwrap import wrap
     from unidecode import unidecode
     import re
     import subprocess
@@ -24,7 +26,7 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-from . import version
+import version
 
 OS = None
 my_platform = platform().lower()
@@ -49,6 +51,34 @@ else:
 
 # pylint: disable=bare-except
 # pylint: disable=c-extension-no-member
+
+
+def chunk(text=None, max_length=250) -> list[str]:
+    """
+    chunk text into segments for speechifying
+
+    :param text: text to split into chunks
+    :param max_length: maximum length of each chunk
+    """
+    chunks = []
+    sentences = sent_tokenize(text)
+    for sentence in sentences:
+        if len(sentence) > max_length:
+            fragments = re.findall(r'[,;\.\-]', sentence)
+            next_chunk = ''
+            for fragment in fragments:
+                if len(fragment) > max_length:
+                    lines = wrap(text=fragment, width=max_length)
+                    chunks.extend(lines)
+                else:
+                    if len(next_chunk) + len(fragment) > max_length:
+                        chunks.append(next_chunk)
+                        next_chunk = fragment
+                    else:
+                        next_chunk += fragment
+        else:
+            chunks.append(sentence)
+    return chunks
 
 
 def get_lock(name='ttspod', timeout=5):
@@ -269,3 +299,6 @@ except ImportError:
             print(f'Version unchanged ({current_version}).')
 
 # pylint: enable=c-extension-no-member
+
+if __name__ == '__main__':
+    print("This is the TTSPod util module.")
