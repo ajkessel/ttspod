@@ -1,8 +1,6 @@
 # TTSPod
 
-Real documentation to come.
-
-But the gist of it is that this app will take various forms of content and turn it into audible speech and then a podcast feed.
+This is a command-line app that takes many types of content and turns them into audible speech as a podcast feed.
 
 ## Inputs 
 
@@ -15,14 +13,21 @@ But the gist of it is that this app will take various forms of content and turn 
 * A locally-stored text file
 * Office documents/PDFs 
 
+## Outputs
+
+* A podcast RSS feed
+* MP3 files corresponding to each input item
+
+You'll need a webserver somewhere to host the content if you want to subscribe with your podcasting app.
+
 ## Text-to-Speech Engines
 
-* [Whisper](https://github.com/collabora/WhisperSpeech) (free, requires substantial compute resources and probably a GPU)
 * [Coqui](https://github.com/coqui-ai/TTS) (free, requires substantial compute resources and probably a GPU)
+* [Whisper](https://github.com/collabora/WhisperSpeech) (free, requires substantial compute resources and probably a GPU)
 * OpenAI (paid, requires an [API key](https://platform.openai.com/api-keys))
 * Eleven (limited free version or paid version, [requires an API key](https://elevenlabs.io/docs/api-reference/getting-started))
 
-If you are using Whisper to generate speech locally, you may need to pull a more recent pytorch build to leverage your GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your specific hardware and operating system. It seems to run reasonably fast on Windows or Linux with a GPU but is deathly slow in my MacOS experiments.
+Depending on your hardware configuration, you may need to pull a more recent pytorch build to get maximum performance for your specific GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your platform. Coqui with XTTS runs reasonably fast on Linux, Mac, and Windows, although the Mac GPU (mps) support is limited compared to NVidia. Coqui with Tortoise is quite slow, especially on Mac.
 
 ## Get Started
 This should work "out of the box" on Linux or MacOS.
@@ -38,7 +43,7 @@ Invoke-WebRequest 'https://raw.githubusercontent.com/ajkessel/ttspod/refs/heads/
 & quickstart.ps1
 ```
 
-You'll need to copy [dotenv](dotenv) to `.env` and edit the settings before the app will work. Minimal required settings include configuring your TTS speech and podcast URL.
+You'll need to generate a config file (`ttspod -g`) and edit it before you can do anything. Minimal required settings include configuring your TTS speech engine preference and podcast URL.
 
 You'll also need somewhere to host your RSS feed and MP3 audio files if you want to subscribe and listen with a podcast client. The application is set up to sync the podcast feed to a web server over ssh.
 
