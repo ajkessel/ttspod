@@ -19,10 +19,11 @@ except ImportError as e:
 
 from .logger import Logger
 
+
 class Wallabag(object):
     """wallabag input processor"""
 
-    def __init__(self, config, log=None):
+    def __init__(self, config, log=None) -> None:
         self.url = config.url
         self.log = log if log else Logger(debug=True)
         self.username = config.username
@@ -41,7 +42,7 @@ class Wallabag(object):
         self.log.write(f'wallabag token: {token}')
         self.access_token = token['access_token']
 
-    def get_items(self, tag):
+    def get_items(self, tag="audio") -> list[tuple[str, str, str]]:
         """retrieve URLs and content from Wallabag repository"""
         entries_url = j(
             self.url, 'api/entries.json?'

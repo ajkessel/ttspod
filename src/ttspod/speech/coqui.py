@@ -69,7 +69,7 @@ class Coqui:
     def convert(self, text, output_file):
         """convert text input to given output_file"""
         chunks = chunk(text,250)
-        self.log.write(f'Starting TTS generation on {len(chunks)} of text.',error=False,log_level=3)
+        self.log.write(f'Starting TTS generation on {len(chunks)} chunks of text.',error=False,log_level=3)
         self.tts.generate(texts = chunks, output = output_file)
         self.log.write(f'TTS generation completed.',error=False,log_level=3)
         return output_file
