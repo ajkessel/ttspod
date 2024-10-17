@@ -63,7 +63,7 @@ def chunk(text=None, max_length=250) -> list[str]:
     chunks = []
     # TODO: add silence for paragraph breaks
     text = re.sub(r'([^\.])\n\n', r'\1. ', text)
-    text = re.sub(r' *\. *', '. ', text)
+    text = re.sub(r' +\. +', '. ', text)
     text = re.sub(r'[ \n]+', ' ', text)
     sentences = sent_tokenize(text)
     for sentence in sentences:
