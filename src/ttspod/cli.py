@@ -6,7 +6,7 @@ try:
 except ImportError:
     pass
 
-from . import app
+import app
 
 def main():
     """main python entrypoint"""

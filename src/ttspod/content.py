@@ -8,12 +8,12 @@ except ImportError:
 
 # standard modules
 try:
-    from os import path
-    from uuid import uuid4
+    from email.header import decode_header
     from html import unescape
     from lxml import html
+    from os import path
+    from uuid import uuid4
     import email
-    from email.header import decode_header
     import hashlib
     import magic
     import pypandoc
@@ -26,8 +26,8 @@ except ImportError as e:
     exit()
 
 # tts modules
-from .logger import Logger
-from .util import clean_html, clean_text
+from logger import Logger
+from util import clean_html, clean_text
 
 # optional modules
 try:
@@ -102,18 +102,20 @@ class Content(object):
                         this_filename = str(uuid4())
                     if this_part:
                         buffer_type = magic.from_buffer(this_part).lower()
-                        excluded_buffers = ['image','executable','zip','sql','json']
+                        excluded_buffers = [
+                            'image', 'executable', 'zip', 'sql', 'json']
                         if any(x in buffer_type for x in excluded_buffers):
-                            self.log.write(f'skipping attachment of type {buffer_type}')
+                            self.log.write(
+                                f'skipping attachment of type {buffer_type}')
                         else:
                             with open(path.join(
                                 self.config.attachment_path, this_filename
-                                ), "wb") as f:
+                            ), "wb") as f:
                                 f.write(this_part)
                                 self.log.write(
                                     'saving attachment: '
                                     f'{this_filename} {buffer_type}'
-                                    )
+                                )
                                 attachments.append(
                                     path.join(self.config.attachment_path, this_filename))
                 except Exception:

@@ -1,5 +1,5 @@
 [MASTER]
-init-hook='import sys; sys.path.append("/home/adam/src/ttspod/src/ttspod","/home/adam/src/ttspod/src/ttspod/speech")
+init-hook='import sys; sys.path.append("/home/adam/src/ttspod/src/ttspod"); sys.path.append("/home/adam/src/ttspod/src/ttspod/speech")'
 
 [MAIN]
 

@@ -8,10 +8,10 @@ except ImportError:
 
 # standard modules
 try:
+    from copy import deepcopy
+    from trafilatura.settings import DEFAULT_CONFIG
     import trafilatura
     import validators
-    from trafilatura.settings import DEFAULT_CONFIG
-    from copy import deepcopy
 except ImportError as e:
     print(
         f"Failed to import required module: {e}\n"

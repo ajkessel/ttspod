@@ -8,11 +8,11 @@ except ImportError:
 
 # standard modules
 try:
-    import pod2gen
-    from ntpath import split
-    from os.path import getsize, join as j
-    from os import chmod
     from datetime import datetime
+    from ntpath import split
+    from os import chmod
+    from os.path import getsize, join as j
+    import pod2gen
     import pytz
 except ImportError as e:
     print(
@@ -21,8 +21,8 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from .logger import Logger
-from .remote_sync import sync as rsync
+from logger import Logger
+from remote_sync import sync as rsync
 
 
 class Pod(object):

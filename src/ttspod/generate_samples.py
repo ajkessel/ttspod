@@ -1,4 +1,4 @@
-"""main module for triggering input and output modules"""
+"""freestanding script to generate sample audio output"""
 # optional system certificate trust
 # cspell: disable
 try:
@@ -19,7 +19,7 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from .speech import speech
+from speech import speech
 
 TEXT = """
     The quick brown fox jumped over the lazy dog. The dog was so lazy, he did not even notice that the fox was brown.

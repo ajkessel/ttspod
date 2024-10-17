@@ -8,9 +8,9 @@ except ImportError:
 
 # standard modules
 try:
-    from os import chmod, path, environ as e, getcwd
     from dotenv import load_dotenv
     from inspect import getsourcefile
+    from os import chmod, path, environ as e, getcwd
     from pathlib import Path
     from posixpath import join as posix_join
     from warnings import filterwarnings
@@ -22,8 +22,8 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from .logger import Logger
-from .util import fix_path
+from logger import Logger
+from util import fix_path
 
 # optional modules - disable linting since we are checking if modules exist
 # pylint: disable=unused-import
@@ -151,8 +151,8 @@ class Config(object):
                 'ttspod_model', 'xtts')
             self.language = e.get('ttspod_language')
             self.max_workers = max_workers
-            self.temp_path = fix_path(temp_path,True)
-            self.final_path = fix_path(final_path,True)
+            self.temp_path = fix_path(temp_path, True)
+            self.final_path = fix_path(final_path, True)
             if not self.engine:
                 self.engine = 'coqui'
             # FIXME: some more TTS engine validation
@@ -184,7 +184,8 @@ class Config(object):
                 path.dirname(path.realpath(__file__)), '.env')
         if self.config_path:
             if not quiet:
-                self.log.write(f'using stored configuration {self.config_path}', True)
+                self.log.write(
+                    f'using stored configuration {self.config_path}', True)
             load_dotenv(self.config_path)
         if not any("ttspod" in x.lower() for x in list(e.keys())):
             raise ValueError(
@@ -194,8 +195,8 @@ class Config(object):
             self.debug = e.get('ttspod_debug', debug)
         else:
             self.debug = debug
-        self.log_level = int(e.get('ttspod_log_level',0))
-        self.log.update(debug=self.debug,maximum_level=self.log_level)
+        self.log_level = int(e.get('ttspod_log_level', 0))
+        self.log.update(debug=self.debug, maximum_level=self.log_level)
         self.gpu = int(gpu if gpu is not None else e.get('ttspod_gpu', 1))
         self.max_length = int(e.get('ttspod_max_length', 20000))
         self.max_workers = int(e.get('ttspod_max_workers', 10))
@@ -216,7 +217,8 @@ class Config(object):
         if self.log_path and not '/' in self.log_path and not '\\' in self.log_path:
             self.log_path = path.join(self.working_path, self.log_path)
         if self.log_path:
-            self.log.update(debug=self.debug,logfile=self.log_path,maximum_level=self.log_level)
+            self.log.update(debug=self.debug, logfile=self.log_path,
+                            maximum_level=self.log_level)
         self.pickle_filename = 'ttspod.pickle'
         self.pickle = path.join(self.working_path, self.pickle_filename)
         if e.get('ttspod_state_file_path'):
@@ -253,7 +255,7 @@ class Config(object):
             final_path=self.final_path,
             ssh_keyfile=self.ssh_keyfile,
             ssh_password=self.ssh_password,
-            log = self.log
+            log=self.log
         )
         self.make_files()
         self.validate()

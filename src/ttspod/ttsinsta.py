@@ -14,7 +14,7 @@ except ImportError:
     AVAILABLE_INSTAPAPER = False
 
 # TTSPod modules
-from .logger import Logger
+from logger import Logger
 
 
 class TTSInsta(object):

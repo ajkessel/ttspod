@@ -7,17 +7,14 @@ except ImportError:
     pass
 try:
     from warnings import simplefilter  # disable coqui future warnings
-    simplefilter(action='ignore', category=FutureWarning)
     from contextlib import redirect_stdout, redirect_stderr
-    from nltk import sent_tokenize
     from glob import glob
-    import numpy as np
     from os import path, environ as env
+    from pprint import pprint
     import torch
     import torchaudio
     from pathlib import Path
     from platform import processor
-    import torch
     from transformers import pytorch_utils
     from whisperspeech.pipeline import Pipeline
     from io import StringIO
@@ -30,6 +27,9 @@ except ImportError as e:
 # ttspod modules
 from logger import Logger
 from util import patched_isin_mps_friendly, chunk
+
+# suppress spurious UserWarning from Whisper
+simplefilter(action='ignore', category=UserWarning)
 
 # this attempts to minimize random voice variations
 torch.manual_seed(123456789)
@@ -56,7 +56,10 @@ if "cuda" in DEVICE and torch.cuda.get_device_name().endswith("[ZLUDA]"):
 class Whisper:
     """whisper text to speech generator"""
 
-    def __init__(self, config=None, log=None, t2s_model=None, s2a_model=None, voice=None, gpu='gpu'):
+    def __init__(
+        self, config=None, log=None,
+        t2s_model=None, s2a_model=None, voice=None, gpu='gpu'
+    ) -> None:
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.voice = None
@@ -88,7 +91,8 @@ class Whisper:
                             device=self.gpu,
                             torch_compile=False,
                             optimize=True)
-        self.log.write('Whisper generator initialized.',error=False,log_level=2)
+        self.log.write('Whisper generator initialized.',
+                       error=False, log_level=2)
 
     def generate(self, texts=None, cps=15, output=None, speaker=None):
         """main whisperspeech generator"""
@@ -115,7 +119,7 @@ class Whisper:
                         cps=cps,
                         step_callback=None
                     )
-            except Exception as err:
+            except Exception as err:  # pylint: disable=broad-except
                 self.log.write(f'Something went wrong: {err}')
             atoks.append(r)
         result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
@@ -130,7 +134,7 @@ class Whisper:
                 torchaudio.save(output, torch.cat(audios, -1).cpu(), 24000)
                 if path.isfile(output):
                     return True
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             self.log.write(f'Something went wrong: {err}\n{result}')
 
     def convert(self, text, output_file):
@@ -151,8 +155,11 @@ class Whisper:
 
 
 if __name__ == "__main__":
-    whisper = Whisper()
+    tts = Whisper()
+    pprint(vars(tts))
+    pprint(dir(tts))
 
+# pylint: disable=line-too-long
     # TEXT = """A Hare was making fun of the Tortoise one day for being so slow.
     # "Do you ever get anywhere?" he asked with a mocking laugh.
     # "Yes," replied the Tortoise, "and I get there sooner than you think. I'll run you a race and prove it."
@@ -160,5 +167,5 @@ if __name__ == "__main__":
     # The Hare was soon far out of sight, and to make the Tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the Tortoise should catch up.
     # The Tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the Tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the Tortoise in time.
     # """
-    # whisper = Whisper(voice='~/ttspod/working/voices/it')
-    # whisper.convert(TEXT, "whisper-test.mp3")
+    # tts = Whisper(voice='~/ttspod/working/voices/it')
+    # tts.convert(TEXT, "whisper-test.mp3")

@@ -19,16 +19,16 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from .remote_sync import sync as rsync
-from .config import Config
-from .content import Content
-from .links import Links
-from .pod import Pod
-from .speech.speech import Speech
-from .ttspocket import TTSPocket
-from .ttsinsta import TTSInsta
-from .wallabag import Wallabag
-from .logger import Logger
+from config import Config
+from content import Content
+from links import Links
+from logger import Logger
+from pod import Pod
+from remote_sync import sync as rsync
+from speech.speech import Speech
+from ttsinsta import TTSInsta
+from ttspocket import TTSPocket
+from wallabag import Wallabag
 
 
 class Main(object):

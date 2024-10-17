@@ -37,6 +37,7 @@ class Logger(object):
             self.start()
 
     def start(self) -> None:
+        """open or reopen log handle and print welcome message"""
         if self.log_handle:
             self.log_handle.close()
         try:
@@ -94,8 +95,8 @@ class Logger(object):
             self.log_handle.close()
 
 if __name__ == '__main__':
-    print("This is the TTSPod logger module. It is not intended to run separately except for debugging.")
+    print("This is the TTSPod logger module. "
+          "It is not intended to run separately except for debugging.")
     logger = Logger()
     pprint(vars(logger))
     pprint(dir(logger))
-    

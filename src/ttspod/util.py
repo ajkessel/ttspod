@@ -61,7 +61,7 @@ def chunk(text=None, max_length=250) -> list[str]:
     :param max_length: maximum length of each chunk
     """
     chunks = []
-    text = re.sub(r'[ \n]+',' ',text)
+    text = re.sub(r'[ \n]+', ' ', text)
     sentences = sent_tokenize(text)
     for sentence in sentences:
         if len(sentence) > max_length:
@@ -85,7 +85,7 @@ def chunk(text=None, max_length=250) -> list[str]:
 def get_lock(name='ttspod', timeout=5) -> bool:
     """
     attempt to obtain a semaphore for the process
-    
+
     :param name: name of semaphore
     :param timeout: how long to wait for semaphore in seconds
     """
@@ -128,7 +128,7 @@ def get_lock(name='ttspod', timeout=5) -> bool:
 def release_lock(name='ttspod') -> bool:
     """
     release a previously locked semaphore
-    
+
     :param name: name of semaphore to release
     """
     released = False
@@ -236,12 +236,14 @@ except ImportError:
 
     get_character = _unix_getch
 
+
 def patched_isin_mps_friendly(elements, test_elements):
     """hack to enable mps GPU support for Mac TTS"""
     if test_elements.ndim == 0:
         test_elements = test_elements.unsqueeze(0)
     return elements.tile(
         test_elements.shape[0], 1).eq(test_elements.unsqueeze(1)).sum(dim=0).bool().squeeze()
+
 
 def upgrade(force=False, debug=False) -> bool:
     """upgrade ttspod in place"""
@@ -272,7 +274,7 @@ def upgrade(force=False, debug=False) -> bool:
         )
         results += result.stdout + result.stderr
         installer = [executable, "-m", "pip",
-                    "install", f"ttspod{option_string}", "-U"]
+                     "install", f"ttspod{option_string}", "-U"]
         if force:
             installer.append("--force-reinstall")
         result = subprocess.run(
@@ -286,7 +288,7 @@ def upgrade(force=False, debug=False) -> bool:
             print('Installing customized transformers module for Mac...')
             result = subprocess.run(
                 [executable, "-m", "pip", "install",
-                "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
+                 "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=False
@@ -294,8 +296,8 @@ def upgrade(force=False, debug=False) -> bool:
             results += result.stdout + result.stderr
         results = results.decode('utf-8')
         lines = [x for x in results.splitlines() if x.strip() and
-                not "cache is disabled" in x.lower() and
-                ("warning" in x.lower() or "error" in x.lower())]
+                 not "cache is disabled" in x.lower() and
+                 ("warning" in x.lower() or "error" in x.lower())]
         if debug:
             print(results)
         elif lines:
@@ -303,7 +305,7 @@ def upgrade(force=False, debug=False) -> bool:
             for line in lines:
                 print(f'{line}\n')
         reload(version)
-    except Exception as err:
+    except Exception as err:  # pylint: disable=broad-except
         print(f'Error occurred: {err}')
     new_version = version.__version__
     if current_version != new_version:
@@ -315,5 +317,7 @@ def upgrade(force=False, debug=False) -> bool:
 
 # pylint: enable=c-extension-no-member
 
+
 if __name__ == '__main__':
-    print("This is the TTSPod util module. It is not intended to run separately except for debugging.")
+    print("This is the TTSPod util module. "
+          "It is not intended to run separately except for debugging.")

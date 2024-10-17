@@ -83,7 +83,7 @@ def parse_location(fullpath):
 def remote_isdir(sftp, remote_dir):
     """check if remote path is a directory"""
     if DBG:
-        print(f'Checking {remote_dir} for directory status... ',end='')
+        print(f'Checking {remote_dir} for directory status... ', end='')
     try:
         file_attribute = sftp.stat(remote_dir)
         isdir = stat.S_ISDIR(file_attribute.st_mode)
@@ -203,7 +203,7 @@ def sync(
     ssh = None
     sftp = None
     source_user, source_host, source_dir = parse_location(source)
-    source_dir = source_dir.replace('\\','/')
+    source_dir = source_dir.replace('\\', '/')
     destination_user, destination_host, destination_dir = parse_location(
         destination)
     if not keyfile and not password:
@@ -254,7 +254,7 @@ def sync(
             print("No hostname provided, local sync only.")
 
     files = []
-    source = source.replace('\\','/')
+    source = source.replace('\\', '/')
     source_trail = source.endswith('/')
     destination_trail = destination.endswith('/')
     file_only = False
@@ -388,11 +388,11 @@ def sync(
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
                 if DBG:
-                    print(f'local {local_check}... ',end='')
+                    print(f'local {local_check}... ', end='')
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
                 if DBG:
-                    print(f'remote {remote_check}... ',end='')
+                    print(f'remote {remote_check}... ', end='')
                 if remote_check is None:
                     if DBG:
                         print(
@@ -437,11 +437,11 @@ def sync(
                 remote_check = get_remote_size(
                     sftp, remote_file) if size_only else remote_get_md5(sftp, remote_file)
                 if DBG:
-                    print(f'remote {remote_check}... ',end='')
+                    print(f'remote {remote_check}... ', end='')
                 local_check = os.path.getsize(
                     local_file) if size_only else md5(local_file)
                 if DBG:
-                    print(f'local {local_check}... ',end='')
+                    print(f'local {local_check}... ', end='')
                 if local_check != remote_check:
                     if DBG:
                         print(

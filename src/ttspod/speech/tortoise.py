@@ -21,8 +21,10 @@ except ImportError as e:
         'Do you need to run pip install -r requirements.txt?')
     exit()
 
-from util import patched_isin_mps_friendly, chunk
+from util import patched_isin_mps_friendly
 from logger import Logger
+
+# suppress spurious FutureWarning from Coqui
 simplefilter(action='ignore', category=FutureWarning)
 
 # this attempts to minimize random voice variations
@@ -66,7 +68,8 @@ class Tortoise:
         self.voice_dir = voice_dir
         self.voice_name = voice_name
         self.silence = torch.zeros(int(24000*0.5)).unsqueeze(0).cpu()
-        self.log.write('Tortoise generator initialized.',error=False,log_level=2)
+        self.log.write('Tortoise generator initialized.',
+                       error=False, log_level=2)
 
     def generate(self, texts=None, output=None):
         """convert a list of texts into an output file"""
@@ -89,15 +92,18 @@ class Tortoise:
                         preset=PRESET,
                         use_deterministic_seed=seed,
                         return_deterministic_state=True
-                        )
+                    )
                 seed = out['deterministic_seed']
                 audio = out['wav'].squeeze(0).cpu()
                 audio_segments.append(audio)
                 audio_segments.append(self.silence)
-            except Exception as e:
-                self.log.write(f'Something went wrong processing {text}: {e}', error=True, log_level=0)
-                self.log.write(stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue(), error=True, log_level=0)
-        result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
+            except Exception as e:  # pylint: disable=broad-except
+                self.log.write(
+                    f'Something went wrong processing {text}: {e}', error=True, log_level=0)
+                self.log.write(stdout_buffer.getvalue()+"\n" +
+                               stderr_buffer.getvalue(), error=True, log_level=0)
+        # TODO: print result in case of failure
+        _ = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
         final_audio = torch.cat(audio_segments, dim=1)
         torchaudio.save(uri=output, src=final_audio,
                         sample_rate=24000, format="mp3")
@@ -105,12 +111,22 @@ class Tortoise:
             return output
         else:
             return None
-        
 
 
 if __name__ == "__main__":
-    print("This is the TTSPod Tortoise TTS module. It is not intended to be run separately except for debugging.")
+    print("This is the TTSPod Tortoise TTS module. "
+          "It is not intended to be run separately except for debugging.")
     tts = Tortoise()
-    tts.generate(["sample text"],"sample_output.mp3")
     pprint(vars(tts))
     pprint(dir(tts))
+
+# pylint: disable=line-too-long
+    # TEXT = """A Hare was making fun of the Tortoise one day for being so slow.
+    # "Do you ever get anywhere?" he asked with a mocking laugh.
+    # "Yes," replied the Tortoise, "and I get there sooner than you think. I'll run you a race and prove it."
+    # The Hare was much amused at the idea of running a race with the Tortoise, but for the fun of the thing he agreed. So the Fox, who had consented to act as judge, marked the distance and started the runners off.
+    # The Hare was soon far out of sight, and to make the Tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the Tortoise should catch up.
+    # The Tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the Tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the Tortoise in time.
+    # """
+    # tts = Whisper(voice='~/ttspod/working/voices/it')
+    # tts.convert(TEXT, "whisper-test.mp3")

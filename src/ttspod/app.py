@@ -10,10 +10,10 @@ except ImportError:
 try:
     from argparse import ArgumentParser
     from os import isatty, path, getcwd
-    from sys import stdin, stdout, exc_info
-    from validators import url
-    from traceback import format_exc
     from pathlib import Path
+    from sys import stdin, stdout, exc_info
+    from traceback import format_exc
+    from validators import url
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
