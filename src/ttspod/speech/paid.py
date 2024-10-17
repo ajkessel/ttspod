@@ -38,7 +38,7 @@ except ImportError:
     pass
 
 # ttspod modules
-from ..logger import Logger
+from logger import Logger
 
 MAX_LENGTH = 4096  # hardcoded maximum value for API-based TTS
 OPENAI_MODEL = 'tts-1'

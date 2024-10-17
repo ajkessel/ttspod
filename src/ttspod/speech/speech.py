@@ -22,8 +22,8 @@ except ImportError as e:
     exit()
 
 # TTSPod modules
-from ..logger import Logger
-from .paid import Paid
+from logger import Logger
+from paid import Paid
 
 # optional generator modules
 ENGINES = {}

@@ -8,6 +8,7 @@ except ImportError:
 
 import app
 
+
 def main():
     """main python entrypoint"""
     app.main()
