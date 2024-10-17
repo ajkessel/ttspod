@@ -43,12 +43,12 @@ try:
 except ImportError:
     pass
 try:
-    from .whisper import Whisper
+    from whisper import Whisper
     ENGINES['whisper'] = True
 except ImportError:
     pass
 try:
-    from .coqui import Coqui
+    from coqui import Coqui
     ENGINES['coqui'] = True
 except ImportError as e:
     pass

@@ -11,16 +11,16 @@ try:
     from contextlib import redirect_stdout, redirect_stderr
     from nltk import sent_tokenize
     from glob import glob
+    import numpy as np
     from os import path, environ as env
     import torch
     import torchaudio
-    import re
     from pathlib import Path
-    from torch import cuda
-    from torch.backends import mps
+    from platform import processor
+    import torch
     from transformers import pytorch_utils
     from whisperspeech.pipeline import Pipeline
-    import io
+    from io import StringIO
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -28,25 +28,38 @@ except ImportError as e:
     exit()
 
 # ttspod modules
-from ..logger import Logger
-from ..util import patched_isin_mps_friendly
+from logger import Logger
+from util import patched_isin_mps_friendly, chunk
+
+# this attempts to minimize random voice variations
+torch.manual_seed(123456789)
+
+# sensible default settings if none are provided
+DEVICE = 'cpu'
+
+if torch.cuda.is_available():
+    DEVICE = "cuda"
+elif torch.mps.is_available() and processor() != 'i386':
+    DEVICE = 'mps'
+    env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
+
+# cspell: disable
+if "cuda" in DEVICE and torch.cuda.get_device_name().endswith("[ZLUDA]"):
+    torch.backends.cudnn.enabled = False
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_math_sdp(True)
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+# cspell: enable
 
 
 class Whisper:
     """whisper text to speech generator"""
 
-    def __init__(self, config=None, log=None, t2s_model=None, s2a_model=None, voice=None):
+    def __init__(self, config=None, log=None, t2s_model=None, s2a_model=None, voice=None, gpu='gpu'):
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.voice = None
-        if cuda.is_available():
-            self.cpu = 'cuda'
-        elif mps.is_available():
-            self.cpu = 'mps'
-            env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-            pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
-        else:
-            self.cpu = 'cpu'
         if not config:
             c = {}
         else:
@@ -54,6 +67,10 @@ class Whisper:
                 c = vars(config)
             else:
                 c = config
+        if gpu == 'cpu':
+            self.gpu = 'cpu'
+        else:
+            self.gpu = DEVICE
         t2s_model = c.get(
             'whisper_t2s_model', 'whisperspeech/whisperspeech:t2s-base-en+pl.model')
         s2a_model = c.get(
@@ -62,36 +79,18 @@ class Whisper:
         if path.isfile(voice):
             self.voice = voice
         elif path.isdir(voice):
-            audio_files = glob(path.join(voice, "*wav"))+glob(path.join(voice, "*mp3"))
+            audio_files = glob(path.join(voice, "*wav")) + \
+                glob(path.join(voice, "*mp3"))
             if audio_files:
                 self.voice = audio_files[0]
         self.tts = Pipeline(t2s_ref=t2s_model,
                             s2a_ref=s2a_model,
-                            device=self.cpu,
+                            device=self.gpu,
                             torch_compile=False,
                             optimize=True)
+        self.log.write('Whisper generator initialized.',error=False,log_level=2)
 
-    def split_and_prepare_text(self, text, cps=14):
-        """break text into chunks for whisperspeech"""
-        chunks = []
-        sentences = sent_tokenize(text)
-        chunk = ""
-        for sentence in sentences:
-            sentence = re.sub('[()]', ",", sentence).strip()
-            sentence = re.sub(",+", ",", sentence)
-            sentence = re.sub('"+', "", sentence)
-            if len(chunk) + len(sentence) < 20*cps:
-                chunk += " " + sentence
-            elif chunk:
-                chunks.append(chunk)
-                chunk = sentence
-            elif sentence:
-                chunks.append(sentence)
-        if chunk:
-            chunks.append(chunk)
-        return chunks
-
-    def whisper_long(self, chunks=None, cps=14, overlap=100, output=None, speaker=None):
+    def generate(self, texts=None, cps=15, output=None, speaker=None):
         """main whisperspeech generator"""
         if not speaker:
             self.log.write('using default speaker')
@@ -99,58 +98,47 @@ class Whisper:
         elif isinstance(speaker, (str, Path)):
             self.log.write(f'extracting speaker {speaker}')
             speaker = self.tts.extract_spk_emb(speaker)
-        r = []
-        old_stoks = None
-        old_atoks = None
-        stdout_buffer = io.StringIO()
-        stderr_buffer = io.StringIO()
-        for i, chunk in enumerate(chunks):
+        atoks = []
+        stdout_buffer = StringIO()
+        stderr_buffer = StringIO()
+        for i, text in enumerate(texts):
             self.log.write(
-                f"processing chunk {i+1} of {len(chunks)}\n"
-                "--------------------------\n"
-                f"{chunk}\n"
-                "--------------------------\n")
+                f'Processing chunk {i+1} of {len(texts)}:\n{text}',
+                error=False,
+                log_level=3)
             try:
                 with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
-                    stoks = self.tts.t2s.generate(
-                        chunk, cps=cps, show_progress_bar=False)[0]
-                    stoks = stoks[stoks != 512]
-                    if old_stoks is not None:
-                        assert len(stoks) < 750-overlap  # TODO
-                        stoks = torch.cat([old_stoks[-overlap:], stoks])
-                        atoks_prompt = old_atoks[:, :, -overlap*3:]
-                    else:
-                        atoks_prompt = None
-                    atoks = self.tts.s2a.generate(
-                        stoks,
-                        atoks_prompt=atoks_prompt,
-                        speakers=speaker.unsqueeze(0),
-                        show_progress_bar=False
+                    r = self.tts.generate_atoks(
+                        text=text,
+                        speaker=speaker,
+                        lang='en',
+                        cps=cps,
+                        step_callback=None
                     )
-                    if atoks_prompt is not None:
-                        atoks = atoks[:, :, overlap*3+1:]
-                    r.append(atoks)
-                    self.tts.vocoder.decode_to_notebook(atoks)
-            except Exception as err:  # pylint: disable=broad-except
-                self.log.write(f'chunk {i+1} failed with error {err}')
-            old_stoks = stoks
-            old_atoks = atoks
-        audios = []
-        for i, atoks in enumerate(r):
-            if i != 0:
-                audios.append(torch.zeros((1, int(24000*0.5)),
-                              dtype=atoks.dtype, device=atoks.device))
-            audios.append(self.tts.vocoder.decode(atoks))
-        if output:
-            torchaudio.save(output, torch.cat(audios, -1).cpu(), 24000)
-        return stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
+            except Exception as err:
+                self.log.write(f'Something went wrong: {err}')
+            atoks.append(r)
+        result = stdout_buffer.getvalue()+"\n"+stderr_buffer.getvalue()
+        try:
+            audios = []
+            for i, atok in enumerate(atoks):
+                if i != 0:
+                    audios.append(torch.zeros((1, int(24000*0.5)),
+                                              dtype=atok.dtype, device=self.gpu))
+                audios.append(self.tts.vocoder.decode(atok))
+            if output:
+                torchaudio.save(output, torch.cat(audios, -1).cpu(), 24000)
+                if path.isfile(output):
+                    return True
+        except Exception as err:
+            self.log.write(f'Something went wrong: {err}\n{result}')
 
     def convert(self, text, output_file):
         """convert text input to given output_file"""
-        chunks = self.split_and_prepare_text(text)
+        chunks = chunk(text)
         try:
-            results = self.whisper_long(
-                chunks=chunks, output=output_file, speaker=self.voice)
+            results = self.generate(
+                texts=chunks, output=output_file, speaker=self.voice)
             if results:
                 self.log.write(
                     f'TTS conversion complete: {results}')
@@ -164,3 +152,13 @@ class Whisper:
 
 if __name__ == "__main__":
     whisper = Whisper()
+
+    # TEXT = """A Hare was making fun of the Tortoise one day for being so slow.
+    # "Do you ever get anywhere?" he asked with a mocking laugh.
+    # "Yes," replied the Tortoise, "and I get there sooner than you think. I'll run you a race and prove it."
+    # The Hare was much amused at the idea of running a race with the Tortoise, but for the fun of the thing he agreed. So the Fox, who had consented to act as judge, marked the distance and started the runners off.
+    # The Hare was soon far out of sight, and to make the Tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the Tortoise should catch up.
+    # The Tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the Tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the Tortoise in time.
+    # """
+    # whisper = Whisper(voice='~/ttspod/working/voices/it')
+    # whisper.convert(TEXT, "whisper-test.mp3")
