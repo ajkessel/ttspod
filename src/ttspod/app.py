@@ -165,7 +165,7 @@ class App(object):
                     f'{env_file} already exists. Do you want to overwrite? (y/n) ')
                 stdout.flush()
                 check = get_character()
-                if isinstance(check,bytes):
+                if isinstance(check, bytes):
                     check = check.decode()
                 if not (check == 'y' or check == 'n'):
                     check = False
@@ -309,7 +309,7 @@ ttspod_openai_model="tts-1-hd"
                     release_lock()
             # this import is slow (loads TTS engines), so only import when needed
             # there is probably a better way to do this by refactoring
-            from .main import Main  # pylint: disable=import-outside-toplevel
+            from main import Main  # pylint: disable=import-outside-toplevel
             self.main = Main(
                 debug=self.debug,
                 config_path=self.config_path,
