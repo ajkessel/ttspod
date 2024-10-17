@@ -36,7 +36,7 @@ PRESET = 'fast'
 
 if torch.cuda.is_available():
     DEVICE = "cuda"
-elif torch.mps.is_available() and processor() != 'i386':
+elif torch.backends.mps.is_available() and processor() != 'i386':
     DEVICE = 'mps'
     env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
     pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
