@@ -155,7 +155,7 @@ class Config(object):
             self.final_path = fix_path(final_path, True)
             if not self.engine:
                 self.engine = 'coqui'
-            # FIXME: some more TTS engine validation
+            # TODO: some more TTS engine validation
             if not self.engine in ENGINES:
                 self.log.write(f'TTS engine {self.engine} selected but not available.\n'
                                f'Available engines are: {ENGINES}\n'
