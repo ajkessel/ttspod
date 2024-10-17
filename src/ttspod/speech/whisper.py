@@ -112,7 +112,6 @@ class Whisper:
         old_stoks = stoks
         old_atoks = stoks
         atoks_prompt = None
-        # stoks_prompt = None
         text = ""
         for i, next_text in enumerate(texts):
             self.log.write(
@@ -126,7 +125,8 @@ class Whisper:
                 continue
             if not text:
                 continue
-            print(f'got segment: {text}\n')
+            self.log.write(
+                f'Chunked together as:\n{text}', error=False, log_level=3)
             try:
                 with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
                     stoks = self.tts.t2s.generate(
