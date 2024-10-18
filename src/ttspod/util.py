@@ -105,32 +105,35 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
     text = re.sub(r'[ \n]+', ' ', text)
     text = text.strip()
     sentences = sent_tokenize(text)
-    sentence = ""
-    for next_sentence in sentences:
-        if len(sentence) + len(next_sentence) < min_length:
-            sentence += next_sentence
-            continue
-        elif sentence:
-            chunks.append(sentence)
-        sentence = next_sentence
-        if len(sentence) > max_length:
-            fragments = re.findall(r'[,;\.\-]', sentence)
-            next_chunk = ''
-            for fragment in fragments:
-                if len(fragment) > max_length:
-                    if next_chunk:
-                        chunks.append(next_chunk)
-                    lines = wrap(text=fragment, width=max_length)
-                    chunks.extend(lines)
-                    next_chunk = ''
-                elif len(next_chunk) + len(fragment) > max_length:
-                    chunks.append(next_chunk)
-                    next_chunk = fragment
-                else:
-                    next_chunk += fragment
-        else:
-            chunks.append(sentence)
-        sentence = ""
+    if not sentences:
+        return []
+    sentence = sentences[0]
+    if len(sentences) > 1:
+        for i, next_sentence in enumerate(sentences[1:]):
+            if len(sentence) + len(next_sentence) < min_length and i+2 < len(sentences):
+                sentence += f' {next_sentence}'
+                continue
+            if len(sentence) > max_length:
+                fragments = re.findall(r'[,;\.\-]', sentence)
+                next_chunk = ''
+                for fragment in fragments:
+                    if len(fragment) > max_length:
+                        if next_chunk:
+                            chunks.append(next_chunk)
+                        lines = wrap(text=fragment, width=max_length)
+                        chunks.extend(lines)
+                        next_chunk = ''
+                    elif len(next_chunk) + len(fragment) > max_length:
+                        chunks.append(next_chunk.strip())
+                        next_chunk = fragment
+                    else:
+                        next_chunk += fragment
+            else:
+                chunks.append(sentence.strip())
+            sentence = next_sentence
+        chunks.append(next_sentence)
+    else:
+        chunks.append(sentence)
     return chunks
 
 

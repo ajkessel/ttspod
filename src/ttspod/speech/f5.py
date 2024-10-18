@@ -179,14 +179,14 @@ class F5:
         generated_waves = []
 
         for i, gen_text in enumerate(tqdm.tqdm(gen_text_batches)):
-            self.log.write(f'Chunk {i}: {gen_text}',log_level=3)
+            self.log.write(f'Chunk {i}: {gen_text}', log_level=3)
             if len(ref_text[-1].encode('utf-8')) == 1:
                 ref_text = ref_text + " "
             final_text_list = [ref_text + gen_text]
 
             # Calculate duration
             ref_audio_len = audio.shape[-1] // HOP_LENGTH
-            punctuation = r"。，、；：？！"
+            punctuation = r"。，、；：？！."
             ref_text_len = len(ref_text.encode('utf-8')) + 3 * \
                 len(re.findall(punctuation, ref_text))
             gen_text_len = len(gen_text.encode('utf-8')) + 3 * \
@@ -257,7 +257,8 @@ class F5:
 
     def convert(self, text="", output_file=None):
         """convert text input to given output_file"""
-        chunks = chunk(text=text, max_length=self.max_chars)
+        chunks = chunk(text=text, min_length=round(
+            self.max_chars/2), max_length=self.max_chars)
         result = self.infer_batch(
             (self.audio, self.sr), self.ref_text, chunks, 0.15)
         if output_file:
