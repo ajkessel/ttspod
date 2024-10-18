@@ -38,10 +38,10 @@ then
   if [ $real ]
   then
     echo "Uploading to real repository"
-    python3 -m twine upload dist/ttspod-"${new_version}".tar.gz
+    python3 -m twine upload dist/ttspod-"$(cat version)".tar.gz
   else
     echo "Uploading to test repository"
-    python3 -m twine upload --repository pypitest dist/ttspod-"${new_version}".tar.gz
+    python3 -m twine upload --repository pypitest dist/ttspod-"$(cat version)".tar.gz
   fi
 else
   echo 'Not uploading. Specify -u to upload.'
