@@ -22,6 +22,7 @@ then
   uv pip install twine
 fi
 ./bump_version.sh
+new_version="$(cat version)"
 python3 -m build --sdist
 if [ "$?" != "0" ]
 then
@@ -38,10 +39,10 @@ then
   if [ $real ]
   then
     echo "Uploading to real repository"
-    python3 -m twine upload dist/ttspod-"$(cat version)".tar.gz
+    python3 -m twine upload dist/ttspod-"${new_version}".tar.gz
   else
     echo "Uploading to test repository"
-    python3 -m twine upload --repository pypitest dist/ttspod-"$(cat version)".tar.gz
+    python3 -m twine upload --repository pypitest dist/ttspod-"${new_version}".tar.gz
   fi
 else
   echo 'Not uploading. Specify -u to upload.'
