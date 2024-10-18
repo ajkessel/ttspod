@@ -53,34 +53,81 @@ else:
 # pylint: disable=c-extension-no-member
 
 
-def chunk(text=None, max_length=250) -> list[str]:
+def check_engines() -> dict:
+    """try importing various TTS modules to determine what is available"""
+    # optional modules - disable linting since we are checking if modules exist
+    # pylint: disable=unused-import,invalid-name,import-outside-toplevel
+    ENGINES = {}
+    try:
+        from elevenlabs.client import ElevenLabs
+        from elevenlabs import save
+        ENGINES['eleven'] = True
+    except ImportError:
+        pass
+    try:
+        from whisperspeech.pipeline import Pipeline
+        ENGINES['whisper'] = True
+    except ImportError:
+        pass
+    try:
+        from f5_tts.model.utils import load_checkpoint
+        ENGINES['f5'] = True
+    except ImportError:
+        pass
+    try:
+        from TTS.api import TTS
+        ENGINES['coqui'] = True
+    except ImportError:
+        pass
+    try:
+        from openai import OpenAI
+        ENGINES['openai'] = True
+    except ImportError:
+        pass
+    # pylint: enable=unused-import
+    return ENGINES
+
+
+def chunk(text=None, min_length=0, max_length=250) -> list[str]:
     """
     chunk text into segments for speechifying
 
     :param text: text to split into chunks
     :param max_length: maximum length of each chunk
     """
+    assert min_length < max_length, \
+        "Invalid arguments given to chunk function:" \
+        "minimum {min_length} is greater than maximum {max_length}."
     chunks = []
     # TODO: add silence for paragraph breaks
     text = re.sub(r'([^\.])\n\n', r'\1. ', text)
     text = re.sub(r' +\. +', '. ', text)
     text = re.sub(r'[ \n]+', ' ', text)
+    text = text.strip()
     sentences = sent_tokenize(text)
-    for sentence in sentences:
-        sentence = sentence.strip()
+    sentence = ""
+    for next_sentence in sentences:
+        if len(sentence) + len(next_sentence) < min_length:
+            sentence += next_sentence
+            continue
+        elif sentence:
+            chunks.append(sentence)
+        sentence = next_sentence
         if len(sentence) > max_length:
             fragments = re.findall(r'[,;\.\-]', sentence)
             next_chunk = ''
             for fragment in fragments:
                 if len(fragment) > max_length:
+                    if next_chunk:
+                        chunks.append(next_chunk)
                     lines = wrap(text=fragment, width=max_length)
                     chunks.extend(lines)
+                    next_chunk = ''
+                elif len(next_chunk) + len(fragment) > max_length:
+                    chunks.append(next_chunk)
+                    next_chunk = fragment
                 else:
-                    if len(next_chunk) + len(fragment) > max_length:
-                        chunks.append(next_chunk)
-                        next_chunk = fragment
-                    else:
-                        next_chunk += fragment
+                    next_chunk += fragment
         else:
             chunks.append(sentence)
     return chunks

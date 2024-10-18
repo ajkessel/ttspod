@@ -6,7 +6,7 @@ try:
 except ImportError:
     pass
 try:
-    from warnings import simplefilter  # disable coqui future warnings
+    from warnings import simplefilter
     from contextlib import redirect_stdout, redirect_stderr
     from glob import glob
     from os import path, environ as env

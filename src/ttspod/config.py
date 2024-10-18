@@ -13,7 +13,6 @@ try:
     from os import chmod, path, environ as e, getcwd
     from pathlib import Path
     from posixpath import join as posix_join
-    from warnings import filterwarnings
     import re
 except ImportError as e:
     print(
@@ -23,36 +22,9 @@ except ImportError as e:
 
 # TTSPod modules
 from logger import Logger
-from util import fix_path
+from util import fix_path, check_engines
 
-# optional modules - disable linting since we are checking if modules exist
-# pylint: disable=unused-import
-ENGINES = {}
-try:
-    from elevenlabs.client import ElevenLabs
-    from elevenlabs import save
-    ENGINES['eleven'] = True
-except ImportError:
-    pass
-try:
-    from whisperspeech.pipeline import Pipeline
-    ENGINES['whisper'] = True
-except ImportError:
-    pass
-try:
-    from TTS.api import TTS
-    ENGINES['coqui'] = True
-except ImportError:
-    pass
-try:
-    from openai import OpenAI
-    # necessary for OpenAI TTS streaming
-    filterwarnings("ignore", category=DeprecationWarning)
-    ENGINES['openai'] = True
-except ImportError:
-    pass
-# pylint: enable=unused-import
-
+ENGINES = check_engines()
 
 class Config(object):
     """configuration settings"""
@@ -147,6 +119,8 @@ class Config(object):
                 'ttspod_whisper_s2a_model',
                 'whisperspeech/whisperspeech:s2a-q4-hq-fast-en+pl.model')
             self.voice = e.get('ttspod_voice')
+            if self.voice:
+                self.voice = path.expanduser(self.voice)
             self.model = e.get(
                 'ttspod_model', 'xtts')
             self.language = e.get('ttspod_language')

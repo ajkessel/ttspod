@@ -80,13 +80,6 @@ Changelog = "https://github.com/ajkessel/ttspod/commits/main/"
 [tool.setuptools]
 include-package-data = true
 
-[tool.setuptools.packages.find]
-where = [ "src", "examples" ]
-
-[tool.setuptools.package-data]
-src = [ "*.py" ]
-examples = ["dotenv.env"]
-
 [project.scripts]
 "ttspod" = "ttspod.cli:main"
 "generate_samples" = "ttspod.generate_samples:main"

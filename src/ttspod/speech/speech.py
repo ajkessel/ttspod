@@ -23,37 +23,9 @@ except ImportError as e:
 
 # TTSPod modules
 from logger import Logger
-from paid import Paid
+from util import check_engines
 
-# optional generator modules
-ENGINES = {}
-# pylint: disable=unused-import
-# pylint: disable=ungrouped-imports
-try:
-    from openai import OpenAI
-    # necessary for OpenAI TTS streaming
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    ENGINES['openai'] = True
-except ImportError:
-    pass
-try:
-    from elevenlabs.client import ElevenLabs
-    from elevenlabs import save
-    ENGINES['eleven'] = True
-except ImportError:
-    pass
-try:
-    from whisper import Whisper
-    ENGINES['whisper'] = True
-except ImportError:
-    pass
-try:
-    from coqui import Coqui
-    ENGINES['coqui'] = True
-except ImportError as e:
-    pass
-# pylint: enable=unused-import
-# pylint: enable=ungrouped-imports
+ENGINES = check_engines()
 
 
 class Speech(object):
@@ -69,13 +41,20 @@ class Speech(object):
         self.final_path = config.final_path
         match self.config.engine.lower():
             case "openai" if "openai" in ENGINES:
+                from paid import Paid
                 self.tts = Paid(config=self.config, log=self.log)
             case "eleven" if "eleven" in ENGINES:
+                from paid import Paid
                 self.tts = Paid(config=self.config, log=self.log)
             case "whisper" if "whisper" in ENGINES:
+                from whisper import Whisper
                 self.tts = Whisper(config=self.config, log=self.log)
             case "coqui" if "coqui" in ENGINES:
+                from coqui import Coqui
                 self.tts = Coqui(config=self.config, log=self.log)
+            case "f5" if "f5" in ENGINES:
+                from f5 import F5
+                self.tts = F5(config=self.config, log=self.log)
             case _:
                 raise ValueError('TTS engine not configured')
 
