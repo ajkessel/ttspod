@@ -179,6 +179,7 @@ class F5:
         generated_waves = []
 
         for i, gen_text in enumerate(tqdm.tqdm(gen_text_batches)):
+            self.log.write(f'Chunk {i}: {gen_text}',log_level=3)
             if len(ref_text[-1].encode('utf-8')) == 1:
                 ref_text = ref_text + " "
             final_text_list = [ref_text + gen_text]
