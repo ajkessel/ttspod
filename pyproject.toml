@@ -1,9 +1,13 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools >= 61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 version = {attr = "src.ttspod.version.__version__"}  # any module attribute compatible with ast.literal_eval
+
+[tool.setuptools]
+packages = ['src']
+include-package-data = true
 
 [project]
 name = "ttspod"
@@ -77,8 +81,6 @@ Repository = "https://github.com/ajkessel/ttspod"
 Issues = "https://github.com/ajkessel/ttspod/issues"
 Changelog = "https://github.com/ajkessel/ttspod/commits/main/"
 
-[tool.setuptools]
-include-package-data = true
 
 [project.scripts]
 "ttspod" = "ttspod.cli:main"
