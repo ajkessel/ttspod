@@ -3,11 +3,19 @@ requires = ["setuptools >= 61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = {attr = "src.ttspod.version.__version__"}  # any module attribute compatible with ast.literal_eval
+version = {attr = "ttspod.version.__version__"}  
 
-[tool.setuptools]
-packages = ['src']
-include-package-data = true
+#[tool.setuptools]
+#packages = ['ttspod']
+#include-package-data = true
+
+#[tool.setuptools.package-data]
+#ttspod = ['*.wav']
+#[tool.setuptools.packages.find]
+#where = ["src"]
+#
+#[tool.setuptools.package-data]
+#ttspod = ['src/ttspod/*']
 
 [project]
 name = "ttspod"
@@ -80,7 +88,6 @@ Documentation = "https://github.com/ajkessel/ttspod/blob/main/README.md"
 Repository = "https://github.com/ajkessel/ttspod"
 Issues = "https://github.com/ajkessel/ttspod/issues"
 Changelog = "https://github.com/ajkessel/ttspod/commits/main/"
-
 
 [project.scripts]
 "ttspod" = "ttspod.cli:main"
