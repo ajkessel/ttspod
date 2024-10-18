@@ -14,7 +14,6 @@ try:
     from time import time
     import unicodedata
     import uuid
-    import warnings
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
@@ -39,6 +38,7 @@ class Speech(object):
         self.config = config
         self.config.nltk = False
         self.final_path = config.final_path
+        # pylint: disable=import-outside-toplevel
         match self.config.engine.lower():
             case "openai" if "openai" in ENGINES:
                 from paid import Paid
@@ -57,7 +57,7 @@ class Speech(object):
                 self.tts = F5(config=self.config, log=self.log)
             case _:
                 raise ValueError('TTS engine not configured')
-
+        # pylint: enable=import-outside-toplevel
     def slugify(self, value):
         """convert an arbitrary string to a valid filename"""
         value = str(value)
