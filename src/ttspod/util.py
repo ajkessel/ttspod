@@ -130,6 +130,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
                     next_chunk += fragment
         else:
             chunks.append(sentence)
+        sentence = ""
     return chunks
 
 

@@ -152,7 +152,7 @@ class F5:
                 'No voice found, using default voice instead.', error=False, log_level=2)
             voice = files('ttspod').joinpath('data', 'sample.wav')
         self.log.write(f'Using voice: {voice}.')
-        assert not path.exists(voice)  # some voice must be specified
+        assert path.exists(voice)  # some voice must be specified
         (self.ref_audio, self.ref_text) = process_voice(voice)
         self.audio, self.sr = torchaudio.load(self.ref_audio)
         self.max_chars = int(len(self.ref_text.encode('utf-8')) /
