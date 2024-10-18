@@ -26,6 +26,7 @@ from util import fix_path, check_engines
 
 ENGINES = check_engines()
 
+
 class Config(object):
     """configuration settings"""
     class Content(object):
@@ -130,6 +131,7 @@ class Config(object):
             if not self.engine:
                 self.engine = 'coqui'
             # TODO: some more TTS engine validation
+            self.log.write(f'Available TTS engines are: {ENGINES}.', log_level=2)
             if not self.engine in ENGINES:
                 self.log.write(f'TTS engine {self.engine} selected but not available.\n'
                                f'Available engines are: {ENGINES}\n'

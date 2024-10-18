@@ -41,6 +41,7 @@ make_venv() {
   printf "Installing ttspod%s and dependencies.\n" "${add_on}"
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
+  [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/SWivid/F5-TTS.git@refs/pull/151/merge
   return 0
 }
 download_tortoise_voices() {

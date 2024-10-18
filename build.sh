@@ -21,16 +21,7 @@ if [ ! $(python -c 'import pkgutil; print(1 if pkgutil.find_loader("twine") else
 then 
   uv pip install twine
 fi
-current_version=$(cat version|grep '[0-9\.]*')
-if [ -z "${current_version}" ]
-then
-  echo "Current version could not be read. Exiting."
-  exit 1
-fi
-new_version=$(echo "${current_version}" | awk -F. -v OFS=. '{$NF += 1 ; print}')
-echo "building new version ${new_version}"
-echo "${new_version}" > version
-sed -i "s/^__version__.*/__version__ = '$(cat version)'/gi" ./src/ttspod/version.py
+./bump_version.sh
 python3 -m build --sdist
 if [ "$?" != "0" ]
 then
