@@ -9,6 +9,7 @@ except ImportError:
 # standard modules
 try:
     from dotenv import load_dotenv
+    from importlib.resources import files
     from inspect import getsourcefile
     from os import chmod, path, environ as e, getcwd
     from pathlib import Path
@@ -106,6 +107,7 @@ class Config(object):
             self.debug = debug
             self.gpu = gpu
             self.engine = engine if engine else e.get('ttspod_engine', '')
+            self.engine = self.engine.lower()
             self.eleven_api_key = e.get('ttspod_eleven_api_key')
             self.eleven_voice = e.get('ttspod_eleven_voice', 'Daniel')
             self.eleven_model = e.get(
@@ -124,6 +126,12 @@ class Config(object):
                 self.voice = path.expanduser(self.voice)
             self.model = e.get(
                 'ttspod_model', 'xtts')
+            self.model = self.model.lower()
+            if not self.voice or self.voice and not path.exists(self.voice):
+                if self.engine == 'coqui' and self.model == 'xtts':
+                    self.voice = 'Daisy Studious'
+                else:
+                    self.voice = files('ttspod').joinpath('data', 'sample.wav')
             self.language = e.get('ttspod_language')
             self.max_workers = max_workers
             self.temp_path = fix_path(temp_path, True)
@@ -131,7 +139,12 @@ class Config(object):
             if not self.engine:
                 self.engine = 'coqui'
             # TODO: some more TTS engine validation
-            self.log.write(f'Available TTS engines are: {ENGINES}.', log_level=2)
+            self.log.write(
+                f'Available TTS engines are: {ENGINES}.', log_level=3)
+            self.log.write(
+                f'TTS settings: engine {self.engine} / model {self.model} / voice {self.voice}',
+                log_level=2
+            )
             if not self.engine in ENGINES:
                 self.log.write(f'TTS engine {self.engine} selected but not available.\n'
                                f'Available engines are: {ENGINES}\n'

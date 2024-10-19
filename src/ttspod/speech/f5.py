@@ -159,7 +159,7 @@ class F5:
         self.ema_model = load_model(MODEL, "F5TTS_Base", DiT,
                                     F5TTS_model_cfg, 1200000)
 
-    def infer_batch(self, ref_audio, ref_text, gen_text_batches, cross_fade_duration=0.15):
+    def infer_batch(self, ref_audio, ref_text, gen_text_batches):
         """workhorse inference function"""
         audio, sr = ref_audio
 
@@ -191,7 +191,6 @@ class F5:
 
             # Calculate duration
             ref_audio_len = audio.shape[-1] // HOP_LENGTH
-            # punctuation = r"。，、；：？！"
             punctuation = re.compile(r'[,\.\?\-;:!。，、；：？！]')
             ref_text_len = len(ref_text.encode('utf-8')) + 3 * \
                 len(re.findall(punctuation, ref_text))
@@ -216,48 +215,7 @@ class F5:
                 generated_wave = generated_wave * rms / TARGET_RMS
             generated_wave = generated_wave.squeeze().cpu().numpy()
             generated_waves.append(generated_wave)
-
-        # Combine all generated waves with cross-fading
-        cross_fade_duration = 0
-        if cross_fade_duration <= 0:
-            # Simply concatenate
-            final_wave = np.concatenate(generated_waves)
-        else:
-            final_wave = generated_waves[0]
-            for i in range(1, len(generated_waves)):
-                prev_wave = final_wave
-                next_wave = generated_waves[i]
-
-                # Calculate cross-fade samples, ensuring it does not exceed wave lengths
-                cross_fade_samples = int(cross_fade_duration * SAMPLE_RATE)
-                cross_fade_samples = min(
-                    cross_fade_samples, len(prev_wave), len(next_wave))
-
-                if cross_fade_samples <= 0:
-                    # No overlap possible, concatenate
-                    final_wave = np.concatenate([prev_wave, next_wave])
-                    continue
-
-                # Overlapping parts
-                prev_overlap = prev_wave[-cross_fade_samples:]
-                next_overlap = next_wave[:cross_fade_samples]
-
-                # Fade out and fade in
-                fade_out = np.linspace(1, 0, cross_fade_samples)
-                fade_in = np.linspace(0, 1, cross_fade_samples)
-
-                # Cross-faded overlap
-                cross_faded_overlap = prev_overlap * fade_out + next_overlap * fade_in
-
-                # Combine
-                new_wave = np.concatenate([
-                    prev_wave[:-cross_fade_samples],
-                    cross_faded_overlap,
-                    next_wave[cross_fade_samples:]
-                ])
-
-                final_wave = new_wave
-
+        final_wave = np.concatenate(generated_waves)
         return final_wave
 
     def convert(self, text="", output_file=None):
@@ -265,7 +223,7 @@ class F5:
         chunks = chunk(text=text, min_length=round(
             self.max_chars/2), max_length=self.max_chars)
         result = self.infer_batch(
-            (self.audio, self.sr), self.ref_text, chunks, 0.15)
+            (self.audio, self.sr), self.ref_text, chunks)
         if output_file:
             try:
                 f = open(output_file, "wb")
