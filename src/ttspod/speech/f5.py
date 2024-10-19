@@ -165,9 +165,16 @@ class F5:
     def infer_batch(self, ref_audio, ref_text, gen_text_batches, cross_fade_duration=0.15):
         """workhorse inference function"""
         audio, sr = ref_audio
+        
+        if not ref_text.endswith(". ")
+            if ref_text.endswith("."):
+                ref_text += " "
+            else:
+                ref_text += ". "
+        
         if audio.shape[0] > 1:
             audio = torch.mean(audio, dim=0, keepdim=True)
-
+            
         rms = torch.sqrt(torch.mean(torch.square(audio)))
         if rms < TARGET_RMS:
             audio = audio * TARGET_RMS / rms
@@ -186,7 +193,7 @@ class F5:
 
             # Calculate duration
             ref_audio_len = audio.shape[-1] // HOP_LENGTH
-            punctuation = r"。，、；：？！."
+            punctuation = r"。，、；：？！"
             ref_text_len = len(ref_text.encode('utf-8')) + 3 * \
                 len(re.findall(punctuation, ref_text))
             gen_text_len = len(gen_text.encode('utf-8')) + 3 * \
