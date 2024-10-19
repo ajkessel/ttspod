@@ -166,7 +166,7 @@ class F5:
         """workhorse inference function"""
         audio, sr = ref_audio
         
-        if not ref_text.endswith(". ")
+        if not ref_text.endswith(". "):
             if ref_text.endswith("."):
                 ref_text += " "
             else:
