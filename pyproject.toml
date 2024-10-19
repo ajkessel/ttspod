@@ -5,18 +5,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = {attr = "ttspod.version.__version__"}  
 
-#[tool.setuptools]
-#packages = ['ttspod']
-#include-package-data = true
-
-#[tool.setuptools.package-data]
-#ttspod = ['*.wav']
-#[tool.setuptools.packages.find]
-#where = ["src"]
-#
-#[tool.setuptools.package-data]
-#ttspod = ['src/ttspod/*']
-
 [project]
 name = "ttspod"
 dynamic = ["version"]
