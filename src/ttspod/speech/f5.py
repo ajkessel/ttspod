@@ -14,7 +14,7 @@ try:
     from f5_tts.model.utils import (get_tokenizer, load_checkpoint)
     from glob import glob
     from os import path, environ as env
-    # from platform import processor
+    from platform import processor
     from pprint import pprint
     from pydub import AudioSegment, silence
     from transformers import pipeline, pytorch_utils
@@ -56,8 +56,7 @@ SPEED = 1.0
 
 if torch.cuda.is_available():
     DEVICE = "cuda"
-elif torch.backends.mps.is_available():
-    # elif torch.backends.mps.is_available() and processor() != 'i386':
+elif torch.backends.mps.is_available() and processor() != 'i386':
     DEVICE = 'mps'
     env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
     pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
@@ -209,8 +208,7 @@ class F5:
                     cfg_strength=CFG_STRENGTH,
                     sway_sampling_coef=SWAY_SAMPLING_COEF,
                 )
-            # TODO: not sure why the +1 is necessary here but it seems to avoid problems
-            generated = generated[:, ref_audio_len+1:, :]
+            generated = generated[:, ref_audio_len:, :]
             generated_mel_spec = rearrange(generated, "1 n d -> 1 d n")
             generated_wave = self.vocos.decode(generated_mel_spec.cpu())
             if rms < TARGET_RMS:
