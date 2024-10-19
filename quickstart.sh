@@ -92,7 +92,7 @@ mac_install() {
   fi
   if pip freeze | grep -q transformers; then
     echo 'Installing modified transformers for Mac MPS support.'
-    pip install git+https://github.com/ajkessel/transformers@v4.42.4a
+    pip3 install git+https://github.com/ajkessel/transformers@v4.42.4a
   fi
   footer
   return 0
@@ -175,7 +175,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
     source "${tts_path}/activate"
     check_optional add_on
     echo "installing ttspod${add_on} -U"
-    if ! pip install "ttspod${add_on}" -U
+    if ! pip3 install "ttspod${add_on}" -U
     then
       printf "Something went wrong.\n"
       exit 1
@@ -184,6 +184,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
     then
       printf "Something went wrong.\n"
     fi
+    [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/SWivid/F5-TTS.git@refs/pull/151/merge
     printf "Update complete.\n"
     extras
     exit 0
