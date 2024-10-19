@@ -276,23 +276,23 @@ class F5:
 
 
 if __name__ == "__main__":
-    # f5 = F5()
-    # print("This is the TTSPod F5 TTS module."
-    #       "It is not intended to run separately except for debugging.")
-    # pprint(vars(f5))
-    # pprint(dir(f5))
+    f5 = F5()
+    print("This is the TTSPod F5 TTS module."
+          "It is not intended to run separately except for debugging.")
+    pprint(vars(f5))
+    pprint(dir(f5))
     # pylint: disable=line-too-long
-    TEXT = """A Hare was making fun of the tortoise one day for being so slow.
-    Do you ever get anywhere? he asked with a mocking laugh.
-    Yes, replied the tortoise, and I get there sooner than you think. I'll run you a race and prove it.
-    The Hare was much amused at the idea of running a race with the tortoise, but for the fun of the thing he agreed.
-    So the Fox, who had consented to act as judge, marked the distance and started the runners off.
-    The Hare was soon far out of sight, and to make the tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the tortoise should catch up.
-    The tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the tortoise in time.
-    """
-    from time import time
-    f5 = F5(voice='/home/adam/ttspod/working/voices/it/short.wav')
-    start_time = time()
-    f5.convert(text=TEXT, output_file="f5-test.mp3")
-    elapsed_time = round(time()-start_time)
-    print(f'Elapsed time: {elapsed_time}.\n')
+    # TEXT = """A Hare was making fun of the tortoise one day for being so slow.
+    # Do you ever get anywhere? he asked with a mocking laugh.
+    # Yes, replied the tortoise, and I get there sooner than you think. I'll run you a race and prove it.
+    # The Hare was much amused at the idea of running a race with the tortoise, but for the fun of the thing he agreed.
+    # So the Fox, who had consented to act as judge, marked the distance and started the runners off.
+    # The Hare was soon far out of sight, and to make the tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the tortoise should catch up.
+    # The tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the tortoise in time.
+    # """
+    # from time import time
+    # f5 = F5()
+    # start_time = time()
+    # f5.convert(text=TEXT, output_file="f5-test.mp3")
+    # elapsed_time = round(time()-start_time)
+    # print(f'Elapsed time: {elapsed_time}.\n')
