@@ -14,12 +14,10 @@ try:
     from f5_tts.model.utils import (get_tokenizer, load_checkpoint)
     from glob import glob
     from os import path, environ as env
-    # from os import environ as env
-    # from pathlib import Path
     # from platform import processor
     from pprint import pprint
     from pydub import AudioSegment, silence
-    from transformers import pipeline  # , pytorch_utils
+    from transformers import pipeline, pytorch_utils
     from vocos import Vocos
     import numpy as np
     import re
@@ -36,7 +34,7 @@ except ImportError as e:
 
 # ttspod modules
 from logger import Logger
-from util import chunk  # , patched_isin_mps_friendly
+from util import chunk, patched_isin_mps_friendly
 
 simplefilter(action='ignore', category=FutureWarning)
 
@@ -62,7 +60,7 @@ elif torch.backends.mps.is_available():
     # elif torch.backends.mps.is_available() and processor() != 'i386':
     DEVICE = 'mps'
     env["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-    # pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
+    pytorch_utils.isin_mps_friendly = patched_isin_mps_friendly
 
 # cspell: disable
 if "cuda" in DEVICE and torch.cuda.get_device_name().endswith("[ZLUDA]"):
@@ -165,16 +163,16 @@ class F5:
     def infer_batch(self, ref_audio, ref_text, gen_text_batches, cross_fade_duration=0.15):
         """workhorse inference function"""
         audio, sr = ref_audio
-        
+
         if not ref_text.endswith(". "):
             if ref_text.endswith("."):
                 ref_text += " "
             else:
                 ref_text += ". "
-        
+
         if audio.shape[0] > 1:
             audio = torch.mean(audio, dim=0, keepdim=True)
-            
+
         rms = torch.sqrt(torch.mean(torch.square(audio)))
         if rms < TARGET_RMS:
             audio = audio * TARGET_RMS / rms
@@ -211,8 +209,8 @@ class F5:
                     cfg_strength=CFG_STRENGTH,
                     sway_sampling_coef=SWAY_SAMPLING_COEF,
                 )
-
-            generated = generated[:, ref_audio_len:, :]
+            # TODO: not sure why the +1 is necessary here but it seems to avoid problems
+            generated = generated[:, ref_audio_len+1:, :]
             generated_mel_spec = rearrange(generated, "1 n d -> 1 d n")
             generated_wave = self.vocos.decode(generated_mel_spec.cpu())
             if rms < TARGET_RMS:

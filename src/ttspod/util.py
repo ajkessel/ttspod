@@ -131,7 +131,8 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
             else:
                 chunks.append(sentence.strip())
             sentence = next_sentence
-        chunks.append(next_sentence)
+        if next_sentence:
+            chunks.append(next_sentence)
     else:
         chunks.append(sentence)
     return chunks
