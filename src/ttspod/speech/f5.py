@@ -132,7 +132,7 @@ def load_model(repo_name, exp_name, model_cls, model_cfg, ckpt_step):
 class F5:
     """F5 TTS generator"""
 
-    def __init__(self, config=None, log=None, voice=None) -> None:
+    def __init__(self, config=None, log=None, voice="") -> None:
         self.log = log if log else Logger(debug=True)
         self.log.write('F5 TTS initializing.')
         if not voice and isinstance(config, object) and getattr(config, 'voice', ''):
@@ -169,6 +169,9 @@ class F5:
             else:
                 ref_text += ". "
 
+        if len(ref_text[-1].encode('utf-8')) == 1:
+            ref_text = ref_text + " "
+
         if audio.shape[0] > 1:
             audio = torch.mean(audio, dim=0, keepdim=True)
 
@@ -184,20 +187,20 @@ class F5:
 
         for i, gen_text in enumerate(tqdm.tqdm(gen_text_batches)):
             self.log.write(f'Chunk {i}: {gen_text}', log_level=3)
-            if len(ref_text[-1].encode('utf-8')) == 1:
-                ref_text = ref_text + " "
             final_text_list = [ref_text + gen_text]
 
             # Calculate duration
             ref_audio_len = audio.shape[-1] // HOP_LENGTH
-            punctuation = r"。，、；：？！"
+            # punctuation = r"。，、；：？！"
+            punctuation = re.compile(r'[,\.\?\-;:!。，、；：？！]')
             ref_text_len = len(ref_text.encode('utf-8')) + 3 * \
                 len(re.findall(punctuation, ref_text))
             gen_text_len = len(gen_text.encode('utf-8')) + 3 * \
                 len(re.findall(punctuation, gen_text))
             duration = ref_audio_len + \
                 int(ref_audio_len / ref_text_len * gen_text_len / SPEED)
-
+            print(
+                f'ref_text_len {ref_text_len} gen_text_len {gen_text_len} duration {duration}')
             # inference
             with torch.inference_mode():
                 generated, _ = self.ema_model.sample(
@@ -217,6 +220,7 @@ class F5:
             generated_waves.append(generated_wave)
 
         # Combine all generated waves with cross-fading
+        cross_fade_duration = 0
         if cross_fade_duration <= 0:
             # Simply concatenate
             final_wave = np.concatenate(generated_waves)
@@ -288,4 +292,9 @@ if __name__ == "__main__":
     # The Hare was soon far out of sight, and to make the tortoise feel very deeply how ridiculous it was for him to try a race with a Hare, he lay down beside the course to take a nap until the tortoise should catch up.
     # The tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the tortoise in time.
     # """
+    # from time import time
+    # f5 = F5(voice='/home/adam/ttspod/working/voices/it/short.wav')
+    # start_time = time()
     # f5.convert(text=TEXT, output_file="f5-test.mp3")
+    # elapsed_time = round(time()-start_time)
+    # print(f'Elapsed time: {elapsed_time}.\n')
