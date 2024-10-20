@@ -77,14 +77,15 @@ def process_voice(ref_audio_orig, ref_text=""):
 
         non_silent_segments = silence.split_on_silence(
             audio_clip, min_silence_len=1000, silence_thresh=-50, keep_silence=1000)
-        non_silent_wave = AudioSegment.silent(duration=0)
+        audio_clip = AudioSegment.silent(duration=0)
         for non_silent_segment in non_silent_segments:
-            non_silent_wave += non_silent_segment
-        audio_clip = non_silent_wave
+            audio_clip += non_silent_segment
+            if len(audio_clip) > 15000:
+                break
 
         audio_duration = len(audio_clip)
-        if audio_duration > 15000:
-            audio_clip = audio_clip[:15000]
+        if audio_duration > 20000:
+            audio_clip = audio_clip[:20000]
         audio_clip.export(f.name, format="wav")
         ref_audio = f.name
 
@@ -151,6 +152,7 @@ class F5:
         self.log.write(f'Using voice: {voice}.')
         assert path.exists(voice)  # some voice must be specified
         (self.ref_audio, self.ref_text) = process_voice(voice)
+        self.log.write(f'Transcribed {self.ref_audio} to {self.ref_text}.',log_level=3)
         self.audio, self.sr = torchaudio.load(self.ref_audio)
         self.max_chars = int(len(self.ref_text.encode('utf-8')) /
                              (self.audio.shape[-1] / self.sr) *
@@ -186,7 +188,7 @@ class F5:
         generated_waves = []
 
         for i, gen_text in enumerate(tqdm.tqdm(gen_text_batches)):
-            self.log.write(f'Chunk {i}: {gen_text}', log_level=3)
+            self.log.write(f'Chunk {i+1} of {len(gen_text_batches)}: {gen_text}', log_level=3)
             final_text_list = [ref_text + gen_text]
 
             # Calculate duration
@@ -249,7 +251,7 @@ if __name__ == "__main__":
     # The tortoise meanwhile kept going slowly but steadily, and, after a time, passed the place where the Hare was sleeping. But the Hare slept on very peacefully; and when at last he did wake up, the tortoise was near the goal. The Hare now ran his swiftest, but he could not overtake the tortoise in time.
     # """
     # from time import time
-    # f5 = F5()
+    # f5 = F5(voice='/home/adam/ttspod/working/voices/british-reader/british-reader.wav')
     # start_time = time()
     # f5.convert(text=TEXT, output_file="f5-test.mp3")
     # elapsed_time = round(time()-start_time)
