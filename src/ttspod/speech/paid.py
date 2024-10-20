@@ -13,9 +13,7 @@ try:
     from pydub import AudioSegment
     from sys import maxsize
     from traceback import format_exc
-    import nltk
     import os
-    import spacy
     import textwrap
     import warnings
 except ImportError as e:
@@ -39,6 +37,7 @@ except ImportError:
 
 # ttspod modules
 from logger import Logger
+from util import get_spacy
 
 MAX_LENGTH = 4096  # hardcoded maximum value for API-based TTS
 OPENAI_MODEL = 'tts-1'
@@ -62,7 +61,7 @@ class Paid:
             self.c = vars(config)
         else:
             self.c = { }
-        self.nlp = self.get_spacy()
+        self.nlp = get_spacy()
         self.engine = engine if engine else self.c.get('engine','')
         self.oai_key = openai_key if openai_key else self.c.get('openai_api_key','')
         self.el_key = eleven_key if eleven_key else self.c.get('eleven_api_key','')
@@ -81,32 +80,11 @@ class Paid:
                 self.tts = None
                 self.log.write(f'no valid paid TTS engine specified: {self.engine}')
 
-    def get_spacy(self):
-        """retrieve model for spacy tokenizer"""
-        nlp = None
-        try:
-            if not spacy.util.is_package("en_core_web_lg"):
-                self.log.write('downloading spacy language model')
-                spacy.cli.download("en_core_web_lg")
-            nlp = spacy.load("en_core_web_lg")
-            nlp.add_pipe('sentencizer')
-            nltk.data.find('tokenizers/punkt_tab')
-            self.log.write("nltk found and activated")
-            self.nltk = True
-        except LookupError:
-            try:
-                nltk.download('punkt_tab')
-                self.log.write("nltk punkt_tab downloaded")
-                self.nltk = True
-            except Exception:  # pylint: disable=broad-except
-                self.log.write("nltk loading failed")
-        return nlp
-
     def segmentize(self, text):
         """ break arbitrary input text of segments of MAX_LENGTH or less"""
-        if self.nltk:
+        try:
             paragraphs = BlanklineTokenizer().tokenize(text)
-        else:
+        except Exception: # pylint: disable=broad-except
             paragraphs = text.split('\n\n')
         segments = []
 

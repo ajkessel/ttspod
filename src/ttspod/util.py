@@ -11,7 +11,8 @@ try:
     from html2text import html2text
     from importlib import reload
     from importlib.util import find_spec
-    from nltk import sent_tokenize
+    import spacy
+    import enchant
     from os import path
     from platform import platform
     from pypandoc import convert_text
@@ -29,6 +30,8 @@ except ImportError as e:
 import version
 
 OS = None
+DICTIONARY = enchant.Dict("en_US")
+
 my_platform = platform().lower()
 if "windows" in my_platform:
     try:
@@ -88,6 +91,16 @@ def check_engines() -> dict:
     return ENGINES
 
 
+def get_spacy():
+    """retrieve model for spacy tokenizer"""
+    nlp = None
+    if not spacy.util.is_package("en_core_web_lg"):
+        spacy.cli.download("en_core_web_lg")
+    nlp = spacy.load("en_core_web_lg")
+    nlp.add_pipe('sentencizer')
+    return nlp
+
+
 def chunk(text=None, min_length=0, max_length=250) -> list[str]:
     """
     chunk text into segments for speechifying
@@ -98,43 +111,50 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
     assert min_length < max_length, \
         "Invalid arguments given to chunk function:" \
         "minimum {min_length} is greater than maximum {max_length}."
-    chunks = []
+
     # TODO: add silence for paragraph breaks
     text = re.sub(r'([^\.])\n\n', r'\1. ', text)
     text = re.sub(r' +\. +', '. ', text)
     text = re.sub(r'[ \n]+', ' ', text)
     text = text.strip()
-    sentences = sent_tokenize(text)
+    nlp = get_spacy()
+    doc = nlp(text)
+    sentences = [sent.text.strip() for sent in doc.sents]
     if not sentences:
         return []
+    chunks = []
     sentence = sentences[0]
+    next_sentence = ''
     if len(sentences) > 1:
-        for i, next_sentence in enumerate(sentences[1:]):
-            if len(sentence) + len(next_sentence) < min_length and i+2 < len(sentences):
+        sentences = sentences[1:]
+        for next_sentence in sentences:
+            if re.match(r'^ *[A-Za-z\.]{,3} *$', next_sentence):
+                continue
+            if len(sentence) + len(next_sentence) <= min_length:
                 sentence += f' {next_sentence}'
                 continue
-            if len(sentence) > max_length:
-                fragments = re.findall(r'[,;\.\-]', sentence)
-                next_chunk = ''
-                for fragment in fragments:
-                    if len(fragment) > max_length:
-                        if next_chunk:
-                            chunks.append(next_chunk)
-                        lines = wrap(text=fragment, width=max_length)
-                        chunks.extend(lines)
-                        next_chunk = ''
-                    elif len(next_chunk) + len(fragment) > max_length:
-                        chunks.append(next_chunk.strip())
-                        next_chunk = fragment
-                    else:
-                        next_chunk += fragment
-            else:
-                chunks.append(sentence.strip())
+            if len(sentence) <= max_length:
+                chunks.append(sentence)
+                sentence = next_sentence
+                continue
+            fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?]', sentence)
+            fragment = ''
+            for next_fragment in fragments:
+                if len(fragment) + len(next_fragment) <= max_length:
+                    fragment += next_fragment
+                    continue
+                if len(fragment) <= max_length:
+                    chunks.append(fragment)
+                    fragment = next_fragment
+                    continue
+                chunks.append(fragment)
+                fragment=next_fragment
+                # lines = wrap(text=fragment, width=max_length) TODO: extra long fragments
+                # chunks.extend(lines)
+            chunks.append(fragment)
             sentence = next_sentence
-        if next_sentence:
-            chunks.append(next_sentence)
-    else:
         chunks.append(sentence)
+    chunks = [x for x in chunks if len(x.strip()) > 0]
     return chunks
 
 
@@ -260,11 +280,19 @@ def clean_text(text):
     text = re.sub(r'mailto:[^ ]*', '', text)
     text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
         '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
-    text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\']', ' ', text)
+    text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', text)
     text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
     text = re.sub(r'\n\n+', '\n\n', text)
     text = re.sub(r' +', ' ', text)
     text = unidecode(text.strip())
+    all_caps_words = re.findall(r'[A-Z]{2,15}', text)
+    try:
+        for word in all_caps_words:
+            if DICTIONARY.check(word):
+                replacement = word.lower()
+                text = text.replace(word, replacement)
+    except Exception:  # pylint: disable=broad-except
+        pass
     return text
 
 
