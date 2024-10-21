@@ -20,7 +20,6 @@ try:
     from transformers import pipeline, pytorch_utils
     from vocos import Vocos
     import numpy as np
-    import re
     import soundfile as sf
     import tempfile
     import torch
@@ -152,7 +151,8 @@ class F5:
         self.log.write(f'Using voice: {voice}.')
         assert path.exists(voice)  # some voice must be specified
         (self.ref_audio, self.ref_text) = process_voice(voice)
-        self.log.write(f'Transcribed {self.ref_audio} to:\n{self.ref_text}.',log_level=3)
+        self.log.write(
+            f'Transcribed {self.ref_audio} to:\n{self.ref_text}.', log_level=3)
         self.audio, self.sr = torchaudio.load(self.ref_audio)
         self.max_chars = int(len(self.ref_text.encode('utf-8')) /
                              (self.audio.shape[-1] / self.sr) *
@@ -188,16 +188,14 @@ class F5:
         generated_waves = []
 
         for i, gen_text in enumerate(tqdm.tqdm(gen_text_batches)):
-            self.log.write(f'Chunk {i+1} of {len(gen_text_batches)}: {gen_text}', log_level=3)
+            self.log.write(
+                f'Chunk {i+1} of {len(gen_text_batches)}: {gen_text}', log_level=3)
             final_text_list = [ref_text + gen_text]
 
             # Calculate duration
             ref_audio_len = audio.shape[-1] // HOP_LENGTH
-            punctuation = re.compile(r'[,\.\?\-;:!。，、；：？！]')
-            ref_text_len = len(ref_text.encode('utf-8')) + 3 * \
-                len(re.findall(punctuation, ref_text))
-            gen_text_len = len(gen_text.encode('utf-8')) + 3 * \
-                len(re.findall(punctuation, gen_text))
+            ref_text_len = len(ref_text.encode('utf-8'))
+            gen_text_len = len(gen_text.encode('utf-8'))
             duration = ref_audio_len + \
                 int(ref_audio_len / ref_text_len * gen_text_len / SPEED)
             # inference
@@ -231,7 +229,8 @@ class F5:
                 f = open(output_file, "wb")
                 sf.write(f.name, result, SAMPLE_RATE, format="mp3")
                 audio_segment = AudioSegment.from_file(output_file)
-                non_silent_segments = silence.split_on_silence(audio_segment, min_silence_len=1000, silence_thresh=-50, keep_silence=500)
+                non_silent_segments = silence.split_on_silence(
+                    audio_segment, min_silence_len=1000, silence_thresh=-50, keep_silence=500)
                 final_audio = AudioSegment.silent(duration=0)
                 for non_silent_segment in non_silent_segments:
                     final_audio += non_silent_segment

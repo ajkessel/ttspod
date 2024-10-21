@@ -17,7 +17,7 @@ try:
     from platform import platform
     from pypandoc import convert_text
     from sys import executable
-    from textwrap import wrap
+    #from textwrap import wrap
     from unidecode import unidecode
     import re
     import subprocess
@@ -140,7 +140,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
             fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?]', sentence)
             fragment = ''
             for next_fragment in fragments:
-                if len(fragment) + len(next_fragment) <= max_length:
+                if len(next_fragment) < 10 or len(fragment) + len(next_fragment) <= max_length:
                     fragment += next_fragment
                     continue
                 if len(fragment) <= max_length:
@@ -148,7 +148,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
                     fragment = next_fragment
                     continue
                 chunks.append(fragment)
-                fragment=next_fragment
+                fragment = next_fragment
                 # lines = wrap(text=fragment, width=max_length) TODO: extra long fragments
                 # chunks.extend(lines)
             chunks.append(fragment)
