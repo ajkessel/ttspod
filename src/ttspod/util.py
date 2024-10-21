@@ -137,7 +137,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
                 chunks.append(sentence)
                 sentence = next_sentence
                 continue
-            fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?]', sentence)
+            fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
             fragment = ''
             for next_fragment in fragments:
                 if len(next_fragment) < 10 or len(fragment) + len(next_fragment) <= max_length:

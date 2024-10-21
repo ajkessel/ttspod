@@ -81,14 +81,13 @@ mac_install() {
   echo 'MacOS environment detected.'
   if [ "${BREW}" ]; then
     if ! brew list libmagic >/dev/null 2>&1; then
-      if yesno 'ttspod requires libmagic. Install with brew?'; then
-        brew install libmagic
-      fi
-    else
-      echo libmagic already installed
+      brew install libmagic
+    fi
+    if ! brew list enchant >/dev/null 2>&1; then
+      brew install enchant
     fi
   else
-    printf "ttspod requires libmagic, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
+    printf "ttspod requires libmagic and enchant, but could not find homebrew package manager.\nDownload from https://brew.sh/\n"
   fi
   if pip freeze | grep -q transformers; then
     echo 'Installing modified transformers for Mac MPS support.'
