@@ -43,7 +43,7 @@ dependencies = [
   'lxml',
   'lxml_html_clean',
   'nltk',
-  'numpy<2',
+  'numpy',
   'pandoc',
   'paramiko',
   'pip',
@@ -54,7 +54,7 @@ dependencies = [
   'psutil',
   'python-magic-bin; platform_system == "Windows"',
   'semaphore_win_ctypes; platform_system == "Windows"',
-  'spacy==3.7.5',
+  'spacy',
   'pydub',
   'pyenchant',
   'pymupdf',
@@ -66,7 +66,7 @@ dependencies = [
   'validators'
   ]
 [project.optional-dependencies]
-local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4']
+local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4','ctranslate2']
 remote = ['openai','elevenlabs']
 truststore = ['truststore']
 dev = ['posix_ipc; platform_system != "Windows"','semaphore_win_ctypes','build','twine']

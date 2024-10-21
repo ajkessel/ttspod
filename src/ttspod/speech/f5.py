@@ -107,6 +107,7 @@ def process_voice(ref_audio_orig, ref_text=""):
 
 def load_model(repo_name, exp_name, model_cls, model_cfg, ckpt_step):
     """load F5 TTS model"""
+    # checkpoint_path = files('f5_tts').joinpath('data','Emilia_ZH_EN_pinyin')
     checkpoint_path = str(cached_path(
         f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors"))
     vocab_char_map, vocab_size = get_tokenizer("Emilia_ZH_EN", "pinyin")
@@ -208,6 +209,7 @@ class F5:
                     cfg_strength=CFG_STRENGTH,
                     sway_sampling_coef=SWAY_SAMPLING_COEF,
                 )
+            generated = generated.to(torch.float32)
             generated = generated[:, ref_audio_len:, :]
             generated_mel_spec = rearrange(generated, "1 n d -> 1 d n")
             generated_wave = self.vocos.decode(generated_mel_spec.cpu())
