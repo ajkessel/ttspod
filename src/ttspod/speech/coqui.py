@@ -24,7 +24,8 @@ from util import chunk
 from xtts import Xtts
 from tortoise import Tortoise
 
-MODEL='xtts'
+MODEL = 'xtts'
+
 
 class Coqui:
     """coqui text to speech generator"""
@@ -40,7 +41,7 @@ class Coqui:
             else:
                 c = config
         gpu = 'gpu'
-        if c.get('gpu',1) == 0 or gpu == 0:
+        if c.get('gpu', 1) == 0 or gpu == 0:
             self.log.write('overriding GPU detection, processing on CPU')
             gpu = 'cpu'
         model = model if model else c.get('model', MODEL)
@@ -59,19 +60,21 @@ class Coqui:
             voice_name = path.basename(voice)
         match model.lower():
             case 'xtts':
-                self.tts = Xtts(config=self.config, log=self.log, voices=voices, gpu=gpu)
+                self.tts = Xtts(config=self.config,
+                                log=self.log, voices=voices, gpu=gpu)
             case 'tortoise':
-                self.tts = Tortoise(config=self.config, log=self.log, voice_dir=voice_dir, voice_name=voice_name, gpu=gpu)
+                self.tts = Tortoise(config=self.config, log=self.log,
+                                    voice_dir=voice_dir, voice_name=voice_name, gpu=gpu)
             case _:
                 raise ValueError(f'model {model} not available')
 
-
     def convert(self, text, output_file):
         """convert text input to given output_file"""
-        chunks = chunk(text,250)
-        self.log.write(f'Starting TTS generation on {len(chunks)} chunks of text.',error=False,log_level=3)
-        self.tts.generate(texts = chunks, output = output_file)
-        self.log.write(f'TTS generation completed.',error=False,log_level=3)
+        chunks = chunk(text, min_length=100, max_length=250)
+        self.log.write(
+            f'Starting TTS generation on {len(chunks)} chunks of text.', error=False, log_level=3)
+        self.tts.generate(texts=chunks, output=output_file)
+        self.log.write(f'TTS generation completed.', error=False, log_level=3)
         return output_file
 
 
