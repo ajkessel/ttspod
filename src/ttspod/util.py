@@ -17,7 +17,7 @@ try:
     from platform import platform
     from pypandoc import convert_text
     from sys import executable
-    #from textwrap import wrap
+    # from textwrap import wrap
     from unidecode import unidecode
     import re
     import subprocess
@@ -137,7 +137,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
                 chunks.append(sentence)
                 sentence = next_sentence
                 continue
-            #fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
+            # fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
             fragments = re.split(r'(?<=[,.:?])(?!\w)', sentence)
             fragment = ''
             for next_fragment in fragments:
@@ -371,7 +371,7 @@ def upgrade(force=False, debug=False) -> bool:
         )
         results += result.stdout + result.stderr
         if OS == "mac" and 'local' in options:
-            print('Installing customized transformers module for Mac...')
+            print('Installing customized transformers module for Mac github...')
             result = subprocess.run(
                 [executable, "-m", "pip", "install",
                  "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
@@ -380,6 +380,15 @@ def upgrade(force=False, debug=False) -> bool:
                 check=False
             )
             results += result.stdout + result.stderr
+        print('Installing customized F5-TTS module from github...')
+        result = subprocess.run(
+            [executable, "-m", "pip", "install",
+                "git+https://github.com/ajkessel/F5-TTS", "-U"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False
+        )
+        results += result.stdout + result.stderr
         results = results.decode('utf-8')
         lines = [x for x in results.splitlines() if x.strip() and
                  not "cache is disabled" in x.lower() and

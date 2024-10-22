@@ -11,3 +11,5 @@ dist/
 sandbox/
 working
 working/
+training/
+ckpts/
