@@ -47,6 +47,8 @@ class Coqui:
         model = model if model else c.get('model', MODEL)
         voice = voice if voice else c.get('voice')
         voices = voice
+        voice_dir = None
+        voice_name = None
         if voice:
             voice = path.expanduser(str(voice))
         if path.isfile(str(voice)):
@@ -74,7 +76,7 @@ class Coqui:
         self.log.write(
             f'Starting TTS generation on {len(chunks)} chunks of text.', error=False, log_level=3)
         self.tts.generate(texts=chunks, output=output_file)
-        self.log.write(f'TTS generation completed.', error=False, log_level=3)
+        self.log.write('TTS generation completed.', error=False, log_level=3)
         return output_file
 
 
