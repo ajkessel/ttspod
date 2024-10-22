@@ -218,13 +218,11 @@ class Content(object):
             self.log.write('detected email input')
             return self.process_email(c, title)
         title = title if title else fname
+        text = ""
         if "pdf" in buffer_type and AVAILABLE_FITZ:
             doc = pymupdf.Document(stream=c)
-            text = ""
             for page in doc:
                 text += page.get_text()
-            if text:
-                items = self.get_items(text=text, title=title)
         elif "ascii text" in buffer_type:
             text = c
         else:
@@ -251,10 +249,9 @@ class Content(object):
                                                  ])
                 except Exception:  # pylint: disable=broad-except
                     text = None
-            self.log.write(f'process_file got raw text: {text}')
-            if text:
-                items = self.get_items(text=text, title=title)
-            self.log.write(f'process_file got cleaned text: {text}')
+        self.log.write(f'process_file got cleaned text: {text}')
+        if text:
+            items = self.get_items(text=text, title=title)
         return items
 
     def get_items(self, text, title=None):
