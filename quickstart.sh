@@ -41,7 +41,7 @@ make_venv() {
   printf "Installing ttspod%s and dependencies.\n" "${add_on}"
   # shellcheck disable=SC2154
   pip3 install "ttspod${add_on}"
-  [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/rsxdalv/F5-TTS.git
+  [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/ajkessel/F5-TTS.git
   return 0
 }
 download_tortoise_voices() {
@@ -183,7 +183,7 @@ if [ -f "${tts_path}/ttspod" ] && [ -f "${tts_path}/activate" ]; then
     then
       printf "Something went wrong.\n"
     fi
-    [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/SWivid/F5-TTS.git@refs/pull/151/merge
+    [[ "${add_on}" == *'local'* ]] && pip3 install git+https://github.com/ajkessel/F5-TTS.git
     printf "Update complete.\n"
     extras
     exit 0
