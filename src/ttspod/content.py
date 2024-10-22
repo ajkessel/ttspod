@@ -225,6 +225,8 @@ class Content(object):
                 text += page.get_text()
             if text:
                 items = self.get_items(text=text, title=title)
+        elif "ascii text" in buffer_type:
+            text = c
         else:
             try:
                 text = pypandoc.convert_file(source_file=fname, to='plain', extra_args=[
