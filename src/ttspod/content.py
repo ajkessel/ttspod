@@ -234,7 +234,7 @@ class Content(object):
                                              f'--lua-filter={self.config.lua_path}noimage.lua'
                                              ])
             except Exception:  # pylint: disable=broad-except
-                text = None
+                text = ""
             if not text:
                 try:
                     text = pypandoc.convert_file(source_file=fname,
@@ -248,7 +248,7 @@ class Content(object):
                                                      f'{self.config.lua_path}noimage.lua'
                                                  ])
                 except Exception:  # pylint: disable=broad-except
-                    text = None
+                    text = ""
         self.log.write(f'process_file got cleaned text: {text}')
         if text:
             items = self.get_items(text=text, title=title)
