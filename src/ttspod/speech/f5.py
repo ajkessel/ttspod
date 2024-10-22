@@ -92,7 +92,7 @@ def process_voice(ref_audio_orig, ref_text=""):
         pipe = pipeline(
             "automatic-speech-recognition",
             model="openai/whisper-large-v3-turbo",
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float16 if DEVICE != 'cpu' else torch.float32,
             device=DEVICE,
         )
         ref_text = pipe(
