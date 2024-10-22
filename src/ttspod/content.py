@@ -224,7 +224,7 @@ class Content(object):
             for page in doc:
                 text += page.get_text()
         elif "ascii text" in buffer_type:
-            text = str(c)
+            text = c.decode('ascii', 'ignore')
         else:
             try:
                 text = pypandoc.convert_file(source_file=fname, to='plain', extra_args=[
