@@ -29,7 +29,6 @@ classifiers=[
   'Environment :: Win32 (MS Windows)'
 ] 
 requires-python = '==3.11.*'
-# spacy lock on 3.7.5 to avoid conflicts
 dependencies = [ 
   'anyascii',
   'cython',
@@ -43,7 +42,7 @@ dependencies = [
   'lxml',
   'lxml_html_clean',
   'nltk',
-  'numpy',
+  'numpy<=1.26.4',
   'pandoc',
   'paramiko',
   'pip',
@@ -54,7 +53,7 @@ dependencies = [
   'psutil',
   'python-magic-bin; platform_system == "Windows"',
   'semaphore_win_ctypes; platform_system == "Windows"',
-  'spacy',
+  'spacy<3.8,>=3',
   'pydub',
   'pyenchant',
   'pymupdf',

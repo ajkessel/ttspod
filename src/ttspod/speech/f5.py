@@ -10,8 +10,8 @@ try:
     from cached_path import cached_path
     from importlib.resources import files
     from einops import rearrange
-    from f5_tts.model import CFM, DiT
-    from f5_tts.model.utils import (get_tokenizer, load_checkpoint)
+    from f5_tts.model import DiT
+    from f5_tts.infer.utils_infer import load_model
     from glob import glob
     from os import path, environ as env
     from platform import processor
@@ -105,29 +105,30 @@ def process_voice(ref_audio_orig, ref_text=""):
     return ref_audio, ref_text
 
 
-def load_model(repo_name, exp_name, model_cls, model_cfg, ckpt_step):
-    """load F5 TTS model"""
-    # checkpoint_path = files('f5_tts').joinpath('data','Emilia_ZH_EN_pinyin')
-    checkpoint_path = str(cached_path(
-        f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors"))
-    vocab_char_map, vocab_size = get_tokenizer("Emilia_ZH_EN", "pinyin")
-    model = CFM(
-        transformer=model_cls(
-            **model_cfg, text_num_embeds=vocab_size, mel_dim=N_MEL_CHANNELS
-        ),
-        mel_spec_kwargs=dict(
-            target_sample_rate=SAMPLE_RATE,
-            n_mel_channels=N_MEL_CHANNELS,
-            hop_length=HOP_LENGTH,
-        ),
-        odeint_kwargs=dict(
-            method=ODE_METHOD,
-        ),
-        vocab_char_map=vocab_char_map,
-    ).to(DEVICE)
-    model = load_checkpoint(
-        model=model, ckpt_path=checkpoint_path, device=DEVICE, use_ema=True)
-    return model
+# def load_model(repo_name, exp_name, model_cls, model_cfg, ckpt_step):
+#     """load F5 TTS model"""
+#     # checkpoint_path = files('f5_tts').joinpath('data','Emilia_ZH_EN_pinyin')
+#     checkpoint_path = str(cached_path(
+#         f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors"))
+
+#     vocab_char_map, vocab_size = get_tokenizer("Emilia_ZH_EN", "pinyin")
+#     model = CFM(
+#         transformer=model_cls(
+#             **model_cfg, text_num_embeds=vocab_size, mel_dim=N_MEL_CHANNELS
+#         ),
+#         mel_spec_kwargs=dict(
+#             target_sample_rate=SAMPLE_RATE,
+#             n_mel_channels=N_MEL_CHANNELS,
+#             hop_length=HOP_LENGTH,
+#         ),
+#         odeint_kwargs=dict(
+#             method=ODE_METHOD,
+#         ),
+#         vocab_char_map=vocab_char_map,
+#     ).to(DEVICE)
+#     model = load_checkpoint(
+#         model=model, ckpt_path=checkpoint_path, device=DEVICE, use_ema=True)
+#     return model
 
 
 class F5:
@@ -159,8 +160,16 @@ class F5:
                              (self.audio.shape[-1] / self.sr) *
                              (25 - self.audio.shape[-1] / self.sr))
         self.vocos = Vocos.from_pretrained("charactr/vocos-mel-24khz")
-        self.ema_model = load_model(MODEL, "F5TTS_Base", DiT,
-                                    F5TTS_model_cfg, 1200000)
+        self.ema_model = load_model(model_cls=DiT,
+                                    model_cfg=F5TTS_model_cfg,
+                                    ckpt_path=str(cached_path(
+                                        f"hf://SWivid/{MODEL}/F5TTS_Base/model_1200000.safetensors")),
+                                    vocab_file="",
+                                    ode_method="euler",
+                                    use_ema=True,
+                                    device=DEVICE)
+        # self.ema_model = load_model(MODEL, "F5TTS_Base", DiT,
+        #                             F5TTS_model_cfg, 1200000)
 
     def infer_batch(self, ref_audio, ref_text, gen_text_batches):
         """workhorse inference function"""

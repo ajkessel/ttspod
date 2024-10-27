@@ -73,7 +73,7 @@ def check_engines() -> dict:
     except ImportError:
         pass
     try:
-        from f5_tts.model.utils import load_checkpoint
+        from f5_tts.infer.utils_infer import load_checkpoint
         ENGINES['f5'] = True
     except ImportError:
         pass
@@ -383,7 +383,7 @@ def upgrade(force=False, debug=False) -> bool:
         print('Installing customized F5-TTS module from github...')
         result = subprocess.run(
             [executable, "-m", "pip", "install",
-                "git+https://github.com/ajkessel/F5-TTS", "-U"],
+                "git+https://github.com/SWivid/F5-TTS", "-U"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False

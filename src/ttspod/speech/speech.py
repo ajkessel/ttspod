@@ -9,6 +9,7 @@ except ImportError:
 # standard modules
 try:
     from anyascii import anyascii
+    from warnings import simplefilter
     import os
     import re
     from time import time
@@ -23,6 +24,8 @@ except ImportError as e:
 # TTSPod modules
 from logger import Logger
 from util import check_engines
+
+simplefilter(action='ignore', category=FutureWarning)
 
 ENGINES = check_engines()
 
