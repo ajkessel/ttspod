@@ -72,8 +72,7 @@ local = [
       'webdataset',
       'coqui-tts==0.24.2',
       'coqui-tts-trainer==0.1.4',
-      'ctranslate2',
-      'f5-tts @ git+https://github.com/SWivid/F5-TTS.git@5f6dcc7e11f0c93f0038b7040846565e2e8ea593'
+      'ctranslate2'
 ]
 remote = ['openai','elevenlabs']
 truststore = ['truststore']
