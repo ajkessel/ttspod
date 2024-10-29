@@ -65,7 +65,7 @@ dependencies = [
   'validators'
   ]
 [project.optional-dependencies]
-local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4','ctranslate2','f5-tts @ git+https://github.com/SWivid/F5-TTS.git@main']
+local = ['torch>=2.2.2','torchaudio>=2.2.2','whisperspeech','webdataset','coqui-tts==0.24.2','coqui-tts-trainer==0.1.4','ctranslate2','f5-tts @ https://github.com/SWivid/F5-TTS.git@main']
 remote = ['openai','elevenlabs']
 truststore = ['truststore']
 dev = ['posix_ipc; platform_system != "Windows"','semaphore_win_ctypes','build','twine']
