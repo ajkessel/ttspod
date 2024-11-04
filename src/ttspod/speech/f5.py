@@ -11,7 +11,7 @@ try:
     from importlib.resources import files
     from einops import rearrange
     from f5_tts.model import DiT
-    from f5_tts.infer.utils_infer import load_model
+    from f5_tts.infer.utils_infer import load_model, preprocess_ref_audio_text
     from glob import glob
     from os import path, environ as env
     from platform import processor
@@ -28,7 +28,8 @@ try:
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
-        'Do you need to run pip install -r requirements.txt?')
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 # ttspod modules
@@ -152,7 +153,10 @@ class F5:
             voice = files('ttspod').joinpath('data', 'sample.wav')
         self.log.write(f'Using voice: {voice}.')
         assert path.exists(voice)  # some voice must be specified
-        (self.ref_audio, self.ref_text) = process_voice(voice)
+        (self.ref_audio, self.ref_text) = preprocess_ref_audio_text(
+            ref_audio_orig=voice,
+            ref_text=""
+        )
         self.log.write(
             f'Transcribed {self.ref_audio} to:\n{self.ref_text}.', log_level=3)
         self.audio, self.sr = torchaudio.load(self.ref_audio)
@@ -163,13 +167,12 @@ class F5:
         self.ema_model = load_model(model_cls=DiT,
                                     model_cfg=F5TTS_model_cfg,
                                     ckpt_path=str(cached_path(
-                                        f"hf://SWivid/{MODEL}/F5TTS_Base/model_1200000.safetensors")),
+                                        f"hf://SWivid/{MODEL}/F5TTS_Base/model_1200000.safetensors")
+                                    ),
                                     vocab_file="",
                                     ode_method="euler",
                                     use_ema=True,
                                     device=DEVICE)
-        # self.ema_model = load_model(MODEL, "F5TTS_Base", DiT,
-        #                             F5TTS_model_cfg, 1200000)
 
     def infer_batch(self, ref_audio, ref_text, gen_text_batches):
         """workhorse inference function"""

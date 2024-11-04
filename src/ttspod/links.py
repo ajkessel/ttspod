@@ -14,9 +14,9 @@ try:
     import validators
 except ImportError as e:
     print(
-        f"Failed to import required module: {e}\n"
-        "Do you need to run pip install -r requirements.txt?"
-    )
+        f'Failed to import required module: {e}\n'
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 # TTSPod modules

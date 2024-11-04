@@ -20,7 +20,8 @@ try:
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
-        'Do you need to run pip install -r requirements.txt?')
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 # TODO: rework the debug/DBG and output logic
@@ -36,7 +37,8 @@ def md5(file_path):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-# this should be refactored to perform the MD5 remotely
+# TODO: this should be refactored to perform the MD5 remotely
+# otherwise it's probably not getting any speed benefit
 
 
 def remote_get_md5(sftp, remote_file):

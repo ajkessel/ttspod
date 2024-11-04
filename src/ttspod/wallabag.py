@@ -14,7 +14,8 @@ try:
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
-        'Do you need to run pip install -r requirements.txt?')
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 from logger import Logger

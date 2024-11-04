@@ -24,7 +24,8 @@ try:
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
-        'Do you need to run pip install -r requirements.txt?')
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 import version
@@ -112,7 +113,7 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
         "Invalid arguments given to chunk function:" \
         "minimum {min_length} is greater than maximum {max_length}."
 
-    # TODO: add silence for paragraph breaks
+    # TODO: add extra silence for paragraph breaks
     text = re.sub(r'([^\.])\n\n', r'\1. ', text)
     text = re.sub(r' +\. +', '. ', text)
     text = re.sub(r'[ \n]+', ' ', text)
@@ -241,7 +242,11 @@ def release_lock(name='ttspod') -> bool:
 
 
 def clean_html(raw_html):
-    """convert HTML to plaintext"""
+    """
+    convert HTML to plaintext
+    
+    :param raw_html: unprocessed HTML content to strip of tags and other cruft
+    """
     text = None
     try:
         text = convert_text(

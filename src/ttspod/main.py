@@ -15,7 +15,8 @@ try:
 except ImportError as e:
     print(
         f'Failed to import required module: {e}\n'
-        'Do you need to run pip install -r requirements.txt?')
+        'You may need to re-execute quickstart.sh.\n'
+        'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
 # TTSPod modules
@@ -25,6 +26,7 @@ from links import Links
 from logger import Logger
 from pod import Pod
 from remote_sync import sync as rsync
+# TODO: use native rsync on platforms where it is available
 from speech.speech import Speech
 from ttsinsta import TTSInsta
 from ttspocket import TTSPocket

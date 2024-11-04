@@ -1,4 +1,4 @@
-"""sample CLI wrapper"""
+"""CLI wrapper"""
 # optional system certificate trust
 try:
     import truststore
