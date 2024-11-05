@@ -8,7 +8,6 @@ except ImportError:
 
 # standard modules
 try:
-    from anyascii import anyascii
     from warnings import simplefilter
     import os
     import re
@@ -70,17 +69,14 @@ class Speech(object):
         value = re.sub(r'[^\w\s-]', '', value.lower())
         return re.sub(r'[-\s]+', '-', value).strip('-_')
 
-    def speechify(self, title="No Title Available", raw_text="", overwrite=True):
+    def speechify(self, title="No Title Available", text="", overwrite=True):
         """workhorse TTS function"""
         clean_title = self.slugify(title)
         out_file = os.path.join(self.config.final_path, f'{clean_title}.mp3')
         if os.path.isfile(out_file) and not overwrite:
             self.log.write(f'skipping {out_file} because it already exists')
             return out_file
-        text = anyascii(raw_text)
-        text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
-        text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
-        text = re.sub('\n\n+', '\n\n', text, flags=re.MULTILINE)
+
         temp = str(uuid.uuid4())
         start_time = time()
         if os.path.exists(out_file):  # don't overwrite existing files

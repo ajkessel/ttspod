@@ -7,6 +7,7 @@ except ImportError:
     pass
 
 try:
+    from anyascii import anyascii
     from html import unescape
     from html2text import html2text
     from importlib import reload
@@ -114,9 +115,6 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
         "minimum {min_length} is greater than maximum {max_length}."
 
     # TODO: add extra silence for paragraph breaks
-    text = re.sub(r'([^\.])\n\n', r'\1. ', text)
-    text = re.sub(r' +\. +', '. ', text)
-    text = re.sub(r'[ \n]+', ' ', text)
     text = text.strip()
     nlp = get_spacy()
     doc = nlp(text)
@@ -283,17 +281,26 @@ def fix_path(text, trail=False):
 def clean_text(text):
     """remove as much non-speakable text as possible"""
     text = unescape(text)
+    # remove obvious hyperlinks
     text = re.sub(r'https?:[^ ]*', '', text)
     text = re.sub(r'mailto:[^ ]*', '', text)
+    # remove any weird characters
     text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
         '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
     text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', text)
-    text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
-    text = re.sub(r'\n\n+', '\n\n', text)
-    text = re.sub(r' +', ' ', text)
     text = unidecode(text.strip())
-    # add a space after commas other than with numbers
-    text = re.sub(r'([A-Za-z]),([A-Za-z])', r'\1, \2', text)
+    text = anyascii(text)
+    # clean up whitespace and punctuation
+    text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
+    text = re.sub(r'\n\n+', '\n\n', text, flags=re.MULTILINE)
+    text = re.sub(r' +', ' ', text)
+    text = re.sub(r'([,\.!"\'\:\?])+',r'\1',text)
+    # drop any short lines, probably ads/filler
+    text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
+    # add a space after punctuation other than with numbers
+    text = re.sub(r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', text)
+    text = re.sub(r' +\. +', '. ', text)
+    text = re.sub(r'[ \n]+', ' ', text)
     # for any all caps word longer than 4 characters, convert to lowercase if it is an English word
     all_caps_words = re.findall(r'[A-Z]{4,15}', text)
     try:
