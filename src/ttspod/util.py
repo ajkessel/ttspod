@@ -244,7 +244,7 @@ def release_lock(name='ttspod') -> bool:
 def clean_html(raw_html):
     """
     convert HTML to plaintext
-    
+
     :param raw_html: unprocessed HTML content to strip of tags and other cruft
     """
     text = None
@@ -292,7 +292,10 @@ def clean_text(text):
     text = re.sub(r'\n\n+', '\n\n', text)
     text = re.sub(r' +', ' ', text)
     text = unidecode(text.strip())
-    all_caps_words = re.findall(r'[A-Z]{2,15}', text)
+    # add a space after commas other than with numbers
+    text = re.sub(r'([A-Za-z]),([A-Za-z])', r'\1, \2', text)
+    # for any all caps word longer than 4 characters, convert to lowercase if it is an English word
+    all_caps_words = re.findall(r'[A-Z]{4,15}', text)
     try:
         for word in all_caps_words:
             if DICTIONARY.check(word):
