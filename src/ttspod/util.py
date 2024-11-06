@@ -124,37 +124,38 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
     chunks = []
     sentence = sentences[0]
     next_sentence = ''
-    if len(sentences) > 1:
-        sentences = sentences[1:]
-        for next_sentence in sentences:
-            if re.match(r'^ *[A-Za-z\.]{,3} *$', next_sentence):
+    if len(sentences) <= 1:
+        sentences.append(next_sentence)
+    sentences = sentences[1:]
+    for next_sentence in sentences:
+        if re.match(r'^ *[A-Za-z\.]{,3} *$', next_sentence):
+            continue
+        if len(sentence) + len(next_sentence) <= min_length:
+            sentence += f' {next_sentence}'
+            continue
+        if len(sentence) <= max_length:
+            chunks.append(sentence)
+            sentence = next_sentence
+            continue
+        # fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
+        fragments = re.split(r'(?<=[,.:?])(?!\w)', sentence)
+        fragment = ''
+        for next_fragment in fragments:
+            next_fragment = next_fragment.strip()
+            if len(next_fragment) < 10 or len(fragment) + len(next_fragment) <= max_length:
+                fragment += next_fragment
                 continue
-            if len(sentence) + len(next_sentence) <= min_length:
-                sentence += f' {next_sentence}'
-                continue
-            if len(sentence) <= max_length:
-                chunks.append(sentence)
-                sentence = next_sentence
-                continue
-            # fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
-            fragments = re.split(r'(?<=[,.:?])(?!\w)', sentence)
-            fragment = ''
-            for next_fragment in fragments:
-                next_fragment = next_fragment.strip()
-                if len(next_fragment) < 10 or len(fragment) + len(next_fragment) <= max_length:
-                    fragment += next_fragment
-                    continue
-                if len(fragment) <= max_length:
-                    chunks.append(fragment)
-                    fragment = next_fragment
-                    continue
+            if len(fragment) <= max_length:
                 chunks.append(fragment)
                 fragment = next_fragment
-                # lines = wrap(text=fragment, width=max_length) TODO: extra long fragments
-                # chunks.extend(lines)
+                continue
             chunks.append(fragment)
-            sentence = next_sentence
-        chunks.append(sentence)
+            fragment = next_fragment
+            # lines = wrap(text=fragment, width=max_length) TODO: extra long fragments
+            # chunks.extend(lines)
+        chunks.append(fragment)
+        sentence = next_sentence
+    chunks.append(sentence)
     chunks = [x for x in chunks if len(x.strip()) > 0]
     return chunks
 

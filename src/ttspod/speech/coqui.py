@@ -84,5 +84,6 @@ class Coqui:
 if __name__ == "__main__":
     coqui = Coqui()
     print("This is the TTSPod Coqui TTS module.")
-    pprint(vars(coqui))
-    pprint(dir(coqui))
+    # pprint(vars(coqui))
+    # pprint(dir(coqui))
+    coqui.convert("this is a test of the coqui model.","output.wav")
