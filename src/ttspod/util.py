@@ -385,16 +385,16 @@ def upgrade(force=False, debug=False) -> bool:
             check=False
         )
         results += result.stdout + result.stderr
-        if OS == "mac" and 'local' in options:
-            print('Installing customized transformers module for Mac github...')
-            result = subprocess.run(
-                [executable, "-m", "pip", "install",
-                 "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False
-            )
-            results += result.stdout + result.stderr
+        # if OS == "mac" and 'local' in options:
+        #     print('Installing customized transformers module for Mac github...')
+        #     result = subprocess.run(
+        #         [executable, "-m", "pip", "install",
+        #          "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
+        #         stdout=subprocess.PIPE,
+        #         stderr=subprocess.PIPE,
+        #         check=False
+        #     )
+        #     results += result.stdout + result.stderr
         print('Installing customized F5-TTS module from github...')
         result = subprocess.run(
             [executable, "-m", "pip", "install",
