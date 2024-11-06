@@ -31,14 +31,24 @@ class TTSInsta(object):
             self.config.key and
             self.config.secret
         ):
-            self.log.write("instapaper support not enabled, check .env")
+            self.log.write(
+                "Instapaper support not enabled, check configuration file.")
             return
         self.links = links
         try:
             self.p = instapaper.Instapaper(self.config.key, self.config.secret)
             self.p.login(self.config.username, self.config.password)
         except Exception as err:  # pylint: disable=broad-except
-            self.log.write(f'instapaper login failed: {err}', error=True)
+            if 'oauth' in str(err):
+                self.log.write('Unable to log in to Instapaper with these credentials:\n'
+                               f'Username: {self.config.username}\n'
+                               f'Password: {self.config.password}\n'
+                               f'API Key: {self.config.key}\n'
+                               f'API Secret: {self.config.secret}\n'
+                               'Please edit configuration and try again.\n',
+                               error=True)
+            else:
+                self.log.write(f'Instapaper login failed: {err}', error=True)
         return
 
     def get_items(self, tag):
