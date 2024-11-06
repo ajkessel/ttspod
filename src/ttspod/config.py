@@ -150,7 +150,7 @@ class Config(object):
                 self.log.write(f'TTS engine {self.engine} selected but not available.\n'
                                f'Available engines are: {ENGINES}\n'
                                'reinstall with quickstart.sh to add engines', True)
-                self.engine = None
+                self.engine = ""
 
     def __init__(self, debug=True, engine=None, config_path=None, log=None, gpu=None, quiet=False):
         self.log = log if log else Logger(debug=debug)

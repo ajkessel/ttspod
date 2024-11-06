@@ -75,7 +75,7 @@ def check_engines() -> dict:
     except ImportError:
         pass
     try:
-        from f5_tts.infer.utils_infer import load_checkpoint
+        import f5_tts
         ENGINES['f5'] = True
     except ImportError:
         pass
