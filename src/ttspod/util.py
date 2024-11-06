@@ -295,7 +295,7 @@ def clean_text(text):
     text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
     text = re.sub(r'\n\n+', '\n\n', text, flags=re.MULTILINE)
     text = re.sub(r' +', ' ', text)
-    text = re.sub(r'([,\.!"\'\:\?])+',r'\1',text)
+    text = re.sub(r'([,\.!"\'\:\?])+', r'\1', text)
     # drop any short lines, probably ads/filler
     text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
     # add a space after punctuation other than with numbers
@@ -398,8 +398,13 @@ def upgrade(force=False, debug=False) -> bool:
         #     results += result.stdout + result.stderr
         print('Installing customized F5-TTS module from github...')
         result = subprocess.run(
-            [executable, "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS", "-U"],
+            [
+                executable, "-m", "pip", "install",
+                "git+https://github.com/SWivid/F5-TTS@8a7e8495fff609cd8f4085c9efe8f2964995fc12",
+                "-U", "--upgrade-strategy", "eager"
+            ],
+            # 8a7e8495fff609cd8f4085c9efe8f2964995fc12 = 2024-11-06 snapshot
+            # TODO: switch to pyproject install once F5-TTS is available on pypi
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False
