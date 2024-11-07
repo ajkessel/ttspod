@@ -153,6 +153,9 @@ class F5:
             voice = files('ttspod').joinpath('data', 'sample.wav')
         self.log.write(f'Using voice: {voice}.')
         assert path.exists(voice)  # some voice must be specified
+        # TODO: cache ref_text based on ref_audio
+        # so it doesn't need to be regenerated with every session
+        # could be stored in the pickle file
         (self.ref_audio, self.ref_text) = preprocess_ref_audio_text(
             ref_audio_orig=voice,
             ref_text=""

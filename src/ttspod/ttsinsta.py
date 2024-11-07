@@ -64,7 +64,7 @@ class TTSInsta(object):
         except Exception:  # pylint: disable=broad-except
             pass
         if tag and not tag == "ALL" and not folder_id:
-            self.log.write("no folder found for {tag}")
+            self.log.write(f"no folder found for {tag}")
             return None
         if tag == "ALL":
             results = self.p.bookmarks(limit=500)

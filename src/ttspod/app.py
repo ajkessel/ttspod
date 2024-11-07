@@ -42,6 +42,7 @@ class App(object):
         self.got_pipe = None
         self.log = None
         self.main = None
+        self.model = None
         self.quiet = None
         self.title = None
         self.gpu = None
@@ -96,6 +97,9 @@ class App(object):
         parser.add_argument("-e", "--engine", action='store',
                             help="specify TTS engine for this session "
                             "(whisper, coqui, openai, eleven)")
+        parser.add_argument("-m", "--model", action='store',
+                            help="specify model to use with engine "
+                            "(for use with Coqui, OpenAI, or Eleven)")
         parser.add_argument("-s", "--sync", action='store_true',
                             help="sync podcast episodes and state file")
         parser.add_argument("-n", "--dry-run", action='store_true',
@@ -132,6 +136,8 @@ class App(object):
         self.title = args.title if hasattr(args, 'title') else None
         self.engine = args.engine if hasattr(
             args, 'engine') else None
+        self.model = args.model if hasattr(
+            args, 'model') else None
         self.got_pipe = not isatty(stdin.fileno())
         self.wallabag = args.wallabag
         self.pocket = args.pocket
@@ -200,6 +206,7 @@ class App(object):
                 debug=self.debug,
                 config_path=self.config_path,
                 engine=self.engine,
+                model=self.model,
                 force=self.force,
                 dry=self.dry,
                 clean=self.clean,

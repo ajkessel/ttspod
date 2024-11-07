@@ -103,7 +103,7 @@ class Config(object):
         """tts processor settings"""
 
         def __init__(self, temp_path='./', final_path='./', engine=None,
-                     max_workers=10, log=None, debug=False, gpu=1):
+                     model=None, max_workers=10, log=None, debug=False, gpu=1):
             self.log = log if log else Logger(debug=True)
             self.debug = debug
             self.gpu = gpu
@@ -127,6 +127,11 @@ class Config(object):
                 self.voice = path.expanduser(self.voice)
             self.model = e.get(
                 'ttspod_model', 'xtts')
+            if model:
+                model = model.lower()
+                self.model = model
+                self.openai_model = model
+                self.eleven_model = model
             self.model = self.model.lower()
             if not self.voice or self.voice and not path.exists(self.voice):
                 if self.engine == 'coqui' and self.model == 'xtts':
@@ -152,7 +157,8 @@ class Config(object):
                                'reinstall with quickstart.sh to add engines', True)
                 self.engine = ""
 
-    def __init__(self, debug=True, engine=None, config_path=None, log=None, gpu=None, quiet=False):
+    def __init__(self, debug=True, engine=None, model=None,
+                 config_path=None, log=None, gpu=None, quiet=False):
         self.log = log if log else Logger(debug=debug)
         self.config_path = None
         if config_path and path.isfile(config_path):
@@ -219,8 +225,8 @@ class Config(object):
         if self.state_file_path:
             self.state_file_path = fix_path(self.state_file_path, False)
         self.speech = self.Speech(temp_path=self.temp_path, final_path=self.final_path,
-                                  engine=engine, max_workers=self.max_workers, log=self.log,
-                                  debug=self.debug, gpu=self.gpu)
+                                  engine=engine, model=model, max_workers=self.max_workers,
+                                  log=self.log, debug=self.debug, gpu=self.gpu)
         self.content = self.Content(
             working_path=self.working_path, log=self.log)
         self.links = self.Links(log=self.log)
