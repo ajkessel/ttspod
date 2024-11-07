@@ -112,7 +112,10 @@ class Main(object):
                 self.log.write(
                     f'{title} is longer than max length of {self.config.max_length}, skipping')
                 continue
-            self.log.write(f'processing {title}')
+            self.log.write(f'Processing {title}')
+            if self.dry:
+                self.log.write('Dry run, skipping audio generation.')
+                continue
             fullpath = self.speech.speechify(title, content)
             if fullpath:
                 self.pod.add((url, title, fullpath))

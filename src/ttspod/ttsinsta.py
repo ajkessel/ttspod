@@ -15,6 +15,7 @@ except ImportError:
 
 # TTSPod modules
 from logger import Logger
+from util import clean_text
 
 
 class TTSInsta(object):
@@ -51,27 +52,56 @@ class TTSInsta(object):
                 self.log.write(f'Instapaper login failed: {err}', error=True)
         return
 
-    def get_items(self, tag):
-        """retrieve items matching tag"""
-        if not self.p:
-            self.log.write("instapaper support not enabled")
-            return None
-        folder_id = None
-        try:
-            folders = self.p.folders()
-            folder_id = [x for x in folders if x['title']
-                         == tag][0]['folder_id']
-        except Exception:  # pylint: disable=broad-except
-            pass
-        if tag and not tag == "ALL" and not folder_id:
-            self.log.write(f"no folder found for {tag}")
-            return None
+    def filter_items(self, tag):
+        """
+        search for bookmarks by folder or tag
+
+        :param tag: folder/tag name to retrieve
+        """
         if tag == "ALL":
-            results = self.p.bookmarks(limit=500)
+            bookmarks = self.p.bookmarks(limit=1000)
         else:
-            results = self.p.bookmarks(folder=folder_id, limit=500)
-        urls = [x.url for x in results]
-        entries = []
-        for url in urls:
-            entries.extend(self.links.get_items(url))
+            bookmarks = self.filter_by_folder(tag)
+            bookmarks.extend(self.filter_by_tag(tag))
+        return bookmarks
+
+    def filter_by_folder(self, tag):
+        """
+        search for bookmarks in named folder
+
+        :param tag: folder name to retrieve
+        """
+        folder_id = []
+        folders = self.p.folders()
+        folder_id = [folder for folder in folders if folder['title']
+                     == tag][0]['folder_id']
+        bookmarks = self.p.bookmarks(
+            folder=folder_id, limit=1000) if folder_id else []
+        return bookmarks
+
+    def filter_by_tag(self, tag):
+        """
+        search for bookmarks with named tag
+
+        :param tag: tag name to retrieve
+        """
+        bookmarks = self.p.bookmarks(limit=1000)
+        return [bookmark for bookmark in bookmarks if tag in [
+            bookmark_tag.get('name') for bookmark_tag in bookmark.tags]]
+
+    def get_items(self, tag):
+        """
+        retrieve items matching tag
+
+        :param tag: tag name to retrieve or ALL for no filtering
+        """
+        if not self.p:
+            self.log.write("Instapaper support not enabled")
+            return []
+        bookmarks = self.filter_items(tag)
+        if not bookmarks:
+            self.log.write(f"No folder or tags found for {tag}")
+            return []
+        entries = [(bookmark.title, clean_text(bookmark.text), bookmark.url)
+                   for bookmark in bookmarks]
         return entries

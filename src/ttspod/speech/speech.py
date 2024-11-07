@@ -35,12 +35,12 @@ class Speech(object):
 
     def __init__(self, config, dry=False, log=None):
         self.dry = dry
-        if dry:
-            return
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.config.nltk = False
         self.final_path = config.final_path
+        if dry:
+            return
         # pylint: disable=import-outside-toplevel
         match self.config.engine.lower():
             case "openai" if "openai" in ENGINES:
