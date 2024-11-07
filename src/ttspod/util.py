@@ -281,13 +281,24 @@ def fix_path(text, trail=False):
 
 def clean_text(text):
     """remove as much non-speakable text as possible"""
+    if not isinstance(text, str):
+        text = text.decode('utf-8', 'ignore')
     text = unescape(text)
     # remove obvious hyperlinks
     text = re.sub(r'https?:[^ ]*', '', text)
     text = re.sub(r'mailto:[^ ]*', '', text)
-    # remove any weird characters
-    text = text.replace('\u201c', '"').replace('\u201d', '"').replace(
-        '\u2018', "'").replace('\u2019', "'").replace('\u00a0', ' ')
+    # remove or replace weird characters
+    replacements = {
+        "‘": "'",
+        "’": "'",
+        "“": '"',
+        "”": '"',
+        '\u00a0': ' ',  # non-breaking space
+        "@": " at "
+    }
+    for curly, straight in replacements.items():
+        text = text.replace(curly, straight)
+    # get rid of everything else that doesn't seem like valid text
     text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', text)
     text = unidecode(text.strip())
     text = anyascii(text)

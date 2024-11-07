@@ -80,10 +80,10 @@ class Content(object):
         longest_html_part = ''
         entries = []
         attachments = []
-        self.log.write(f'got title {title}')
+        self.log.write(f'Email: got title {title}')
         for part in msg.walk():
             self.log.write(
-                f'checking MIME part with type {part.get_content_type()}')
+                f'Checking MIME part with type {part.get_content_type()}', log_level=3)
             if part.get_content_type().lower() == 'text/plain':
                 this_part = quopri.decodestring(part.get_payload(decode=True))
                 if len(this_part) > len(longest_plain_part):
@@ -128,8 +128,8 @@ class Content(object):
             longest_plain_part = re.search(
                 r'<html.*</html>', str(longest_plain_part))[0]
             longest_plain_part = str(clean_html(longest_plain_part))
-        if longest_plain_part:
-            longest_plain_part = longest_plain_part.decode('ascii', 'ignore')
+        # if longest_plain_part:
+        #    longest_plain_part = longest_plain_part.decode('ascii', 'ignore')
         if len(longest_html_part) > len(longest_plain_part):
             text = longest_html_part
         elif longest_plain_part:
@@ -140,7 +140,9 @@ class Content(object):
         if text:
             entry = (title, text, url)
             entries.append(entry)
-        self.log.write(f'email entry {entry}')
+            self.log.write(f'Email entry:\n{entry}', log_level=3)
+        else:
+            self.log.write('No useful text was extracted.', log_level=1)
         for attachment in attachments:
             # if anything goes wrong extracting an attachment, just move on
             # pylint: disable=broad-exception-caught
