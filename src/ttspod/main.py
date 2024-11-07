@@ -172,8 +172,7 @@ class Main(object):
 
     def process_insta(self, tag):
         """process instapaper items matching tag"""
-        links = Links(self.config.links)
-        p = TTSInsta(config=self.config.insta, links=links, log=self.log)
+        p = TTSInsta(config=self.config.insta, log=self.log)
         items = p.get_items(tag)
         return self.process(items)
 

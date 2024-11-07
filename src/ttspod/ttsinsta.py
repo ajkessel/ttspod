@@ -21,7 +21,7 @@ from util import clean_text
 class TTSInsta(object):
     """instapaper input"""
 
-    def __init__(self, config, links, log):
+    def __init__(self, config, log):
         self.log = log if log else Logger(debug=True)
         self.config = config
         self.p = None
@@ -35,7 +35,6 @@ class TTSInsta(object):
             self.log.write(
                 "Instapaper support not enabled, check configuration file.")
             return
-        self.links = links
         try:
             self.p = instapaper.Instapaper(self.config.key, self.config.secret)
             self.p.login(self.config.username, self.config.password)
