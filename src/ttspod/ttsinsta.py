@@ -52,6 +52,23 @@ class TTSInsta(object):
                 self.log.write(f'Instapaper login failed: {err}', error=True)
         return
 
+    def get_items(self, tag):
+        """
+        retrieve items matching tag
+
+        :param tag: tag name to retrieve or ALL for no filtering
+        """
+        if not self.p:
+            self.log.write("Instapaper support not enabled")
+            return []
+        bookmarks = self.filter_items(tag)
+        if not bookmarks:
+            self.log.write(f"No folder or tags found for {tag}")
+            return []
+        entries = [(bookmark.title, clean_text(bookmark.text), bookmark.url)
+                   for bookmark in bookmarks]
+        return entries
+
     def filter_items(self, tag):
         """
         search for bookmarks by folder or tag
@@ -88,20 +105,3 @@ class TTSInsta(object):
         bookmarks = self.p.bookmarks(limit=1000)
         return [bookmark for bookmark in bookmarks if tag in [
             bookmark_tag.get('name') for bookmark_tag in bookmark.tags]]
-
-    def get_items(self, tag):
-        """
-        retrieve items matching tag
-
-        :param tag: tag name to retrieve or ALL for no filtering
-        """
-        if not self.p:
-            self.log.write("Instapaper support not enabled")
-            return []
-        bookmarks = self.filter_items(tag)
-        if not bookmarks:
-            self.log.write(f"No folder or tags found for {tag}")
-            return []
-        entries = [(bookmark.title, clean_text(bookmark.text), bookmark.url)
-                   for bookmark in bookmarks]
-        return entries
