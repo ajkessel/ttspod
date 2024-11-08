@@ -67,7 +67,9 @@ class TTSInsta(object):
         entries = []
         for bookmark in bookmarks:
             self.log.write(
-                f'Instapaper content for {bookmark.title} / {bookmark.url}:\n{bookmark.text}', log_level=3)
+                f'Instapaper content for {bookmark.title} / {bookmark.url}:\n{bookmark.text}',
+                log_level=3
+            )
             entries.append((bookmark.title, clean_text(
                 bookmark.text), bookmark.url))
         return entries

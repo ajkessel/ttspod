@@ -405,22 +405,12 @@ def upgrade(force=False, debug=False) -> bool:
             check=False
         )
         results += result.stdout + result.stderr
-        # if OS == "mac" and 'local' in options:
-        #     print('Installing customized transformers module for Mac github...')
-        #     result = subprocess.run(
-        #         [executable, "-m", "pip", "install",
-        #          "git+https://github.com/ajkessel/transformers@v4.42.4a", "-U"],
-        #         stdout=subprocess.PIPE,
-        #         stderr=subprocess.PIPE,
-        #         check=False
-        #     )
-        #     results += result.stdout + result.stderr
         print('Installing customized F5-TTS module from github...')
         result = subprocess.run(
             [
                 executable, "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS@8a7e8495fff609cd8f4085c9efe8f2964995fc12",
-                "-U", "--upgrade-strategy", "eager"
+                "git+https://github.com/SWivid/F5-TTS@c33a83c0094ca4c62c1d193cf457a5e2a2e9d87a",
+                "-U", "--force-reinstall", "--upgrade-strategy", "eager"
             ],
             # 8a7e8495fff609cd8f4085c9efe8f2964995fc12 = 2024-11-06 snapshot
             # TODO: switch to pyproject install once F5-TTS is available on pypi
