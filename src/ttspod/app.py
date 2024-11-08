@@ -227,8 +227,8 @@ class App(object):
             for i in self.url:
                 if url(i):
                     self.main.process_link(i, self.title)
-                elif path.isfile(i):
-                    self.main.process_file(i, self.title)
+                elif path.isfile(path.expanduser(i)):
+                    self.main.process_file(path.expanduser(i), self.title)
                 else:
                     print(f'command-line argument {i} not recognized')
             return self.main.finalize()
