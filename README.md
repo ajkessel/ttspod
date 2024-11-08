@@ -83,7 +83,7 @@ options:
                         specify model to use with engine (for use with Coqui, OpenAI, or Eleven)
   -s, --sync            sync podcast episodes and state file
   -n, --dry-run         do not actually create or sync audio files
-  --nogpu               disable GPU support (may be necessary for Mac)
+  --nogpu               disable GPU support (try this if you're having trouble on Mac)
   -u, --upgrade         upgrade to latest version
   -v, --version         print version number
 ```
