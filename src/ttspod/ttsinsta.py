@@ -64,8 +64,12 @@ class TTSInsta(object):
         if not bookmarks:
             self.log.write(f"No folder or tags found for {tag}")
             return []
-        entries = [(bookmark.title, clean_text(bookmark.text), bookmark.url)
-                   for bookmark in bookmarks]
+        entries = []
+        for bookmark in bookmarks:
+            self.log.write(
+                f'Instapaper content for {bookmark.title} / {bookmark.url}:\n{bookmark.text}', log_level=3)
+            entries.append((bookmark.title, clean_text(
+                bookmark.text), bookmark.url))
         return entries
 
     def filter_items(self, tag):

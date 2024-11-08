@@ -128,34 +128,37 @@ def chunk(text=None, min_length=0, max_length=250) -> list[str]:
         sentences.append(next_sentence)
     sentences = sentences[1:]
     for next_sentence in sentences:
-        if re.match(r'^ *[A-Za-z\.]{,3} *$', next_sentence):
-            continue
+        # if re.match(r'^ *[A-Za-z\.]{,3} *$', next_sentence):
+        #    continue
+        # I don't think we need this - extra short paras are now handled in clean_text
         if len(sentence) + len(next_sentence) <= min_length:
             sentence += f' {next_sentence}'
             continue
         if len(sentence) <= max_length:
-            chunks.append(sentence)
+            chunks.append(sentence.strip())
             sentence = next_sentence
             continue
         # fragments = re.findall(r'[^,;\.\-\?]+[,;\.\-\?](?!\d)', sentence)
-        fragments = re.split(r'(?<=[,.:?])(?!\w)', sentence)
+        fragments = re.split(r'(?<=[,.:?])(?![\w\'"])', sentence)
         fragment = ''
         for next_fragment in fragments:
             next_fragment = next_fragment.strip()
             if len(next_fragment) < 10 or len(fragment) + len(next_fragment) <= max_length:
+                if re.search(r'[,.]$', fragment) and re.match(r'^[A-Za-z"\']', next_fragment):
+                    fragment += ' '
                 fragment += next_fragment
                 continue
             if len(fragment) <= max_length:
-                chunks.append(fragment)
+                chunks.append(fragment.strip())
                 fragment = next_fragment
                 continue
-            chunks.append(fragment)
+            chunks.append(fragment.strip())
             fragment = next_fragment
             # lines = wrap(text=fragment, width=max_length) TODO: extra long fragments
             # chunks.extend(lines)
-        chunks.append(fragment)
+        chunks.append(fragment.strip())
         sentence = next_sentence
-    chunks.append(sentence)
+    chunks.append(sentence.strip())
     chunks = [x for x in chunks if len(x.strip()) > 0]
     return chunks
 
@@ -293,7 +296,7 @@ def clean_text(text):
         "’": "'",
         "“": '"',
         "”": '"',
-        "…": '. ',
+        "…": '.',
         '\u00a0': ' ',  # non-breaking space
         "@": " at ",
         ".com": " dot com",
@@ -306,17 +309,15 @@ def clean_text(text):
     text = anyascii(text)
     # clean up whitespace and punctuation
     replacements = [
-        (r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' '),
-        (r'^ *$', '\n'),
+        (r'[^A-Za-z0-9 \n\-/()_.,%!"\'?;:]+', ' '),
+        (r'([,.!"\':?])\1+', r'\1'),
+        (r'^\s*$', '\n'),
         (r'\n\n+', '\n\n'),
+        (r' +\. +', '. '),
         (r' +', ' '),
-        (r'([,\.!"\'\:\?])+', r'\1'),
-        (r'^.{,8}$', ''),
-        (r' +\. +', '. '),
-        (r'[ \n]+', ' '),
-        (r' +\. +', '. '),
-        (r'[ \n]+', ' '),
-        (r'([A-Za-z])([,!"\:\?])+([A-Za-z])', r'\1\2 \3')
+        (r'([A-Za-z])([,!":?])+([A-Za-z])', r'\1\2 \3'),
+        (r' +\.', '.'),
+        (r'^.{,8}$', '')
     ]
     for (x, y) in replacements:
         text = re.sub(pattern=x, repl=y, string=text, flags=re.M)
