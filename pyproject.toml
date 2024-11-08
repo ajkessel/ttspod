@@ -71,7 +71,7 @@ local = [
       'whisperspeech',
       'webdataset',
       'coqui-tts==0.24.3',
-      'transformers==4.46.2',
+      'transformers>=4.46.2',
       'coqui-tts-trainer',
       'ctranslate2'
 ]
