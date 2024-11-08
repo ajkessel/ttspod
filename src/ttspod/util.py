@@ -409,8 +409,8 @@ def upgrade(force=False, debug=False) -> bool:
         result = subprocess.run(
             [
                 executable, "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS@3fcdbc70b4a9d4299e1ecd0b5a1c35209f23fd69",
-                "--upgrade, "--force-reinstall", "--no-deps", "--upgrade-strategy", "eager"
+                "git+https://github.com/SWivid/F5-TTS.git@3fcdbc70b4a9d4299e1ecd0b5a1c35209f23fd69",
+                "--upgrade, "--upgrade-strategy", "eager"
             ],
             # 3fcdbc70b4a9d4299e1ecd0b5a1c35209f23fd69 = v0.1.0
             # ignore-installed is currently necessary since F5-TTS on github lacks versioning
