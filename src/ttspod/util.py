@@ -311,7 +311,7 @@ def clean_text(text):
     replacements = [
         (r'[^A-Za-z0-9 \n\-/()_.,%!"\'?;:]+', ' '),
         (r'([,.!"\':?])\1+', r'\1'),
-        (r'^\s*$', '\n'),
+        (r'^[^A-Za-z]*$', '\n'),
         (r'\n\n+', '\n\n'),
         (r' +\. +', '. '),
         (r' +', ' '),
@@ -409,9 +409,10 @@ def upgrade(force=False, debug=False) -> bool:
         result = subprocess.run(
             [
                 executable, "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS@c33a83c0094ca4c62c1d193cf457a5e2a2e9d87a",
+                "git+https://github.com/SWivid/F5-TTS@dcd9a19889147481d0a6f4b34505cdf75a1f3b90",
                 "-U", "--ignore-installed f5-tts", "--upgrade-strategy", "eager"
             ],
+            # dcd9a19889147481d0a6f4b34505cdf75a1f3b90 = v0.1.0
             # ignore-installed is currently necessary since F5-TTS on github lacks versioning
             # TODO: switch to pyproject install once F5-TTS is available on pypi
             stdout=subprocess.PIPE,
@@ -422,6 +423,7 @@ def upgrade(force=False, debug=False) -> bool:
         results = results.decode('utf-8')
         lines = [x for x in results.splitlines() if x.strip() and
                  not "cache is disabled" in x.lower() and
+                 not "longer than usual" in x.lower() and
                  ("warning" in x.lower() or "error" in x.lower())]
         if debug:
             print(results)
