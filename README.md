@@ -18,7 +18,7 @@ This is a command-line app that takes many types of content and turns them into 
 * A podcast RSS feed
 * MP3 files corresponding to each input item
 
-You'll need a webserver somewhere to host the content if you want to subscribe with your podcasting app.
+You'll need a web server somewhere to host the content if you want to subscribe with your podcasting app.
 
 ## Text-to-Speech Engines
 
