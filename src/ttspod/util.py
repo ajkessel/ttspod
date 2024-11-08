@@ -412,6 +412,7 @@ def upgrade(force=False, debug=False) -> bool:
                 "git+https://github.com/SWivid/F5-TTS@c33a83c0094ca4c62c1d193cf457a5e2a2e9d87a",
                 "-U", "--ignore-installed f5-tts", "--upgrade-strategy", "eager"
             ],
+            # ignore-installed is currently necessary since F5-TTS on github lacks versioning
             # TODO: switch to pyproject install once F5-TTS is available on pypi
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
