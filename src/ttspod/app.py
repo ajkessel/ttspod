@@ -105,7 +105,7 @@ class App(object):
         parser.add_argument("-n", "--dry-run", action='store_true',
                             help="do not actually create or sync audio files")
         parser.add_argument("--nogpu", action='store_true',
-                            help="disable GPU support (may be necessary for Mac)")
+                            help="disable GPU support (try this if you're having trouble on Mac)")
         parser.add_argument("-u", "--upgrade", action='store_true',
                             help="upgrade to latest version")
         parser.add_argument("-v", "--version", action='store_true',

@@ -49,53 +49,38 @@ You'll also need somewhere to host your RSS feed and MP3 audio files if you want
 
 ## Usage
 ```
-usage: ttspod [-h] [-c [CONFIG]] [-g [GENERATE]] [-w [WALLABAG]] [-i [INSTA]]
-              [-p [POCKET]] [-l [LOG]] [-q [QUIET]] [-d] [-r] [-f] [-t TITLE]
-              [-e ENGINE] [-s] [-n] [--nogpu] [-u] [-v]
-              [url ...]
+usage: ttspod [-h] [-c [CONFIG]] [-g [GENERATE]] [-w [WALLABAG]] [-i [INSTA]] [-p [POCKET]] [-l [LOG]] [-q [QUIET]] [-d] [-r] [-f] [-t TITLE] [-e ENGINE] [-m MODEL] [-s] [-n] [--nogpu] [-u] [-v] [url ...]
 
 Convert any content to a podcast feed.
 
 positional arguments:
-  url                   specify any number of URLs or local documents (plain
-                        text, HTML, PDF, Word documents, etc) to add to your
-                        podcast feed
+  url                   specify any number of URLs or local documents (plain text, HTML, PDF, Word documents, etc) to add to your podcast feed
 
 options:
   -h, --help            show this help message and exit
   -c [CONFIG], --config [CONFIG]
-                        specify path for config file (default
-                        ~/.config/ttspod.ini if it exists, otherwise .env in
-                        the current directory)
+                        specify path for config file (default ~/.config/ttspod.ini if it exists, otherwise .env in the current directory)
   -g [GENERATE], --generate [GENERATE]
-                        generate a new config file(default
-                        ~/.config/ttspod.ini if ~/.config exists, otherwise
-                        .env in the current directory)
+                        generate a new config file(default ~/.config/ttspod.ini if ~/.config exists, otherwise .env in the current directory)
   -w [WALLABAG], --wallabag [WALLABAG]
-                        add unprocessed items with specified tag (default
-                        audio) from your wallabag feed to your podcast feed
+                        add unprocessed items with specified tag (default audio) from your wallabag feed to your podcast feed
   -i [INSTA], --insta [INSTA]
-                        add unprocessed items with specified tag (default
-                        audio) from your instapaper feed to your podcast feed,
-                        or use tag ALL for default inbox
+                        add unprocessed items with specified tag (default audio) from your instapaper feed to your podcast feed, or use tag ALL for default inbox
   -p [POCKET], --pocket [POCKET]
-                        add unprocessed items with specified tag (default
-                        audio) from your pocket feed to your podcast feed
+                        add unprocessed items with specified tag (default audio) from your pocket feed to your podcast feed
   -l [LOG], --log [LOG]
-                        log all output to specified filename (default
-                        ttspod.log)
+                        log all output to specified filename (default ttspod.log)
   -q [QUIET], --quiet [QUIET]
-                        no visible output (all output will go to log if
-                        specified)
+                        no visible output (all output will go to log if specified)
   -d, --debug           include debug output
   -r, --restart         wipe state file clean and start new podcast feed
-  -f, --force           force addition of podcast even if cache indicates it
-                        has already been added
+  -f, --force           force addition of podcast even if cache indicates it has already been added
   -t TITLE, --title TITLE
                         specify title for content provided via pipe
   -e ENGINE, --engine ENGINE
-                        specify TTS engine for this session (whisper, coqui,
-                        openai, eleven)
+                        specify TTS engine for this session (whisper, coqui, openai, eleven)
+  -m MODEL, --model MODEL
+                        specify model to use with engine (for use with Coqui, OpenAI, or Eleven)
   -s, --sync            sync podcast episodes and state file
   -n, --dry-run         do not actually create or sync audio files
   --nogpu               disable GPU support (may be necessary for Mac)
