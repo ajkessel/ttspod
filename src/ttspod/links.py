@@ -21,6 +21,7 @@ except ImportError as e:
 
 # TTSPod modules
 from logger import Logger
+from util import clean_text
 
 
 class Links(object):
@@ -38,9 +39,9 @@ class Links(object):
         entries = []
         if not validators.url(url):
             self.log.write(
-                f"{url} does not appear to be a valid URL, skipping")
+                f"{url} does not appear to be a valid URL, skipping.")
             return None
-        self.log.write(f"processing {url}")
+        self.log.write(f"Processing {url}.")
         try:
             downloaded = trafilatura.fetch_url(url, config=self.my_config)
             text = trafilatura.extract(
@@ -52,9 +53,12 @@ class Links(object):
                     detect_title = trafilatura.extract_metadata(
                         downloaded).title
                     title = detect_title if detect_title else url
+                text = clean_text(text)
                 entry = (title, text, url)
                 entries.append(entry)
-                self.log.write(f"successfully processed {url} {title}")
+                self.log.write(
+                    f"Successfully processed entry:\nURL: {url}\nTitle: {title}", log_level=2)
+                self.log.write(f'Contents:\n{text}', log_level=3)
             else:
                 self.log.write(f"failed to process {url}: no text returned")
         except Exception as err:  # pylint: disable=broad-except

@@ -293,6 +293,7 @@ def clean_text(text):
         "’": "'",
         "“": '"',
         "”": '"',
+        "…": '. ',
         '\u00a0': ' ',  # non-breaking space
         "@": " at ",
         ".com": " dot com",
@@ -311,12 +312,11 @@ def clean_text(text):
         (r' +', ' '),
         (r'([,\.!"\'\:\?])+', r'\1'),
         (r'^.{,8}$', ''),
-        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3'),
         (r' +\. +', '. '),
         (r'[ \n]+', ' '),
-        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3'),
         (r' +\. +', '. '),
-        (r'[ \n]+', ' ')
+        (r'[ \n]+', ' '),
+        (r'([A-Za-z])([,!"\:\?])+([A-Za-z])', r'\1\2 \3')
     ]
     for (x, y) in replacements:
         text = re.sub(pattern=x, repl=y, string=text, flags=re.M)
