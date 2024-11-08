@@ -294,7 +294,10 @@ def clean_text(text):
         "“": '"',
         "”": '"',
         '\u00a0': ' ',  # non-breaking space
-        "@": " at "
+        "@": " at ",
+        ".com": " dot com",
+        ".org": " dot org",
+        ".net": " dot net"
     }
     for x, y in replacements.items():
         text = text.replace(x, y)
@@ -302,21 +305,21 @@ def clean_text(text):
     text = anyascii(text)
     # clean up whitespace and punctuation
     replacements = [
-        (r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', re.I),
-        (r'^ *$', '\n', re.MULTILINE),
-        (r'\n\n+', '\n\n', re.MULTILINE),
-        (r' +', ' ', re.I),
-        (r'([,\.!"\'\:\?])+', r'\1', re.I),
-        (r'^.{,8}$', '', re.MULTILINE),
-        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', re.I),
-        (r' +\. +', '. ', re.I),
-        (r'[ \n]+', ' ', re.I),
-        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', re.I),
-        (r' +\. +', '. ', re.I),
-        (r'[ \n]+', ' ', re.I)
+        (r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' '),
+        (r'^ *$', '\n'),
+        (r'\n\n+', '\n\n'),
+        (r' +', ' '),
+        (r'([,\.!"\'\:\?])+', r'\1'),
+        (r'^.{,8}$', ''),
+        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3'),
+        (r' +\. +', '. '),
+        (r'[ \n]+', ' '),
+        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3'),
+        (r' +\. +', '. '),
+        (r'[ \n]+', ' ')
     ]
-    for (x, y, z) in replacements:
-        text = re.sub(pattern=x, repl=y, string=text, flags=z)
+    for (x, y) in replacements:
+        text = re.sub(pattern=x, repl=y, string=text, flags=re.M)
     # for any all caps word longer than 4 characters, convert to lowercase if it is an English word
     all_caps_words = re.findall(r'[A-Z]{4,15}', text)
     try:
