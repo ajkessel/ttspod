@@ -296,23 +296,27 @@ def clean_text(text):
         '\u00a0': ' ',  # non-breaking space
         "@": " at "
     }
-    for curly, straight in replacements.items():
-        text = text.replace(curly, straight)
-    # get rid of everything else that doesn't seem like valid text
-    text = re.sub(r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', text)
+    for x, y in replacements.items():
+        text = text.replace(x, y)
     text = unidecode(text.strip())
     text = anyascii(text)
     # clean up whitespace and punctuation
-    text = re.sub(r'^ *$', '\n', text, flags=re.MULTILINE)
-    text = re.sub(r'\n\n+', '\n\n', text, flags=re.MULTILINE)
-    text = re.sub(r' +', ' ', text)
-    text = re.sub(r'([,\.!"\'\:\?])+', r'\1', text)
-    # drop any short lines, probably ads/filler
-    text = re.sub('^.{,8}$', '', text, flags=re.MULTILINE)
-    # add a space after punctuation other than with numbers
-    text = re.sub(r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', text)
-    text = re.sub(r' +\. +', '. ', text)
-    text = re.sub(r'[ \n]+', ' ', text)
+    replacements = [
+        (r'[^A-Za-z0-9% \n\/\(\)_.,!"\'\?\:]', ' ', re.I),
+        (r'^ *$', '\n', re.MULTILINE),
+        (r'\n\n+', '\n\n', re.MULTILINE),
+        (r' +', ' ', re.I),
+        (r'([,\.!"\'\:\?])+', r'\1', re.I),
+        (r'^.{,8}$', '', re.MULTILINE),
+        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', re.I),
+        (r' +\. +', '. ', re.I),
+        (r'[ \n]+', ' ', re.I),
+        (r'([A-Za-z])([,!"\:\?])([A-Za-z])', r'\1\2 \3', re.I),
+        (r' +\. +', '. ', re.I),
+        (r'[ \n]+', ' ', re.I)
+    ]
+    for (x, y, z) in replacements:
+        text = re.sub(pattern=x, repl=y, string=text, flags=z)
     # for any all caps word longer than 4 characters, convert to lowercase if it is an English word
     all_caps_words = re.findall(r'[A-Z]{4,15}', text)
     try:
