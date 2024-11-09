@@ -20,7 +20,7 @@ except ImportError as e:
         'See https://github.com/ajkessel/ttspod/blob/main/README.md for details.')
     exit()
 
-# from util import patched_isin_mps_friendly
+from util import patched_isin_mps_friendly
 from logger import Logger
 simplefilter(action='ignore', category=FutureWarning)
 
@@ -74,7 +74,7 @@ class Xtts:
         elif isinstance(voices, str):
             self.gpt_cond_latent, self.speaker_embedding = \
                 self.model.speaker_manager.speakers[voices].values()
-        self.log.write('Xtts generator initialized.',error=False,log_level=2)
+        self.log.write('Xtts generator initialized.', error=False, log_level=2)
 
     def generate(self, texts=None, output=None):
         """convert a list of texts into an output file"""
@@ -97,6 +97,7 @@ class Xtts:
         final_audio = torch.cat(audio_segments, dim=1)
         torchaudio.save(output, final_audio, 24000, format="mp3")
         # TODO sanity check that it actually worked
+
 
 if __name__ == "__main__":
     xtts = Xtts()
