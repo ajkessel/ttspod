@@ -55,6 +55,13 @@ class Xtts:
     def __init__(self, config=None, log=None, voices=None, gpu='gpu'):
         self.log = log if log else Logger(debug=True)
         self.config = config
+        env["COQUI_TOS_AGREED"] = "1"
+        self.log.write('Initializing XTTS model.\n'
+                       'XTTS is subject to the Coqui Public Model License 1.0.0, which states:\n'
+                       'This license allows only non-commercial use of a machine learning model '
+                       'and its outputs.\n'
+                       'View full license at https://coqui.ai/cpml.',
+                       error=True, log_level=0)
         api = TTS(MODEL)
         if voices:
             self.voices = voices
