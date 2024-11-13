@@ -95,15 +95,15 @@ Add a URL to your podcast feed
 ```
 Update your podcast feed with all of your Wallabag items tagged "audio" that have not yet been processed
 ```
-# ttspod -w
+ttspod -w
 ```
 Create a one-sentence podcast from the command-line
 ```
-# echo this text will be turned into a podcast that I will be able to listen to later | ttspod -t 'The Title of the Podcast'
+echo "This text will be turned into a podcast that I will be able to listen to later." | ttspod -t 'The Title of the Podcast'
 ```
 Turn a Word document into a podcast 
 ```
-# ttspod my_document.docx
+ttspod my_document.docx
 ```
 
 ## Platforms
