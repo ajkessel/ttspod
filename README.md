@@ -18,16 +18,17 @@ This is a command-line app that takes many types of content and turns them into 
 * A podcast RSS feed
 * MP3 files corresponding to each input item
 
-You'll need a web server somewhere to host the content if you want to subscribe with your podcasting app.
+You'll need a web server to host the generated content in order to subscribe with your podcasting app.
 
 ## Text-to-Speech Engines
 
-* [Coqui](https://github.com/coqui-ai/TTS) (free, requires substantial compute resources and probably a GPU)
-* [Whisper](https://github.com/collabora/WhisperSpeech) (free, requires substantial compute resources and probably a GPU)
+* [F5](https://github.com/SWivid/F5-TTS) (free, requires substantial compute resources and GPU)
+* [Coqui](https://github.com/coqui-ai/TTS) (free, requires substantial compute resources and GPU): supports XTTS (fast) and Tortoise (slow, high quality) inference models
+* [Whisper](https://github.com/collabora/WhisperSpeech) (free, requires substantial compute resources and GPU)
 * OpenAI (paid, requires an [API key](https://platform.openai.com/api-keys))
 * Eleven (limited free version or paid version, [requires an API key](https://elevenlabs.io/docs/api-reference/getting-started))
 
-Depending on your hardware configuration, you may need to pull a more recent pytorch build to get maximum performance for your specific GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your platform. Coqui with XTTS runs reasonably fast on Linux, Mac, and Windows, although the Mac GPU (mps) support is limited compared to NVidia. Coqui with Tortoise is quite slow, especially on Mac.
+Depending on your hardware configuration, you may need to pull a more recent pytorch build to get maximum performance for your specific GPU. See [the PyTorch website](https://pytorch.org/get-started/locally/) for instructions on installing torch and torchaudio with pip for your platform. Coqui with XTTS runs reasonably fast on Linux, Mac, and Windows, although the Mac GPU (mps) support is limited compared to NVidia CUDA. Coqui with Tortoise is quite slow, especially on Mac.
 
 ## Get Started
 This should work "out of the box" on Linux or MacOS.
