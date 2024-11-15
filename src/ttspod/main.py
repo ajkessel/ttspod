@@ -106,15 +106,22 @@ class Main(object):
         for item in items[0:self.config.max_articles]:
             (title, content, url) = item
             if url in self.cache and not self.force:
-                self.log.write(f'{title} is already in the feed, skipping')
+                self.log.write(
+                    f'Skipping "{title}" because it is already in the feed. '
+                    'Use --force to regenerate previously processed content.',
+                    log_level=1
+                )
                 continue
             if len(content) > self.config.max_length:
                 self.log.write(
-                    f'{title} is longer than max length of {self.config.max_length}, skipping')
+                    f'Skipping "{title}" because it is longer than '
+                    f'max length of {self.config.max_length}.',
+                    log_level=0
+                )
                 continue
             self.log.write(f'Processing {title}')
             if self.dry:
-                self.log.write('Dry run, skipping audio generation.')
+                self.log.write('Dry run, skipping audio generation.', log_level=3)
                 continue
             fullpath = self.speech.speechify(title, content)
             if fullpath:
