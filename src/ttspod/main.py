@@ -121,7 +121,8 @@ class Main(object):
                 continue
             self.log.write(f'Processing {title}')
             if self.dry:
-                self.log.write('Dry run, skipping audio generation.', log_level=3)
+                self.log.write(
+                    'Dry run, skipping audio generation.', log_level=3)
                 continue
             fullpath = self.speech.speechify(title, content)
             if fullpath:

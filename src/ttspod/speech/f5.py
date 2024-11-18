@@ -100,36 +100,9 @@ def process_voice(ref_audio_orig, ref_text=""):
             ref_audio,
             chunk_length_s=30,
             batch_size=128,
-            # generate_kwargs={"task": "transcribe"},
             return_timestamps=False,
         )["text"].strip()
     return ref_audio, ref_text
-
-
-# def load_model(repo_name, exp_name, model_cls, model_cfg, ckpt_step):
-#     """load F5 TTS model"""
-#     # checkpoint_path = files('f5_tts').joinpath('data','Emilia_ZH_EN_pinyin')
-#     checkpoint_path = str(cached_path(
-#         f"hf://SWivid/{repo_name}/{exp_name}/model_{ckpt_step}.safetensors"))
-
-#     vocab_char_map, vocab_size = get_tokenizer("Emilia_ZH_EN", "pinyin")
-#     model = CFM(
-#         transformer=model_cls(
-#             **model_cfg, text_num_embeds=vocab_size, mel_dim=N_MEL_CHANNELS
-#         ),
-#         mel_spec_kwargs=dict(
-#             target_sample_rate=SAMPLE_RATE,
-#             n_mel_channels=N_MEL_CHANNELS,
-#             hop_length=HOP_LENGTH,
-#         ),
-#         odeint_kwargs=dict(
-#             method=ODE_METHOD,
-#         ),
-#         vocab_char_map=vocab_char_map,
-#     ).to(DEVICE)
-#     model = load_checkpoint(
-#         model=model, ckpt_path=checkpoint_path, device=DEVICE, use_ema=True)
-#     return model
 
 
 class F5:
