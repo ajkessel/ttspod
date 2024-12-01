@@ -405,15 +405,15 @@ def upgrade(force=False, debug=False) -> bool:
             check=False
         )
         results += result.stdout + result.stderr
-        print('Installing F5-TTS module snapshot (v0.1.2) from github...')
+        print('Installing F5-TTS module snapshot (2024-12-01) from github...')
         result = subprocess.run(
             [
                 executable,
                 "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS.git@194bf1e853c1d99c1a2914b163c1ef8f7cb24cd2",
+                "git+https://github.com/SWivid/F5-TTS.git@eea65de823daa37c9d5b565cc01254d0c94bcc58",
                 "--upgrade", "--upgrade-strategy", "eager"
             ],
-            # 194bf1e853c1d99c1a2914b163c1ef8f7cb24cd2 = v0.1.2
+            # eea65de823daa37c9d5b565cc01254d0c94bcc58 = 2024-01-12
             # TODO: switch to pyproject install once F5-TTS is available on pypi
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
