@@ -410,7 +410,7 @@ def upgrade(force=False, debug=False) -> bool:
             [
                 executable,
                 "-m", "pip", "install",
-                "git+https://github.com/SWivid/F5-TTS.git@eea65de823daa37c9d5b565cc01254d0c94bcc58",
+                "git+https://github.com/SWivid/F5-TTS.git@8898d05e374bcb8d3fc0b1286037e95df61f491f",
                 "--upgrade", "--upgrade-strategy", "eager"
             ],
             # eea65de823daa37c9d5b565cc01254d0c94bcc58 = 2024-01-12

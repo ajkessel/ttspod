@@ -70,7 +70,7 @@ local = [
       'torchaudio>=2.2.2',
       'whisperspeech',
       'webdataset',
-      'coqui-tts==0.24.3',
+      'coqui-tts==0.25.1',
       'transformers',
       'coqui-tts-trainer',
       'ctranslate2'
